@@ -34,7 +34,7 @@ get_dupes(riskfactors_im)
 
 descr(riskfactors_im)
 
-n_distinct(riskfactors_im$tcode)
+n_distinct(riskfactors_im$TCode)
 
 
 

@@ -40,8 +40,7 @@ n_distinct(detection_mode_im$tcode)
 
 # remove tcode NAs - these pulled out of the study so ignore them
 dm_df <- detection_mode_im %>%
-  filter(!is.na(tcode)) %>% 
-  select(-incident, -confirmed)
+  filter(!is.na(tcode)) 
 
 
 
