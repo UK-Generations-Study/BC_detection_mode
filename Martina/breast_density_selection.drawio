@@ -1,0 +1,339 @@
+<mxfile host="app.diagrams.net" modified="2024-04-15T15:01:29.289Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0" etag="fMg2SGPDKG9Lwn98eFwp" version="24.2.1" type="device">
+  <diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">
+    <mxGraphModel dx="2323" dy="1084" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2336" pageHeight="1654" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="62893188c0fa7362-1" value="Dmode v2 is?" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="1230" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-2" value="Mammo date between 3m to 5y before diagnosis?" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-3" value="&lt;span&gt;&amp;nbsp;Mammo with a date before diagnosis available?&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="1490" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-4" value="&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;Screen Detected" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-1" target="62893188c0fa7362-3" edge="1">
+          <mxGeometry x="-0.3002" y="13" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-5" value="Interval&amp;nbsp; &amp;nbsp; &amp;nbsp;" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-1" target="62893188c0fa7362-2" edge="1">
+          <mxGeometry x="-0.359" y="-11" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-8" value="&lt;span&gt;More than 1 eligible mammo dates?&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="810" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-12" value="Screen date around the time of mammo? (-30 to 10 days)" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="550" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-14" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-2" target="62893188c0fa7362-8" edge="1">
+          <mxGeometry x="-0.2" y="-14" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-15" value="No" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="62893188c0fa7362-2" target="ltzN6pnCUaCi4MzfEoiR-7" edge="1">
+          <mxGeometry x="-0.2" y="14" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="1190" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-16" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="62893188c0fa7362-3" target="kYvpu-cuTH2BE-WpAr-0-41" edge="1">
+          <mxGeometry x="-0.2614" y="-13" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="1394.5454545454545" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-17" value="No" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="62893188c0fa7362-3" target="kYvpu-cuTH2BE-WpAr-0-71" edge="1">
+          <mxGeometry x="-0.1294" y="17" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="1740" y="273.5999999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-18" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-8" target="62893188c0fa7362-12" edge="1">
+          <mxGeometry x="-0.2168" y="-14" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-14" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="62893188c0fa7362-20" target="ltzN6pnCUaCi4MzfEoiR-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-20" value="Select the rows with the mammo date closest to the Screen date&amp;nbsp;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;fillColor=#FF8000;strokeColor=#FF9933;" parent="1" vertex="1">
+          <mxGeometry x="410" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-12" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="62893188c0fa7362-21" target="ltzN6pnCUaCi4MzfEoiR-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-21" value="Select the rows with the mammo date closest before Screen date&amp;nbsp;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;fillColor=#FF8000;" parent="1" vertex="1">
+          <mxGeometry x="690" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="62893188c0fa7362-24" value="Yes" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-12" target="62893188c0fa7362-20" edge="1">
+          <mxGeometry x="0.1373" y="-16" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62893188c0fa7362-25" value="No" style="rounded=0;html=1;labelBackgroundColor=none;startArrow=none;startFill=0;startSize=5;endArrow=none;endFill=0;endSize=5;jettySize=auto;orthogonalLoop=1;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" source="62893188c0fa7362-12" target="62893188c0fa7362-21" edge="1">
+          <mxGeometry x="0.1373" y="16" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-7" value="No eligible density" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF99CC;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-18" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ltzN6pnCUaCi4MzfEoiR-11" target="ltzN6pnCUaCi4MzfEoiR-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-14" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ltzN6pnCUaCi4MzfEoiR-11" target="kYvpu-cuTH2BE-WpAr-0-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-11" value="MLO view images available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-5" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ltzN6pnCUaCi4MzfEoiR-17" target="kYvpu-cuTH2BE-WpAr-0-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ltzN6pnCUaCi4MzfEoiR-17" value="Images read by SB available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-1" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="450" y="670" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-2" value="Take all MLO images read by SB with the selected mammo date and calculate the mean density using both breasts&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="160" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-3" value="Take all MLO images with the selected mammo date and calculate the mean density using both breasts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="430" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-10" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.367;exitY=1.017;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="ltzN6pnCUaCi4MzfEoiR-17" target="kYvpu-cuTH2BE-WpAr-0-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="620" y="827" as="sourcePoint" />
+            <mxPoint x="670" y="777" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-11" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="270" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-12" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="410" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-23" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-13" target="kYvpu-cuTH2BE-WpAr-0-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-13" value="Images read by SB available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-15" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="710" y="670" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-24" value="Take all CC view images read by SB with the selected mammo date and calculate the mean density using both breasts&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="660" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-25" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="730" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-27" value="Take all CC view images with the selected mammo date and calculate the mean density using both breasts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="900" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-28" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.567;exitY=1.017;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.333;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-13" target="kYvpu-cuTH2BE-WpAr-0-27">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1090" y="800" as="sourcePoint" />
+            <mxPoint x="1140" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-29" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="900" y="780" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-37" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;curved=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="330" as="sourcePoint" />
+            <mxPoint x="660" y="626" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="900" y="330" />
+              <mxPoint x="900" y="626" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-40" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="900" y="338" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-41" value="Mammo dates 2y to 3.5y before diagnosis/dm2 screen date?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-43" value="" style="endArrow=none;html=1;rounded=0;exitX=0.59;exitY=-0.05;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-59">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1110" y="500" as="sourcePoint" />
+            <mxPoint x="1310" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-45" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="338" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-46" value="Mammo date more than 3.5y and less than 5y before diagnosis available?" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="1338" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-47" value="" style="endArrow=none;html=1;rounded=0;entryX=0.549;entryY=1.047;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-46" target="kYvpu-cuTH2BE-WpAr-0-41">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1380" y="420" as="sourcePoint" />
+            <mxPoint x="1430" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-48" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="338" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-51" value="" style="endArrow=none;html=1;rounded=0;entryX=0.674;entryY=0.992;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-55" target="kYvpu-cuTH2BE-WpAr-0-46">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1520" y="500" as="sourcePoint" />
+            <mxPoint x="1260" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-53" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="458" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-54" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="458" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-55" value="No eligible density&lt;br&gt;(those with mammo 2y or less before dg)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF99CC;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-59" value="Only one mammo date should be available but if more dates &amp;gt; discussion" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF8000;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-65" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;curved=1;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-46" target="ltzN6pnCUaCi4MzfEoiR-11">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="950" y="490" as="sourcePoint" />
+            <mxPoint x="1000" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-70" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;curved=1;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-59" target="ltzN6pnCUaCi4MzfEoiR-11">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1080" y="590" as="sourcePoint" />
+            <mxPoint x="340" y="795" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-71" value="Diagnostic mamo available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-72" value="Contralateral site available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1630" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-74" value="" style="endArrow=none;html=1;rounded=0;entryX=0.367;entryY=0.983;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-72" target="kYvpu-cuTH2BE-WpAr-0-71">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1620" y="490" as="sourcePoint" />
+            <mxPoint x="1670" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-75" value="" style="endArrow=none;html=1;rounded=0;entryX=0.65;entryY=1.033;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.417;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-78" target="kYvpu-cuTH2BE-WpAr-0-71">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1870" y="400" as="sourcePoint" />
+            <mxPoint x="1670" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-76" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="338" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-77" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="338" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-78" value="No eligible density" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF99CC;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-79" value="MLO view images available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-81" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-79" target="kYvpu-cuTH2BE-WpAr-0-72">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1380" y="610" as="sourcePoint" />
+            <mxPoint x="1430" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-82" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" target="kYvpu-cuTH2BE-WpAr-0-72">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1790" y="510" as="sourcePoint" />
+            <mxPoint x="1430" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-83" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1730" y="458" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-84" value="yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="458" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-85" value="No eligible density" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF99CC;" vertex="1" parent="1">
+          <mxGeometry x="1750" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-86" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="kYvpu-cuTH2BE-WpAr-0-87" target="kYvpu-cuTH2BE-WpAr-0-89" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-87" value="Images read by SB available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1298" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-88" value="Take MLO images from the contralateral side read by SB with the selected mammo date and calculate the mean density using the unaffected breast" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="1168" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-89" value="Take MLO images from contralateral side with the selected mammo date and calculate the mean density using the unaffected breast" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="1438" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-90" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.367;exitY=1.017;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" source="kYvpu-cuTH2BE-WpAr-0-87" target="kYvpu-cuTH2BE-WpAr-0-88" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1628" y="827" as="sourcePoint" />
+            <mxPoint x="1678" y="777" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-91" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1278" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-92" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1418" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-93" value="" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="kYvpu-cuTH2BE-WpAr-0-94" target="kYvpu-cuTH2BE-WpAr-0-95" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2030" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-94" value="Images read by SB available?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1770" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-95" value="Take CC view images from the contralateral side read by SB with the selected mammo date and calculate the mean density using the unaffected breast&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="1650" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-96" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1720" y="788" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-97" value="Take CC view images from the contralateral side with the selected mammo date and calculate the mean density using the unaffected breast" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#00FFFF;" vertex="1" parent="1">
+          <mxGeometry x="1890" y="840" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-98" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.567;exitY=1.017;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.333;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" source="kYvpu-cuTH2BE-WpAr-0-94" target="kYvpu-cuTH2BE-WpAr-0-97" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="2080" y="800" as="sourcePoint" />
+            <mxPoint x="2130" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-99" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1890" y="780" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-100" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.092;exitY=1.033;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-79" target="kYvpu-cuTH2BE-WpAr-0-87">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1040" y="730" as="sourcePoint" />
+            <mxPoint x="1090" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-101" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="670" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-102" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="kYvpu-cuTH2BE-WpAr-0-79" target="kYvpu-cuTH2BE-WpAr-0-94">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1590" y="730" as="sourcePoint" />
+            <mxPoint x="1640" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kYvpu-cuTH2BE-WpAr-0-103" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1710" y="670" width="40" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
