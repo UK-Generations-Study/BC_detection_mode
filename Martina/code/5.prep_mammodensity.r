@@ -45,12 +45,25 @@ mammodensity_df <- mammodensity_im %>%
   mutate(tcode = TCode) %>% 
   filter(!is.na(tcode)) %>% 
   select(-TCode) %>% 
-  distinct()
+  distinct() %>% 
+  mutate(mammo_flag = "Y")
 
 
 mammodensity_df %>% tabyl(Reader_Internal)
 
 describe(mammodensity_df)
+
+mammo_cases <- mammodensity_df %>% 
+  select(tcode, mammo_flag) %>% 
+  distinct()
+
+# check how many SD and I cases have mammo density
+
+check <- dm_cases %>% 
+  left_join(mammo_cases, by = "tcode")
+
+check %>% tabyl(mammo_flag)
+
 # freq(mammodensity_df)
 
 summary <- dfSummary(mammodensity_df)
@@ -62,6 +75,8 @@ stview(summary)
 
 mammodensity_df <- dm_cases %>% 
   left_join(mammodensity_df, by = "tcode")
+
+n_distinct(mammodensity_df$tcode)
 
 # descriptives
 stview(dfSummary(mammodensity_df))
@@ -78,3 +93,23 @@ mammodensity_df <- mammodensity_df %>%
          B2Risk_Study = as.factor(B2Risk_Study),
          ImageType = as.factor(ImageType),
          UploadDate = as.Date(UploadDate))
+
+stview(dfSummary(mammodensity_df))
+
+
+# Create a look up of date counts 
+
+#Needs to be edited
+dates_sum_lookup <- mammodensity_df %>%
+  group_by(tcode) %>%
+  summarise(date_count = n_distinct(MammoDat_f))
+
+n_distinct(mammodensity_df$tcode)
+
+n_dates <- dates_sum_lookup %>% 
+  tabyl(date_count)
+
+# join the date_sum_lookup with mammodensity to create a variable with count of dates for each participant
+
+mammodensity_df <- mammodensity_df %>% 
+  left_join(dates_sum_lookup, by = "tcode")

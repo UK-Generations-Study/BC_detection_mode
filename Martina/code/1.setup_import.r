@@ -145,7 +145,7 @@ check_numeric <- function(variable) {
   print(describe(variable))
   
   cat("tabulate:\n")
-  print(tabulate_ordered(variable))
+  print(table(variable))
   
   cat("histogram:\n")
   print(hist(variable))

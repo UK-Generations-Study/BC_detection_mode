@@ -24,7 +24,7 @@
 ## select variables from detection mode -----------------------
 
 dm_vars <- dm_df %>% 
-  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f)
+  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen)
 
 ## select variables from cancer df ---------------------------
 
@@ -215,9 +215,12 @@ relevant_mammo_df <- relevant_mammo_df %>%
 # total
 dates_sum <- relevant_mammo_df %>%
   group_by(tcode) %>%
-  summarise(count = n_distinct(MammoDat_f))
+  summarise(date_count = n_distinct(MammoDat_f))
 
 n_distinct(relevant_mammo_df$tcode)
+
+n_dates <- dates_sum %>% 
+  tabyl(date_count)
 
 
 # assigned
