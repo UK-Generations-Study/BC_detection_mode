@@ -129,7 +129,9 @@ density_df <- density_df %>%
   arrange(tcode, MammoDat_f) %>% 
   mutate(
     # variables needed for decision tree flow 
-    mammo_3m_before_dg = if_else(mammo_dg_diff_rank == 1 & abs_diag_date_diff > (3*one_month), "Y", "N"),
+    mammo_3m_before_dg = if_else(abs_diag_date_diff > (3*one_month), "Y", "N"),
+    
+    mammo_1y_before_dg = if_else(abs_diag_date_diff > (one_year), "Y", "N"),
          
          screen_closeto_mammo = if_else(scr_date_diff > -30 & scr_date_diff < 10, "Y", "N"),
           
@@ -143,7 +145,7 @@ density_df <- density_df %>%
          ) %>% 
   ungroup()
 
-# create a variable to indicate diagnostic mammmo (3 months before and 3 months after diagnosis?)
+# create a variable to indicate diagnostic mammmo (3 months before and 3 months after diagnosis?) - exploratory
 density_df <- density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -225,36 +227,122 @@ dev_density_df <- density_df %>%
   ) %>% 
   ungroup()
 
-# tabulate how many assigned
-checks <- dev_density_df %>% 
-  select(tcode, ancat_dmode_v2, I_density_flag, date_count) %>% 
-  group_by(tcode) %>% 
-  arrange(tcode, I_density_flag) %>% 
-  slice(1)
-  
-n_distinct(checks$tcode)
-checks %>% tabyl(I_density_flag)
-checks %>% tabyl(date_count)
-checks %>% tabyl(date_count, ancat_dmode_v2)
+
 
 
 # I assign those with more than 1 mammo date (n 114)
-dev_density_df <- density_df %>% 
+dev_density_df <- dev_density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
   mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
                                       ancat_dmode_v2 == "I" &
                                       date_count > 1 &
                                       mammo_3m_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
                                       mlo_available == "Y" & # any row with MLO per ID
                                       reader_SB == "Y" & # any row with SB per ID
                                       View %in% c("LMLO", "RMLO") &
                                       Reader_Internal == "SB"
-                                    ~ "1", 
-                                    T ~ NA
+                                    ~ "5", 
+                                    T ~ I_density_flag
   )
   ) %>% 
+    mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
+                                        ancat_dmode_v2 == "I" &
+                                        date_count > 1 &
+                                        mammo_3m_before_dg == "Y" &
+                                        mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                        mlo_available == "Y" & # any row with MLO per ID
+                                        reader_SB == "N" & # any row with SB per ID
+                                        View %in% c("LMLO", "RMLO") &
+                                        Reader_Internal != "SB"
+                                      ~ "6", 
+                                      T ~ I_density_flag
+    )
+  ) %>% 
+  mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
+                                      ancat_dmode_v2 == "I" &
+                                      date_count > 1 &
+                                      mammo_3m_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                      mlo_available == "N" & # any row with MLO per ID
+                                      reader_SB == "Y" & # any row with SB per ID
+                                      View %in% c("LCC", "RCC") &
+                                      Reader_Internal == "SB"
+                                    ~ "7", 
+                                    T ~ I_density_flag
+  )
+  ) %>% 
+  mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
+                                      ancat_dmode_v2 == "I" &
+                                      date_count > 1 &
+                                      mammo_3m_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                      mlo_available == "N" & # any row with MLO per ID
+                                      reader_SB == "N" & # any row with SB per ID
+                                      View %in% c("LCC", "RCC") &
+                                      Reader_Internal != "SB"
+                                    ~ "8", 
+                                    T ~ I_density_flag
+  )
+  ) %>% 
+  mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
+                                      ancat_dmode_v2 == "I" &
+                                      date_count > 1 &
+                                      mammo_3m_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "2" & # choose date directly before diagnosis - second sweep
+                                      mlo_available == "Y" & # any row with MLO per ID
+                                      reader_SB == "Y" & # reader SB available for this ID
+                                      View %in% c("LMLO", "RMLO") &
+                                      Reader_Internal == "SB"
+                                    ~ "9",  # this one picks up those who have rank 1 not done by SB reader 
+                                    T ~ I_density_flag
+  )
+  ) %>% 
+  mutate(I_density_flag = case_when(all(is.na(I_density_flag)) &
+                                      ancat_dmode_v2 == "I" &
+                                      date_count > 1 &
+                                      mammo_3m_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "2" & # choose date directly before diagnosis - second sweep
+                                      mlo_available == "N" & # any row with MLO per ID
+                                      reader_SB == "Y" & # reader SB available for this ID
+                                      View %in% c("LCC", "RCC") &
+                                      Reader_Internal == "SB"
+                                    ~ "10",  # this one picks up those who have rank 1 not done by SB reader and don't have any MLOs
+                                    T ~ I_density_flag
+  )
+  ) %>%
   ungroup()
+
+
+
+
+
+
+
+
+
+# tabulate how many assigned
+checks <- dev_density_df %>% 
+  select(tcode, ancat_dmode_v2, I_density_flag, date_count) %>% 
+  group_by(tcode) %>% 
+  arrange(tcode, I_density_flag) %>% 
+  slice(1)
+
+n_distinct(checks$tcode)
+checks %>% tabyl(I_density_flag)
+checks %>% tabyl(date_count)
+checks %>% tabyl(date_count, ancat_dmode_v2)
+checks %>% tabyl(I_density_flag, date_count, ancat_dmode_v2)
+
+density_df %>%  tabyl(diag_diff_cat, ancat_dmode_v2)
+
+
+
+
+
+
+
 
 
 
@@ -270,7 +358,7 @@ dev_density_df <- dev_density_df %>%
   mutate(SD_density_flag = case_when(ancat_dmode_v2 == "SD" &
                                       date_count == 1 &
                                        #SD_dg_first_screen == "N" &
-                                      mammo_3m_before_dg == "Y" &
+                                      mammo_1y_before_dg == "Y" &
                                       mlo_available == "Y" & # any row with MLO per ID
                                       reader_SB == "Y" & # any row with SB per ID
                                       View %in% c("LMLO", "RMLO") &
@@ -284,7 +372,7 @@ dev_density_df <- dev_density_df %>%
                                       ancat_dmode_v2 == "SD" &
                                       date_count == 1 &
                                        #SD_dg_first_screen == "N" &
-                                      mammo_3m_before_dg == "Y" &
+                                      mammo_1y_before_dg == "Y" &
                                       mlo_available == "Y" &
                                       reader_SB == "N" &
                                       View %in% c("LMLO", "RMLO") &
@@ -297,7 +385,7 @@ dev_density_df <- dev_density_df %>%
                                        ancat_dmode_v2 == "SD" &
                                       date_count == 1 &
                                        #SD_dg_first_screen == "N" &
-                                      mammo_3m_before_dg == "Y" &
+                                      mammo_1y_before_dg == "Y" &
                                       mlo_available == "N" & # ano MLO views
                                       reader_SB == "Y" & # no readings by SB 
                                       View %in% c("LCC", "RCC") &
@@ -309,7 +397,7 @@ dev_density_df <- dev_density_df %>%
                                        ancat_dmode_v2 == "SD" &
                                       date_count == 1 &
                                        #SD_dg_first_screen == "N" &
-                                      mammo_3m_before_dg == "Y" &
+                                      mammo_1y_before_dg == "Y" &
                                       mlo_available == "N" & # ano MLO views
                                       reader_SB == "N" & # no readings by SB 
                                       View %in% c("LCC", "RCC") &
@@ -317,6 +405,94 @@ dev_density_df <- dev_density_df %>%
                                     ~ "4", 
                                     T ~ SD_density_flag)
   ) %>% 
+  ungroup()
+
+
+
+
+
+
+## step 2 - assign those with more than 1 mammo date ------------------------------------
+dev_density_df <- dev_density_df %>% 
+  group_by(tcode) %>% 
+  arrange(tcode, MammoDat_f) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) & 
+                                       ancat_dmode_v2 == "SD" &
+                                       date_count > 1 &
+                                       mammo_1y_before_dg == "Y" &
+                                       mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                       mlo_available == "Y" & # any row with MLO per ID
+                                       reader_SB == "Y" & # any row with SB per ID
+                                       View %in% c("LMLO", "RMLO") &
+                                       Reader_Internal == "SB" 
+                                     
+                                     ~ "5", 
+                                     T ~ SD_density_flag
+  )
+  ) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) & # if any row 
+                                       ancat_dmode_v2 == "SD" &
+                                       date_count > 1 &
+                                       mammo_1y_before_dg == "Y" &
+                                       mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                       mlo_available == "Y" &
+                                       reader_SB == "N" &
+                                       View %in% c("LMLO", "RMLO") &
+                                       Reader_Internal != "SB"
+                                     ~ "6", 
+                                     T ~ SD_density_flag)
+  
+  ) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) &
+                                       ancat_dmode_v2 == "SD" &
+                                       date_count > 1 &
+                                       mammo_1y_before_dg == "Y" &
+                                       mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                       mlo_available == "N" & # ano MLO views
+                                       reader_SB == "Y" & # no readings by SB 
+                                       View %in% c("LCC", "RCC") &
+                                       Reader_Internal == "SB"
+                                     ~ "7", 
+                                     T ~ SD_density_flag)
+  ) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) &
+                                       ancat_dmode_v2 == "SD" &
+                                       date_count > 1 &
+                                       mammo_1y_before_dg == "Y" &
+                                       mammo_dg_diff_rank == "1" & # choose date directly before diagnosis
+                                       mlo_available == "N" & # ano MLO views
+                                       reader_SB == "N" & # no readings by SB 
+                                       View %in% c("LCC", "RCC") &
+                                       Reader_Internal != "SB"
+                                     ~ "8", 
+                                     T ~ SD_density_flag)
+  ) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) &
+                                      ancat_dmode_v2 == "SD" &
+                                      date_count > 1 &
+                                      mammo_1y_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "2" & # choose date directly before diagnosis - second sweep
+                                      mlo_available == "Y" & # any row with MLO per ID
+                                      reader_SB == "Y" & # reader SB available for this ID
+                                      View %in% c("LMLO", "RMLO") &
+                                      Reader_Internal == "SB"
+                                    ~ "9",  # this one picks up those who have rank 1 not done by SB reader 
+                                    T ~ SD_density_flag
+  )
+  ) %>% 
+  mutate(SD_density_flag = case_when(all(is.na(SD_density_flag)) &
+                                      ancat_dmode_v2 == "SD" &
+                                      date_count > 1 &
+                                      mammo_1y_before_dg == "Y" &
+                                      mammo_dg_diff_rank == "2" & # choose date directly before diagnosis - second sweep
+                                      mlo_available == "N" & # any row with MLO per ID
+                                      reader_SB == "Y" & # reader SB available for this ID
+                                      View %in% c("LCC", "RCC") &
+                                      Reader_Internal == "SB"
+                                    ~ "10",  # this one picks up those who have rank 1 not done by SB reader and don't have any MLOs
+                                    T ~ SD_density_flag
+  )
+  ) %>%
   ungroup()
 
 
@@ -334,6 +510,24 @@ checks %>% tabyl(date_count, ancat_dmode_v2)
 checks %>% tabyl(date_count, SD_density_flag, ancat_dmode_v2)
 checks %>% tabyl(SD_density_flag, SD_dg_first_screen)
 
+
+
+density_df %>%  tabyl(diag_diff_cat, ancat_dmode_v2)
+
+
+## step 3 assign those with diagnostic date ----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+# not to use the below - decided to not use the SD flag for first screen - use interval based on data 3m before to 3m after diagnosis
 
 # check number of dates for those diagnosed at first screen - to see if there are 
 # any discrepancies between screening data and mammo date as 612 were categories before 
