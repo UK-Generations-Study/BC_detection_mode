@@ -174,7 +174,8 @@ cancer_df <- cancer_df %>%
          reginfo_groupdatesite = as.factor(Reginfo_GroupDateSite),
          reginfo_clusterino = as.factor(Reginfo_Clusterino),
          report_groupdatesite = as.factor(Report_GroupDateSite),
-         report_cluster = as.factor(Report_Cluster)
+         report_cluster = as.factor(Report_Cluster),
+         side = as.factor(side)
   ) %>%
   select(-Reginfo_Clusterino, -Reginfo_GroupDateSite,
          -Report_Cluster, -Report_GroupDateSite)
