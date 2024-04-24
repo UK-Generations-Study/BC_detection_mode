@@ -31,18 +31,21 @@ dm_vars <- dm_df %>%
 ca_vars <- cancer_df %>% 
   select(tcode, diagdate, side)
 
-## join with mammo dataset 
+## join with mammo dataset -----------------------------------
 
 relevant_mammo_df <- mammodensity_df %>% 
   left_join(dm_vars, by = "tcode") %>% 
   left_join(ca_vars, by = "tcode") %>% 
   mutate(ancat_dmode_v2 = as.factor(ancat_dmode_v2))
 
+# checks:
 str(relevant_mammo_df)
 n_distinct(relevant_mammo_df$tcode)
 
 
-# 2. Identify relevant mammo date ----------------------------------------------------
+
+
+# 2. Create variables needed for density estimation  ----------------------------------------------------
 
 # for simplicity filter out those without mammo density
 density_df <- relevant_mammo_df %>% 
@@ -50,6 +53,9 @@ density_df <- relevant_mammo_df %>%
 
 n_distinct(density_df$tcode)
 
+
+
+## difference in dates ----------------------------
 
 # create a variable with a difference between dens_dm2_screen_date and mammoDat and diagnosis 
 
@@ -61,7 +67,8 @@ density_df <- density_df %>%
          ) %>% 
   ungroup()
 
-# explore the differences
+
+# explore the differences:
 density_df %>% 
   group_by(ancat_dmode_v2) %>% 
   mean_table(scr_date_diff)
@@ -85,7 +92,7 @@ density_df <- density_df %>%
 # note: for abs_scr_date_diff - using 10 days because the mammo images could be uploaded a bit later 
 # than the screen date, as long as it is very close to screen date (can be changed to a different cut off)
 
-
+# checks: 
 density_df %>% 
   group_by(ancat_dmode_v2) %>% 
   mean_table(abs_diag_date_diff)
@@ -94,7 +101,7 @@ density_df %>%
   group_by(ancat_dmode_v2) %>% 
   mean_table(abs_scr_date_diff)
 
-# create order of mammo dates based on smallest difference between diagdate and mammo date and screen and mammo dates - rank
+# create rank of mammo dates based on smallest difference between diagdate and mammo date and screen and mammo dates - rank
 
 density_df <- density_df %>% 
   group_by(tcode) %>% 
@@ -104,26 +111,13 @@ density_df <- density_df %>%
   ungroup()
 
 
-#  IN PROGRESS - create a variable for selecting the appropriate rows based on dates -------------
-# relevant_mammo_df <- relevant_mammo_df %>% 
-#   group_by(tcode) %>% 
-#   arrange(tcode, MammoDat_f) %>% 
-#   mutate(I_mammo_date = case_when(ancat_dmode_v2 == "I" & mammo_dg_diff_rank == 1 ~ "Y",
-#                               TRUE ~ NA)
-#          )
+## Create flag variables based on the decision tree conditions -------------------------------
 
-# NOTES: create flags for interval selected rows (check restricitons on difference number),
-# then create flag for SD selected rows (also bases on intervals between dates - need to do exploratory analysis on this)
-
-# Interval flag variables ------------------------------------
-# Note - by the decision tree conditions 
 
 one_year <- 365.25
 one_month <- one_year/12
 
-# DO CHECKS BEFORE RESUMING ON THE NUMBER OF CASES FOR MAMMO DENSITY SELECTION 
 
-## 1. Mammo date between at least 3 months before diagnosis? ------------------------
 density_df <- density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -137,9 +131,9 @@ density_df <- density_df %>%
           
         screen_dir_bef_mammo = if_else(scr_mammo_diff_rank == 1, "Y", "N"), # screen directly before mammo
          
-         mlo_available = if_else(any(View %in% c("LMLO", "RMLO")), "Y", "N"),
+         mlo_available = if_else(any(View %in% c("LMLO", "RMLO")), "Y", "N"), # case has any row with MLO
          
-         reader_SB = if_else(any(Reader_Internal == "SB"), "Y", "N"),
+         reader_SB = if_else(any(Reader_Internal == "SB"), "Y", "N"), # case has any row with SB reader
     
     mammo_before_dg = if_else(diag_date_diff > 0, "Y", "Y"),
     
@@ -154,7 +148,18 @@ density_df <- density_df %>%
          ) %>% 
   ungroup()
 
+
+# checks: 
+density_df %>% tabyl(mammo_3m_before_dg)
+density_df %>% tabyl(mammo_1y_before_dg)
+density_df %>% tabyl(screen_closeto_mammo)
+density_df %>% tabyl(mlo_available)
+density_df %>% tabyl(screen_dir_bef_mammo)
+density_df %>% tabyl(reader_SB)
+density_df %>% tabyl(mammo_before_dg)
+density_df %>% tabyl(dg_mammo)
 density_df %>% tabyl(contralateral)
+
 
 # create a variable to indicate diagnostic mammmo (3 months before and 3 months after diagnosis?) - exploratory
 density_df <- density_df %>% 
@@ -170,24 +175,26 @@ density_df <- density_df %>%
   ) %>% 
   ungroup()
 
+
+# checks:
 density_df %>% tabyl(diag_diff_cat)
-
 density_df %>% tabyl(diag_diff_cat, ancat_dmode_v2)
-
 density_df %>% 
   group_by(diag_diff_cat, ancat_dmode_v2) %>% 
   mean_table(diag_date_diff)
 
-# add more variables needed for SD once the relevant SD date is derived
 
 
 
 
+# 3. Interval density row selection -------------------------------------------------
 
+# based on the decision tree conditions and using the above created variables, create flag variable for Interval cases,
+# flagging the rows that meet the decision tree criteria for Interval cases paths. There are multiple options, 
+# for simplicity tag each decision tree path with a different number within the flag variable. 
+# There rows then will be used for calculating the average density for cases. 
 
-# Interval density selection -------------------------------------------------
-
-## step 1 - assign those with only 1 mammo date
+## step 1: assign those with only 1 mammo date ---------------------------------------
 dev_density_df <- density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -241,7 +248,7 @@ dev_density_df <- density_df %>%
 
 
 
-# I assign those with more than 1 mammo date (n 114)
+## step 2: assign those with more than 1 mammo date (n 114) -------------------------
 dev_density_df <- dev_density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -342,11 +349,6 @@ dev_density_df <- dev_density_df %>%
 
 
 
-
-
-
-
-
 # tabulate how many assigned
 checks <- dev_density_df %>% 
   select(tcode, ancat_dmode_v2, I_density_flag, date_count) %>% 
@@ -368,15 +370,19 @@ density_df %>%  tabyl(diag_diff_cat, ancat_dmode_v2)
 
 
 
+# 4. SD density selection -------------------------------------------------
 
-
-
-# SD density selection -------------------------------------------------
-
-# 22/04/2024 - excluded SD_dg_first_screen from the code because the functionality of the variable doesn't seem to be so good
+# 22/04/2024 - excluded SD_dg_first_screen (flag for diagnosis at first screen from screening data) from the code because the functionality of the variable doesn't seem to be so good
 # around half of cases have mammo before the supposedly diagnostic screening date. 
 
-## step 1 - assign those with only 1 mammo date
+# based on the decision tree conditions and using the above created variables, create flag variable for SD cases,
+# flagging the rows that meet the decision tree criteria for Interval cases paths. There are multiple options, 
+# for simplicity tag each decision tree path with a different number within the flag variable. 
+# There rows then will be used for calculating the average density for cases. 
+
+
+
+## step 1 - assign those with only 1 mammo date ---------------------------------
 dev_density_df <- dev_density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -565,7 +571,25 @@ dev_density_df <- dev_density_df %>%
 
 
 ## step 3 assign those with diagnostic date ----------------------------------------
-# 23/04/2024 
+
+
+# 23/04/2024 decided to not use the SD flag for first screen - use interval based on data 3m before to 3m after diagnosis
+
+
+# comment on SD flag for first screen exploration: ******************************************** 
+# check number of dates for those diagnosed at first screen - to see if there are 
+# any discrepancies between screening data and mammo date as 612 were categories before 
+# condition on excluding dg at first screen was included, then 590. So it seems that around 22 have more dates. 
+
+checks <- dev_density_df %>% 
+  filter(SD_dg_first_screen == "Y") %>% 
+  group_by(tcode) %>%
+  summarise(date_count = n_distinct(MammoDat_f))
+
+# there are 5 IDs that have 2 mammo dates - explored manually 
+# ****************************************************************************************************
+
+
 
 dev_density_df <- dev_density_df %>% 
   group_by(tcode) %>% 
@@ -718,7 +742,7 @@ dev_density_df <- dev_density_df %>%
   ungroup()
 
 
-#  any(diag_date_diff > -(3*one_month))
+
 # tabulate how many assigned
 checks <- dev_density_df %>% 
   select(tcode, ancat_dmode_v2, SD_density_flag, I_density_flag, date_count, SD_dg_first_screen, diag_diff_cat) %>% 
@@ -744,7 +768,7 @@ checks %>%  tabyl(diag_diff_cat, ancat_dmode_v2) %>%
 
 
 
-# Explore unassigned --------------------------------------
+# 5. Explore unassigned -------------------------------------------------------
 
 ## SD -------------------------
 SD_unassiged <- dev_density_df %>% 
@@ -795,18 +819,8 @@ alldiag_ids <- I_unassiged %>%
   distinct()
 
 
-# not to use the below - decided to not use the SD flag for first screen - use interval based on data 3m before to 3m after diagnosis
 
-# check number of dates for those diagnosed at first screen - to see if there are 
-# any discrepancies between screening data and mammo date as 612 were categories before 
-# condition on excluding dg at first screen was included, then 590. So it seems that around 22 have more dates. 
 
-checks <- dev_density_df %>% 
-  filter(SD_dg_first_screen == "Y") %>% 
-  group_by(tcode) %>%
-  summarise(date_count = n_distinct(MammoDat_f))
-
-# there are 5 IDs that have 2 mammo dates - explore more 
 
 
 
@@ -829,7 +843,7 @@ dev_density_df %>% tabyl(I_density_flag, mammo_row)
 dev_density_df %>% tabyl(SD_density_flag, mammo_row)
 
 
-## step 2: compute the average ----------------------------------------------
+## step 2: compute the mean ----------------------------------------------
 mean_density_df <- dev_density_df %>% 
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
@@ -838,7 +852,8 @@ mean_density_df <- dev_density_df %>%
          SD_density = SD(Density_Reading)
          ) %>% 
   select(tcode, mean_density, SD_density) %>% 
-  distinct()
+  distinct() %>% 
+  ungroup()
 
 dev_density_df %>% tabyl(B2Risk_Study, mammo_row) %>%  adorn_totals()
 
@@ -853,7 +868,8 @@ b2_density_df <- dev_density_df %>%
          B2SD_density = SD(Density_Reading)
   ) %>% 
   select(tcode, B2mean_density, B2SD_density) %>% 
-  distinct()
+  distinct() %>% 
+  ungroup()
 
 
 comp_density <- mean_density_df %>% 
@@ -861,5 +877,11 @@ comp_density <- mean_density_df %>%
   mutate(diff = mean_density - B2mean_density)
 
 hist(comp_density$diff)
+
+comp_density %>% 
+  mean_table(mean_density) 
+
+comp_density %>% 
+  mean_table(B2mean_density) 
 
 # next step - compare distributions with density from Louise
