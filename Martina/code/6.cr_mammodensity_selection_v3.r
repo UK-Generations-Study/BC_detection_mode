@@ -851,11 +851,48 @@ mean_density_df <- dev_density_df %>%
   mutate(mean_density = mean(Density_Reading),
          SD_density = SD(Density_Reading)
          ) %>% 
-  select(tcode, mean_density, SD_density) %>% 
+  select(tcode, mean_density, SD_density, ancat_dmode_v2) %>% 
   distinct() %>% 
   ungroup()
 
+
+# checks:
 dev_density_df %>% tabyl(B2Risk_Study, mammo_row) %>%  adorn_totals()
+
+mean_density_df %>% 
+  group_by(ancat_dmode_v2) %>% 
+  summarise(n = n())
+
+
+mean_density_df %>% 
+  group_by(ancat_dmode_v2) %>% 
+  mean_table(mean_density)
+
+# charts 
+hist(mean_density_df$mean_density)
+
+boxplot(mean_density_df$mean_density)
+
+# hist by dmode
+mean_density_df %>% 
+  na.omit() %>% 
+  ggplot(aes(x = mean_density, fill = ancat_dmode_v2)) +
+  geom_histogram(binwidth = 10) +
+  facet_wrap(~ ancat_dmode_v2) +  # Separate histograms for each group
+  coord_cartesian(xlim = c(0, 100),
+                  ylim = c(0, 200)) +  
+  theme_classic()
+
+# 
+# box plots with jitter
+mean_density_df %>% 
+  ggplot(aes(x = ancat_dmode_v2, y = mean_density, fill = ancat_dmode_v2)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
 
 
 # comparison with b2 risk density
@@ -883,5 +920,7 @@ comp_density %>%
 
 comp_density %>% 
   mean_table(B2mean_density) 
+
+
 
 # next step - compare distributions with density from Louise

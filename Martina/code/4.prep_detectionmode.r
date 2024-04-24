@@ -65,6 +65,8 @@ dm_df <- cases %>%
 # descriptives
 stview(dfSummary(dm_df))
 
+dm_df %>% tabyl(ancat_dmode_v2) %>% adorn_totals()
+
 # select only interval and SD dmode categories from ancat_dmode_v2 
 dm_df <- dm_df %>% 
   filter(ancat_dmode_v2 %in% c("I", "SD"))

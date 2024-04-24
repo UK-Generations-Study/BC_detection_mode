@@ -70,15 +70,17 @@ casummary_df <- casummary_df %>%
     report_cluster99 = ifelse(Report_Cluster == 0, 999, Report_Cluster),
     # fix date format
     diagdate = as.Date(diagdate_f),
-    # Identify any invasive cancer (including breast cancer) and DCIS-breast cancer (exclude NMSC)
+    # Identify any invasive cancer (including breast cancer) and insitu breast cancer (exclude NMSC)
+    # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     cancer = as.factor(ifelse(
       !((str_sub(ICDt, 1, 3) == 'C44') | (str_sub(ICDt, 1, 3) == '173')) &
         ((str_sub(ICDt, 1, 1) == 'C') |
            (str_sub(ICDt, 1, 1) == '1') |
            (str_sub(ICDt, 1, 2) == '20') |
-           (str_sub(ICDt, 1, 3) == 'D05') |
+           (str_sub(ICDt, 1, 3) == 'D05') |  # now 
            (str_sub(ICDt, 1, 4) == '2330')), 1, 0)),
-    # Identify invasive or DCIS-breast cancer
+    # Identify invasive or insitu -breast cancer
+    # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     breast_cancer = as.factor(ifelse(
       (str_sub(ICDt, 1, 3) == 'C50') |
         (str_sub(ICDt, 1, 3) == '174') |
@@ -89,6 +91,7 @@ casummary_df <- casummary_df %>%
       (str_sub(ICDt, 1, 3) == 'C50') |
         (str_sub(ICDt, 1, 3) == '174'), 1, 0)),
     # Identify DCIS-breast cancer
+    # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     breast_cancer_dcis = as.factor(ifelse(
       (str_sub(ICDt, 1, 3) == 'D05') |
         (str_sub(ICDt, 1, 4) == '2330'), 1, 0)) 
