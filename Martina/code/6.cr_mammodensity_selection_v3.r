@@ -29,7 +29,7 @@ dm_vars <- dm_df %>%
 ## select variables from cancer df ---------------------------
 
 ca_vars <- cancer_df %>% 
-  select(tcode, diagdate, side)
+  select(tcode, diagdate, diagage, side)
 
 ## join with mammo dataset -----------------------------------
 
