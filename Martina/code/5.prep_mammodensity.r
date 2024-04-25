@@ -102,7 +102,7 @@ stview(dfSummary(mammodensity_df))
 #Needs to be edited
 dates_sum_lookup <- mammodensity_df %>%
   group_by(tcode) %>%
-  summarise(date_count = n_distinct(MammoDat_f))
+  summarise(date_count = n_distinct(MammoDat_f, na.rm = T))
 
 n_distinct(mammodensity_df$tcode)
 
