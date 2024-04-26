@@ -13,7 +13,8 @@
 #Date: 12/04/2024
 # Martina Brayley (Martina.Brayley@icr.ac.uk)
 
-# version control: 1 
+# version control: 1
+#                  2 (changing case selection criteria to first primary only and dcis only)
 #                  
 #                 
 #_____________________________________________________________________________
@@ -54,6 +55,12 @@ casummary_df <- casummary_df %>%
 
 # 2. Select BC cases ----------------------------------------------------------------------------------------------------
 
+# tabulate insitu cases to decide which ICD code to use 
+
+casummary_df %>% 
+  filter(startsWith(ICDt, "D05")) %>% 
+  tabyl(ICDt)
+
 
 
 ## create variables needed for cancer selections -------------------------------
@@ -70,18 +77,18 @@ casummary_df <- casummary_df %>%
     # Identify any invasive cancer (including breast cancer) and insitu breast cancer (exclude NMSC)
     # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     cancer = as.factor(ifelse(
-      !((str_sub(ICDt, 1, 3) == 'C44') | (str_sub(ICDt, 1, 3) == '173')) &
+      !((str_sub(ICDt, 1, 3) == 'C44') | (str_sub(ICDt, 1, 3) == '173')) & # excluding NMSC
         ((str_sub(ICDt, 1, 1) == 'C') |
            (str_sub(ICDt, 1, 1) == '1') |
            (str_sub(ICDt, 1, 2) == '20') |
-           (str_sub(ICDt, 1, 3) == 'D05') |  # now 
+           (str_sub(ICDt, 1, 3) == 'D051') |  # selecting as cancer only dcis from BC insitu
            (str_sub(ICDt, 1, 4) == '2330')), 1, 0)),
-    # Identify invasive or insitu -breast cancer
+    # Identify invasive or insitu breast cancer
     # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     breast_cancer = as.factor(ifelse(
       (str_sub(ICDt, 1, 3) == 'C50') |
         (str_sub(ICDt, 1, 3) == '174') |
-        (str_sub(ICDt, 1, 3) == 'D05') |
+        (str_sub(ICDt, 1, 3) == 'D051') |
         (str_sub(ICDt, 1, 4) == '2330'), 1, 0)),
     # Identify invasive breast cancer
     breast_cancer_invasive = as.factor(ifelse(
@@ -90,7 +97,7 @@ casummary_df <- casummary_df %>%
     # Identify DCIS-breast cancer
     # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
     breast_cancer_dcis = as.factor(ifelse(
-      (str_sub(ICDt, 1, 3) == 'D05') |
+      (str_sub(ICDt, 1, 3) == 'D051') |
         (str_sub(ICDt, 1, 4) == '2330'), 1, 0)) 
   ) %>% 
   # Order cancer diagnosis within participants by date
@@ -98,8 +105,12 @@ casummary_df <- casummary_df %>%
   arrange(tcode, diagage, diagdate, Reginfo_Clusterino, Report_Cluster) %>%
   # cancer diagnosis order 
   mutate(ca_order = as.factor(order(tcode)),
+         # confirmed only cancer order 
+         conf_ca_order = as.factor(if_else(confirmed ==1 & cancer == 1, cumsum(cancer == 1), 0)), 
          # BC diagnosis (dcis and inv) order within participants by date 
          BC_order = as.factor(if_else(breast_cancer == 1, cumsum(breast_cancer == 1), 0)),
+         # confirmed only BC diagnosis (dcis and inv) order within participants by date 
+         conf_BC_order = as.factor(if_else(confirmed == 1 & breast_cancer == 1, cumsum(breast_cancer == 1), 0)),
          # BC diagnosis (inv only) order within participants by date
          BC_inv_order = as.factor(if_else(breast_cancer_invasive == 1, cumsum(breast_cancer_invasive == 1), 0)),
          # Flag for first cancer is BC (dcis and inv)
@@ -118,16 +129,27 @@ casummary_df <- casummary_df %>%
 
 # NEED TO FIGURE OUT HOW TO DEAL WITH BILATERAL CASES
 
-cancer_df <- casummary_df %>%
-  group_by(tcode) %>% 
-  filter(confirmed == 1,
-         incident == 1,
-         breast_cancer == 1, # BC (dcis and inv) cases
-         BC_order == 1) %>% # first breast cancer 
-  ungroup()
-
 # cancer_df <- casummary_df %>%
 #   group_by(tcode) %>% 
+#   filter(confirmed == 1,
+#          incident == 1,
+#          breast_cancer == 1, # BC (dcis and inv) cases
+#          BC_order == 1) %>% # first breast cancer 
+#   ungroup()
+# 
+# 
+# # using only first confirmed breast cancer
+# cancer_df <- casummary_df %>%
+#   group_by(tcode) %>% 
+#   filter(confirmed == 1,
+#          incident == 1,
+#          breast_cancer == 1, # BC (dcis and inv) cases
+#          conf_BC_order == 1) %>% # first breast cancer 
+#   ungroup()
+# 
+# # first ever primary breast cancer 
+# cancer_df <- casummary_df %>%
+#   group_by(tcode) %>%
 #   filter(confirmed == 1,
 #          incident == 1,
 #          breast_cancer == 1, # BC (dcis and inv) cases
@@ -135,12 +157,36 @@ cancer_df <- casummary_df %>%
 #          ca_order == 1) %>%  # first ever cancer
 #   ungroup()
 
+
+
+# RESUME HERE -----------------------
+# 26/04/2024
+# NOTE: need to think about the logic of this properly - is this accurate? do I need put in different conditions 
+
+# first ever confirmed primary breast cancer
+cancer_df <- casummary_df %>%
+  group_by(tcode) %>%
+  filter(#confirmed == 1,
+         incident == 1,
+         breast_cancer == 1, # BC (dcis and inv) cases
+         #conf_BC_order == 1, # first breast cancer
+         conf_ca_order == 1) %>%  # first ever cancer
+  ungroup()
+
+# the above selection did not pick any dcis cases - why?
+
 cancer_df %>% tabyl(confirmed)
 cancer_df %>% tabyl(incident)
 cancer_df %>% tabyl(breast_cancer_invasive)
 
+cancer_df %>% tabyl(ICDt)
+
 n_distinct(cancer_df$tcode)
 
+
+
+
+# old notes: 
 # if we want to select confirmed cases in this step can use min(BC_order) as the first breast cancer might've been uncofirmed - need to check this logic though
 # cancer_df <- casummary_df %>%
 #   group_by(tcode) %>% 
