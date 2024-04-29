@@ -79,7 +79,7 @@ mammodensity_df <- dm_cases %>%
 n_distinct(mammodensity_df$tcode)
 
 # descriptives
-stview(dfSummary(mammodensity_df))
+#stview(dfSummary(mammodensity_df))
 
 
 # change variable formats 
@@ -94,7 +94,7 @@ mammodensity_df <- mammodensity_df %>%
          ImageType = as.factor(ImageType),
          UploadDate = as.Date(UploadDate))
 
-stview(dfSummary(mammodensity_df))
+#stview(dfSummary(mammodensity_df))
 
 
 # Create a look up of date counts 

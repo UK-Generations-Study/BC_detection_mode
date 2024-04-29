@@ -63,7 +63,7 @@ dm_df <- cases %>%
   left_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
 
 # descriptives
-stview(dfSummary(dm_df))
+#stview(dfSummary(dm_df))
 
 dm_df %>% tabyl(ancat_dmode_v2) %>% adorn_totals()
 
@@ -71,7 +71,7 @@ dm_df %>% tabyl(ancat_dmode_v2) %>% adorn_totals()
 dm_df <- dm_df %>% 
   filter(ancat_dmode_v2 %in% c("I", "SD"))
 
-stview(dfSummary(dm_df))
+#stview(dfSummary(dm_df))
 
 # create a list of I and SD cases (this will be used to select appropriate cases)
 dm_cases <- dm_df %>% 
