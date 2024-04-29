@@ -18,7 +18,7 @@ original_cases <- casummary_im %>%
 
 # n = 4245 
 
-4245 - 4172 # 73
+4245 - 4133 # 73
 
 
 original_cases_ids <- original_cases %>% 
