@@ -44,13 +44,24 @@ n_distinct(casummary_im$tcode)
 casummary_df <- casummary_im %>%
   filter(!is.na(tcode)) 
 
+
+n_miss(riskfactors_df$date_entry)
+
 # merge date of birth from risk factors 
+
+n_miss(birth$date_entry)
+
 birth <- riskfactors_df %>% 
   select(tcode, date_birth, date_entry)
 
 casummary_df <- casummary_df %>% 
   left_join(birth, by = "tcode")
 
+n_miss(casummary_df$date_entry)
+
+# remove those with missing date_entry because they have not completed questionnaires 
+casummary_df <- casummary_df %>% 
+  filter(!is.na(date_entry))
 
 
 # 2. Select BC cases ----------------------------------------------------------------------------------------------------
