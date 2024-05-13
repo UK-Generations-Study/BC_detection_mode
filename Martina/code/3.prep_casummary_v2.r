@@ -49,10 +49,12 @@ n_miss(riskfactors_df$date_entry)
 
 # merge date of birth from risk factors 
 
-n_miss(birth$date_entry)
+
 
 birth <- riskfactors_df %>% 
   select(tcode, date_birth, date_entry)
+
+n_miss(birth$date_entry)
 
 casummary_df <- casummary_df %>% 
   left_join(birth, by = "tcode")

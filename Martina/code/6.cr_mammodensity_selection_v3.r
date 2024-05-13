@@ -852,7 +852,7 @@ mean_density_df <- dev_density_df %>%
          sd_density = SD(Density_Reading),
          MD_avail = "Y"
          ) %>% 
-  select(tcode, MD_avail, mean_density, sd_density, ancat_dmode_v2) %>% 
+  select(tcode, MammoDat_f, MD_avail, mean_density, sd_density, ancat_dmode_v2) %>% 
   distinct() %>% 
   ungroup()
 

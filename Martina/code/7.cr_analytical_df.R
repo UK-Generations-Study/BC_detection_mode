@@ -2,7 +2,7 @@
 
 
 
-# ___________________________  PART 6. Compile analytical dataset  _________________________________
+# ___________________________  PART 7. Compile analytical dataset  _________________________________
 
 
 # Purpose: preparation of casummary data and case selection
@@ -29,7 +29,9 @@ dm_vars <- dm_df %>%
 ## select variables from cancer df ---------------------------
 
 ca_vars <- cancer_df %>% 
-  select(tcode, date_birth, date_entry, diagdate, diagage, side)
+  select(tcode, date_birth, date_entry, diagdate, diagage, 
+         incident, side, ICDt, breast_cancer, breast_cancer_invasive, breast_cancer_dcis, 
+         stage, grade, er_Status, pr_Status, her2_Status, Tsize, nodes_tot, nodes_pos)
 
 ## select variables from mean density ----------------------------
 
@@ -57,16 +59,17 @@ str(dev_an_df)
 
 # 3. Prepare analytical variables --------------------------------------------------
 
-## TIMING VARIABLES ------------------------------------------------
+## AGE AND TIMING VARIABLES ------------------------------------------------
 
 ### Time between entry and BC diagnosis ------------------------
+# continuous only
 
 dev_an_df <- dev_an_df %>% 
   mutate(
-    R1toBC = as.numeric(diagdate - date_entry),
-         R1toBC_y = round(R1toBC/365.25, 1))
+    d_R1toBC = as.numeric(diagdate - date_entry),
+         d_R1toBC_y = round(R1toBC/365.25, 1))
 
-# add categorical
+
 # checks:
 View(dev_an_df[,c("tcode", "diagdate", "date_entry", "R1toBC", "R1toBC_y")])
 
@@ -75,22 +78,129 @@ summary(dev_an_df$R1toBC_y)
 
 dev_an_df %>% tabyl(R1toBC_y)
 
-### Time between entry and mammo density 
+### Time between mammo and BC 
 
 dev_an_df <- dev_an_df %>% 
   mutate(
-    R1toBC = as.numeric(diagdate - date_entry),
-    R1toBC_y = round(R1toBC/365.25, 1))
+    d_MDtoBC = as.numeric(diagdate - MammoDat_f),
+    d_MDtoBC_y = round(MDtoBC/365.25, 1),
+    d_MDtoBC_cat = case_when(MDtoBC_y < 3 ~ 1,
+                           MDtoBC_y >=3 & MDtoBC_y <6 ~ 2,
+                           MDtoBC_y >= 6 ~ 3,
+                           TRUE ~ NA),
+    d_MDtoBC_clab = factor(
+      x = MDtoBC_cat, 
+      levels = 1:3,
+      labels = c("<3 years", "3-5 years", ">=6 years")
+    )
+    )
 
-# add categorical
+dev_an_df %>% tabyl(MDtoBC_y, MDtoBC_cat)
+dev_an_df %>% tabyl(MDtoBC_cat, MDtoBC_clab)
 
-View(dev_an_df[,c("tcode", "diagdate", "date_entry", "R1toBC", "R1toBC_y")])
+View(dev_an_df[,c("tcode", "diagdate", "MammoDat_f", "MDtoBC_y",  "MDtoBC_cat", "MDtoBC_clab")])
 
 str(dev_an_df)
 
 
 
 ## TUMOUR CHARACTERISTICS -------------------------------------------
+
+### Invasive status ----------------------------------------------------
+# categories: invasive/insitu
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_inv_status = case_when(breast_cancer_invasive == 1 ~ 1,
+                                breast_cancer_dcis == 1 ~ 0,
+                                TRUE ~ NA),
+         d_inv_status_lab = factor(
+           x = inv_status,
+           levels = 0:1,
+           labels = c("DCIS", "Invasive")
+         )
+         )
+
+View(dev_an_df[,c("tcode", "diagdate", "ICDt", "breast_cancer_invasive", "breast_cancer_dcis", "inv_status", "inv_status_lab")])
+dev_an_df %>% tabyl(inv_status, inv_status_lab)
+dev_an_df %>% tabyl(inv_status_lab, breast_cancer_invasive)
+dev_an_df %>% tabyl(inv_status_lab, breast_cancer_dcis)
+
+### Grade ----------------------------------------------------------------
+# categories: 1,2,3,n/k
+
+dev_an_df %>% tabyl(grade)
+
+dev_an_df %>% tabyl(grade, inv_status_lab)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_grade = as.factor(case_when(grade %in% c("1", "low", "Low") ~ 1,
+                             grade %in% c("2", "intermediate", "Intermediate") ~ 2,
+                             grade %in% c("3", "high", "High") ~ 3,
+                             grade %in% c("4", "7") ~ 777, # invalid value
+                             is.na(grade) ~ 888 # missing
+                             )),
+         d_grade = ordered(x = d_grade, c("1", "2", "3", "777", "888"))
+         )
+
+
+dev_an_df %>% tabyl(grade, d_grade)
+
+
+### Morphology -----------------------------------------------------------
+# categories: ductal, lobular, mixed, mucinous, other 
+
+
+
+
+### n of positive nodes ----------------------------------------------------
+# categories: 0, 1-3, 4-10, >10, n/k 
+
+
+
+
+
+### Size -------------------------------------------------------------
+# categories: <21, 21-50, >50, n/k
+
+
+
+
+
+### ER status ---------------------------------------------------------
+# categories: negative, positive, n/k 
+
+
+
+
+### PR status --------------------------------------------------------
+# categories: negative, positive, n/k 
+
+
+
+
+
+### HER2 status ----------------------------------------------------------
+# categories: negative, positive, n/k 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## RISK FACTORS -----------------------------------------------------
