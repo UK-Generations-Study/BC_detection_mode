@@ -31,7 +31,7 @@ dm_vars <- dm_df %>%
 ca_vars <- cancer_df %>% 
   select(tcode, date_birth, date_entry, diagdate, diagage, 
          incident, side, ICDt, ICDm, breast_cancer, breast_cancer_invasive, breast_cancer_dcis, 
-         stage, grade, er_Status, pr_Status, her2_Status, Tsize, nodes_tot, nodes_pos, N)
+         stage, grade, er_Status, pr_Status, her2_Status, Tsize, nodes_tot, nodes_pos, N, AgeatEntry)
 
 ## select variables from mean density ----------------------------
 
@@ -79,7 +79,7 @@ summary(dev_an_df$d_R1toBC_y)
 
 dev_an_df %>% tabyl(d_R1toBC_y)
 
-### Time between mammo and BC 
+### Time between mammo and BC --------------------------------
 
 dev_an_df <- dev_an_df %>% 
   mutate(
@@ -103,7 +103,17 @@ dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_clab)
 
 str(dev_an_df)
 
+### Age at breast cancer diagnosis -------------------------------------
+# does not need preparing as it looks okay 
 
+dev_an_df %>% tabyl(diagage)
+hist(dev_an_df$diagage)
+
+
+### Age at entry -----------------------------------------------------
+# does not need preparing as it looks okay 
+dev_an_df %>% tabyl(AgeatEntry)
+hist(dev_an_df$AgeatEntry)
 
 ## TUMOUR CHARACTERISTICS -------------------------------------------
 
@@ -178,9 +188,17 @@ dev_an_df %>% tabyl(ICDm)
 dev_an_df <- dev_an_df %>% 
   mutate(ICDm = as.character(ICDm)
          ) %>% 
-  mutate(d_morphology = as.factor(case_when(ICDm == "85213" ~ 7, # Ductular
-                                           ICDm == "82113" ~ 5, # Tubular
+  mutate(d_morphology = as.factor(case_when(#specific types with full codes hence first
+                                            ICDm == "82113" ~ 5, # Tubular
+                                            ICDm == "85213" ~ 7, # Ductular
+                                            ICDm == "81403" ~ 8, # Adenocarcinoma, NOS
                                            
+                                           # combined types - full codes hence first
+                                           ICDm == "85223" ~ 9, # # infiltrating duct and lobular
+                                           ICDm == "85233" ~ 10, # infiltrating duct mixed with other types of carcinoma
+                                           ICDm == "85243" ~ 11, # Infiltrating lobular mixed with other types of carcinoma
+                                           
+                                           # more general types - starting with codes hence last 
                                            startsWith(ICDm, "850") ~ 1, # Ductal
                                            startsWith(ICDm, "851") ~ 2, # Medullary
                                            startsWith(ICDm, "848") ~ 3, # Mucinous or colloid
@@ -188,32 +206,38 @@ dev_an_df <- dev_an_df %>%
                                            
                                            startsWith(ICDm, "805") ~ 6, # Papillary
                                            
-                                           ICDm == "81403" ~ 8, # Adenocarcinoma, NOS
                                            
-                                           is.na(ICDm) ~ 10, # not known
                                            
-                                           TRUE ~ 9 # other
+                                           is.na(ICDm) ~ 888, # not known
+                                           
+                                           TRUE ~ 12 # other
                                            )
                                  ),
-         d_morphology = ordered(x = d_morphology, c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
+         d_morphology = ordered(x = d_morphology, c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "888"))
          ) %>% 
   mutate(
           d_morphology_lab = factor(
            x = d_morphology, 
-           levels = 1:10,
-           labels = c("Ductal", "Medullary", "Mucinous or colloid", "Lobular", "Tubular", "Papillary", "Ductular", "Adenocarcinoma, NOS", "Other", "Not known")
+           levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 888),
+           labels = c("Ductal", "Medullary", "Mucinous or colloid", "Lobular", 
+                      "Tubular", "Papillary", "Ductular", "Adenocarcinoma, NOS", 
+                      "Mixed: Ductal and lobular", "Mixed: Ductal and other", "Mixed: Lobular and other",  
+                      "Other", "Not known")
          )
-         ) %>% 
-  # condensed morphology 
-  mutate(d_morph5 = as.factor(case_when(d_morphology == 1 ~ 1,
-                             d_morphology == 4 ~ 2,
-                             d_morphology == 5 ~ 3,
-                             d_morphology %in% c(2, 3, 6, 7, 8, 9) ~ 4,
-                             d_morphology == 10 ~ 5)),
-         d_morph5 = ordered(x = d_morph5, c("1", "2", "3", "4", "5")),
-         d_morph5_lab = factor(x = d_morph5, 
-                               levels = 1:5, 
-                               labels = c("Ductal", "Lobular", "Tubular", "Other", "Not known"))
+         ) %>%
+  # condensed morphology
+  mutate(d_morph7 = as.factor(case_when(d_morphology == 1 ~ 1, # ductual
+                             d_morphology == 4 ~ 2, # lobular
+                             d_morphology == 9 ~ 3, # mixed duct and lobular
+                             d_morphology == 10 ~ 4, # mixed duct and other
+                             d_morphology == 5 ~ 5, # Tubular
+                             d_morphology == 3 ~ 6, # Mucinous or colloid
+                             d_morphology %in% c(2, 6, 7, 8, 11, 12) ~ 7, # Other
+                             d_morphology == 888 ~ 888)), # Not known
+         d_morph7 = ordered(x = d_morph7, c("1", "2", "3", "4", "5", "6", "7", "888")),
+         d_morph7_lab = factor(x = d_morph7,
+                               levels = c(1, 2, 3, 4, 5, 6, 7, 888),
+                               labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other", "Not known"))
          )
 
          
@@ -228,14 +252,19 @@ dev_an_df %>% tabyl(d_morphology_lab)
 
 dev_an_df %>% tabyl(d_morphology_lab, d_morphology)
 
-dev_an_df %>% tabyl(d_morph5)
-dev_an_df %>% tabyl(d_morph5_lab)
-dev_an_df %>% tabyl(d_morph5_lab, d_morph5)
+dev_an_df %>% tabyl(d_morph7)
+dev_an_df %>% tabyl(d_morph7_lab)
+dev_an_df %>% tabyl(d_morph7_lab, d_morph7)
+dev_an_df %>% tabyl(d_morphology_lab, d_morph7_lab)
 
 ### n of positive nodes ----------------------------------------------------
-# categories: 0, 1-3, 4-10, >10, n/k 
+# categories: 0, 1-3, 4-10, >10, n/k
+# L's notes said this should be replaced by binary nodes variable - below
 
 dev_an_df %>% tabyl(nodes_pos)
+str(dev_an_df$nodes_pos)
+
+dev_an_df %>% tabyl(nodes_tot, nodes_pos)
 
 dev_an_df %>% tabyl(N)
 
@@ -243,27 +272,111 @@ dev_an_df %>% tabyl(N)
 ### positive nodes y/n ----------------------------------------------------
 # binary y/n
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_pos_nodes_n = case_when(nodes_pos == "Y" ~ "777", # unlikely value
+                                   is.na(nodes_pos) ~ "888", # is missing
+                                   TRUE ~ nodes_pos
+                                   
+                                      ) ,
+         d_pos_nodes_n = as.numeric(d_pos_nodes_n) ,
 
+         d_pos_nodes = as.factor(case_when(d_pos_nodes_n == 0 ~ 0,
+                                           d_pos_nodes_n >= 1 & d_pos_nodes_n < 777 ~ 1,
+                                           d_pos_nodes_n %in% c(888, 777) ~ 888
+                                           )
+                                 
+                                           
+                                 ) ,
+        d_pos_nodes = ordered(x = d_pos_nodes, c("0", "1", "888")),
+        d_pos_nodes_lab = factor(x = d_pos_nodes,
+                                 levels = c(0, 1, 888),
+                                 labels = c("Negative", "Positive", "Not known")
+        )
+         )
 
+dev_an_df %>% tabyl(d_pos_nodes, d_pos_nodes_lab)
 
-
-
+dev_an_df %>% tabyl(d_pos_nodes_n)
 
 ### Size -------------------------------------------------------------
 # categories: <21, 21-50, >50, n/k
+dev_an_df %>% tabyl(Tsize)
+str(dev_an_df$Tsize)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_tumour_size_n = case_when(Tsize == "." ~ "777", # unlikely value
+                                     is.na(Tsize) ~ "888", # not known
+                                     TRUE ~ Tsize
+                                     ),
+         d_tumour_size_n = as.numeric(d_tumour_size_n),
+         
+         d_tumour_size = as.factor(case_when(d_tumour_size_n < 21 ~ 1,
+                                             d_tumour_size_n >= 21 & d_tumour_size_n <= 50 ~ 2,
+                                             d_tumour_size_n > 50 & d_tumour_size_n < 776 ~ 3,
+                                             d_tumour_size_n == 888 | d_tumour_size_n == 777 ~ 888 # not known
+                                             )
+                                   ),
+         d_tumour_size = ordered(x = d_tumour_size, c("1", "2", "3", "888")
+                                 ),
+         d_tumour_size_lab = factor(x = d_tumour_size,
+                                levels = c(1, 2, 3, 888),
+                                labels = c("<21", "21-50", ">50", "Not known")
+                                )
+         )
+
+str(dev_an_df$d_tumour_size_n)
+dev_an_df %>% tabyl(d_tumour_size_n)
 
 
+dev_an_df %>% tabyl(d_tumour_size_n)
+       
+dev_an_df %>% tabyl(Tsize, d_tumour_size) %>% 
+  adorn_totals()
 
-
+dev_an_df %>% tabyl(d_tumour_size_n, d_tumour_size) %>% 
+  adorn_totals()
 
 ### ER status ---------------------------------------------------------
 # categories: negative, positive, n/k 
+dev_an_df %>% tabyl(er_Status)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_er_status = as.factor(case_when(er_Status == "Negative" ~ 0,
+                                           er_Status == "Positive" ~ 1,
+                                           is.na(er_Status) ~ 888
+                                           )
+                                 ),
+         d_er_status = ordered(x = d_er_status, c("0", "1", "888")
+                              ),
+         d_er_status_lab = factor(x = d_er_status,
+                                  levels = c(0, 1, 888),
+                                  labels = c("Negative", "Positive", "Not known"))
+         )
 
-
+dev_an_df %>% tabyl(d_er_status)
+dev_an_df %>% tabyl(d_er_status, d_er_status_lab)
+dev_an_df %>% tabyl(er_Status, d_er_status_lab)
 
 ### PR status --------------------------------------------------------
 # categories: negative, positive, n/k 
+dev_an_df %>% tabyl(pr_Status)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_pr_status = as.factor(case_when(pr_Status == "Negative" ~ 0,
+                                           pr_Status == "Positive" ~ 1,
+                                           is.na(pr_Status) ~ 888
+  )
+  ),
+  d_pr_status = ordered(x = d_pr_status, c("0", "1", "888")
+  ),
+  d_pr_status_lab = factor(x = d_pr_status,
+                           levels = c(0, 1, 888),
+                           labels = c("Negative", "Positive", "Not known"))
+  )
+
+dev_an_df %>% tabyl(d_pr_status)
+dev_an_df %>% tabyl(d_pr_status, d_pr_status_lab)
+dev_an_df %>% tabyl(pr_Status, d_pr_status_lab)
 
 
 
@@ -272,28 +385,37 @@ dev_an_df %>% tabyl(N)
 ### HER2 status ----------------------------------------------------------
 # categories: negative, positive, n/k 
 
+dev_an_df %>% tabyl(her2_Status)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_her2_status = as.factor(case_when(her2_Status == "Negative" ~ 0,
+                                           her2_Status == "Positive" | her2_Status == "Borderline" ~ 1,
+                                           is.na(her2_Status) ~ 888
+  )
+  ),
+  d_her2_status = ordered(x = d_her2_status, c("0", "1", "888")
+  ),
+  d_her2_status_lab = factor(x = d_her2_status,
+                           levels = c(0, 1, 888),
+                           labels = c("Negative", "Positive", "Not known"))
+  )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+dev_an_df %>% tabyl(d_her2_status)
+dev_an_df %>% tabyl(d_her2_status, d_her2_status_lab)
+dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 
 
 
 ## RISK FACTORS -----------------------------------------------------
 
 
+
+
+
+
 ## MAMMO DENSITY ----------------------------------------------------
+
+
+
+# df summary -----------------------------------------------------------
+stview(dfSummary(dev_an_df))

@@ -102,3 +102,6 @@ riskfactors_df <- riskfactors_df %>%
     age_pregnancy365_8 = (date_preg_8 - date_birth),
     age_pregnancy365_9 = (date_preg_9 - date_birth)
   )
+
+
+View(riskfactors_df[,c("tcode", "date_entry", "date_birth", "AgeatEntry", "age_start365", "age_entry_365")])

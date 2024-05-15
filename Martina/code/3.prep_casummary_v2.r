@@ -52,7 +52,7 @@ n_miss(riskfactors_df$date_entry)
 
 
 birth <- riskfactors_df %>% 
-  select(tcode, date_birth, date_entry)
+  select(tcode, date_birth, date_entry, AgeatEntry)
 
 n_miss(birth$date_entry)
 
