@@ -63,21 +63,37 @@ str(dev_an_df)
 ## AGE AND TIMING VARIABLES ------------------------------------------------
 
 ### Time between entry and BC diagnosis ------------------------
-# continuous only
+# continuous and categorical 
 
 dev_an_df <- dev_an_df %>% 
   mutate(
     d_R1toBC = as.numeric(diagdate - date_entry),
-         d_R1toBC_y = round(d_R1toBC/365.25, 1))
+    d_R1toBC_y = round(d_R1toBC/365.25, 1),
+    d_R1toBC_cat = case_when(d_R1toBC_y < 3 ~ 1,
+                             d_R1toBC_y >= 3 & d_R1toBC_y <= 5.9 ~ 2,
+                             d_R1toBC_y >= 6 & d_R1toBC_y <= 8.9 ~ 3,
+                             d_R1toBC_y >= 9 & d_R1toBC_y <= 11.9 ~ 4,
+                             d_R1toBC_y >= 12 ~ 5,
+                             ),
+    d_R1toBC_cat = ordered(x = d_R1toBC_cat, c("1", "2", "3", "4", "5") # ordering so when factor is created it stays ordered
+                           ),
+    d_R1toBC_lab = factor(x = d_R1toBC_cat,
+                          levels = 1:5,
+                          labels = c("<3 years", "3 to 5 years", "6 to 8 years", "9 to 11 years", ">12 years" ))
+    )
 
 
 # checks:
 #View(dev_an_df[,c("tcode", "diagdate", "date_entry", "d_R1toBC", "d_R1toBC_y")])
 
-str(dev_an_df)
+str(dev_an_df$)
 summary(dev_an_df$d_R1toBC_y)
 
 dev_an_df %>% tabyl(d_R1toBC_y)
+
+dev_an_df %>% tabyl(d_R1toBC_y, d_R1toBC_cat)
+dev_an_df %>% tabyl(d_R1toBC_y, d_R1toBC_lab)
+dev_an_df %>% tabyl(d_R1toBC_lab)
 
 ### Time between mammo and BC --------------------------------
 
@@ -405,8 +421,94 @@ dev_an_df %>% tabyl(d_her2_status, d_her2_status_lab)
 dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 
 
-
+  
 ## RISK FACTORS -----------------------------------------------------
+
+### Alcohol (units per week) -----------------------------------
+# categories(0, 1-9, 10-19, 20-29, >=30)
+
+
+### Benign breast disease ----------------------------------------
+# binary y/n
+
+
+
+### BMI ----------------------------------------------------------
+# WHO categories 
+
+
+
+### Number of relatives with BC -----------------------------------
+# categories: 0, 1, >2
+
+
+
+### HRT status -------------------------------------------------------
+# categories: never, former, current 
+
+
+
+### Age at menarche -----------------------------------------------
+# categories: <13, >=13 
+
+
+
+### Menopausal status at baseline -----------------------------------
+# binary: pre/post 
+
+
+
+### Age at menopause -----------------------------------------------
+# categories: <=50, 51-53, >53
+
+
+
+
+
+
+### OC status --------------------------------------------------------
+# categories: never, former, current 
+
+
+
+
+
+### Physical activity --------------------------------------------------
+# categories: METs per week <= 25, 25.1 to 50, 50.1 to 75, > 75 - this might need revising and check recommendations 
+
+
+
+
+### Parity ---------------------------------------------------------
+# binary y/n
+
+
+
+
+
+### Age at first birth -------------------------------------------------
+# categories: <20, 20-24, 25-29, 30-34, >=35
+
+
+
+
+### Number of children ----------------------------------------------------
+# categories: 1, 2, 3, >=4 
+
+
+
+
+
+### SES -------------------------------------------------------------
+# categories: Affluent achievers, rising prosperity, comfortable communities, 
+#             financially streched, urban adversity and non-private households 
+
+
+
+
+
+### Smoking -----------------------------------------------------------
+# categories: never, former, current 
 
 
 
