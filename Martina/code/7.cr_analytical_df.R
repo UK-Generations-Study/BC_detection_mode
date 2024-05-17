@@ -42,7 +42,7 @@ density_vars <- mean_density_df
 
 rf_vars <- riskfactors_df %>% 
   select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
-         brbendis, fambrca)
+         brbendis, fambrca, fambrcaN)
 
 
 
@@ -508,7 +508,48 @@ dev_an_df %>% tabyl(d_bbd, d_bbd_lab)
 ### Number of relatives with BC -----------------------------------
 # categories: 0, 1, >2
 
+# prepare categorical: 
+dev_an_df %>% tabyl(fambrca)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_fambrca = case_when(fambrca == 0 ~ 0,
+                               fambrca == 1 ~ 1,
+                               TRUE ~ 888),
+         d_fambrca_lab = factor(x = d_fambrca,
+                                levels = c(0, 1, 888),
+                                labels = c("No", "Yes", "Not known"))
+         )
+
+dev_an_df %>% tabyl(d_fambrca)
+dev_an_df %>% tabyl(d_fambrca_lab)
+dev_an_df %>% tabyl(d_fambrca, d_fambrca_lab)
+
+# prepare count of relatives: 
+dev_an_df %>% tabyl(fambrcaN)
+
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_fambrcaN = case_when(fambrcaN == 0 ~ 0,
+                               fambrcaN == 1 ~ 1,
+                               fambrcaN >= 2 ~ 2,
+                               TRUE ~ 888),
+         d_fambrcaN_lab = factor(x = d_fambrcaN,
+                                levels = c(0, 1, 2, 888),
+                                labels = c("0", "1", "2 or more", "Not known")
+                                )
+  )
+
+dev_an_df %>% tabyl(d_fambrcaN)
+dev_an_df %>% tabyl(d_fambrcaN_lab)
+dev_an_df %>% tabyl(d_fambrcaN, d_fambrcaN_lab)
+
+
+# cross check: 
+dev_an_df %>% tabyl(fambrcaN, fambrca) %>% 
+  adorn_totals()
+
+dev_an_df %>% tabyl(d_fambrcaN, d_fambrca) %>% 
+  adorn_totals()
 
 ### HRT status -------------------------------------------------------
 # categories: never, former, current 
