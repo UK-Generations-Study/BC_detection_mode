@@ -676,10 +676,21 @@ str(dev_an_df$meno_age_est)
 
 ### OC status --------------------------------------------------------
 # categories: never, former, current 
+dev_an_df %>% tabyl(ocstatus)
+str(dev_an_df$ocstatus)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_ocstatus = ifelse(ocstatus %in% c(9999, 999, 888, NA), 888, ocstatus),
+         d_ocstatus_lab = factor(x = d_ocstatus,
+                                 levels = c(0, 1, 2, 888),
+                                 labels = c("Never", "Former", "Current", "Not known")
+                                 )
+         )
 
-
-
+dev_an_df %>% tabyl(d_ocstatus)
+dev_an_df %>% tabyl(d_ocstatus_lab)
+dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus)
+dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
 
 ### Physical activity --------------------------------------------------
 # categories: METs per week <= 25, 25.1 to 50, 50.1 to 75, > 75 - this might need revising and check recommendations 
