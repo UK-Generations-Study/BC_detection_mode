@@ -42,7 +42,8 @@ density_vars <- mean_density_df
 
 rf_vars <- riskfactors_df %>% 
   select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
-         brbendis, fambrca, fambrcaN)
+         brbendis, fambrca, fambrcaN,
+         bodysizebminow)
 
 
 
@@ -500,10 +501,40 @@ dev_an_df %>% tabyl(d_bbd_lab)
 dev_an_df %>% tabyl(d_bbd, d_bbd_lab)
 
 
-### BMI ----------------------------------------------------------
+### BMI at baseline ----------------------------------------------------------
 # WHO categories 
 
+# numerical prep: 
+dev_an_df %>% tabyl(bodysizebminow)
+str(dev_an_df$bodysizebminow)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bmi_entry = case_when(bodysizebminow == 999 ~ 888, # recode 999 to 888 for consistency with other variables
+                                 is.na(bodysizebminow) ~ 888, # recode missing NAs to 888 (no NAs)
+                                 bodysizebminow < 13.5 | bodysizebminow > 60 ~ 989, # extreme value
+                                 TRUE ~ bodysizebminow)
+         )
+
+dev_an_df %>% tabyl(d_bmi_entry)
+
+# categorical prep
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bmi_entry_cat = case_when(d_bmi_entry < 18.5 ~ 1, # < 18.5
+                                     d_bmi_entry >= 18.5 & d_bmi_entry <= 24.9 ~ 2, # 18.5 to 24.9
+                                     d_bmi_entry >= 25 & d_bmi_entry <= 29.9 ~ 3, # 25 to 29.9 
+                                     d_bmi_entry >= 30 & d_bmi_entry < 888 ~ 4, # >= 30
+                                     d_bmi_entry == 888 ~ 888, # not known
+                                     TRUE ~ 888
+                                     ),
+         d_bmi_entry_cat = ordered(x = d_bmi_entry_cat, c("1", "2", "3", "4", "888")),
+         d_bmi_entry_lab = factor(x = d_bmi_entry_cat,
+                                  levels = c(1, 2, 3, 4, 888),
+                                  labels = c("<18.5", "18.5 to 24.9", "25 to 29.9", ">=30", "Not known"))
+         )
+
+dev_an_df %>% tabyl(d_bmi_entry_cat)
+check <- dev_an_df %>% tabyl(d_bmi_entry, d_bmi_entry_cat)
+dev_an_df %>% tabyl(d_bmi_entry_cat, d_bmi_entry_lab)
 
 ### Number of relatives with BC -----------------------------------
 # categories: 0, 1, >2
