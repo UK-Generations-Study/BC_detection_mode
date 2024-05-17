@@ -43,7 +43,8 @@ density_vars <- mean_density_df
 rf_vars <- riskfactors_df %>% 
   select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
          brbendis, fambrca, fambrcaN,
-         bodysizebminow)
+         bodysizebminow,
+         hrtstatus, R1menopause, meno_age_est)
 
 
 
@@ -584,8 +585,20 @@ dev_an_df %>% tabyl(d_fambrcaN, d_fambrca) %>%
 
 ### HRT status -------------------------------------------------------
 # categories: never, former, current 
+dev_an_df %>% tabyl(hrtstatus)
+str(dev_an_df$hrtstatus)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1hrtstatus = case_when(hrtstatus %in% c(888,999,9999) | is.na(hrtstatus) ~ 888, # Merging error values into one - potential loss of information but also easier to track
+                                   TRUE ~ hrtstatus),
+         d_R1hrtstatus_lab = factor(x = d_R1hrtstatus,
+                                    levels = c(0, 1, 2, 888),
+                                    labels = c("Never", "Former", "Current", "Not known"))
+    )
 
+dev_an_df %>% tabyl(d_R1hrtstatus)
+dev_an_df %>% tabyl(d_R1hrtstatus, d_R1hrtstatus_lab)
+dev_an_df %>% tabyl(AgeatEntry, d_R1hrtstatus)
 
 ### Age at menarche -----------------------------------------------
 # categories: <13, >=13 
@@ -595,11 +608,47 @@ dev_an_df %>% tabyl(d_fambrcaN, d_fambrca) %>%
 ### Menopausal status at baseline -----------------------------------
 # binary: pre/post 
 
+dev_an_df %>% tabyl(R1menopause)
+str(dev_an_df$R1menopause)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1menopause = case_when(is.na(R1menopause) | R1menopause %in% c(8, 10) ~ 888, # not know or questionnaire not completed
+                                   TRUE ~ R1menopause),
+         d_R1menopause_lab6 = factor(x = d_R1menopause,
+                                    levels = c(1, 2, 3, 4, 9, 888),
+                                    labels = c("Postmenopausal", "Premenopausal", 
+                                               "Assumed postmenopausal", "Assumed premenopausal", 
+                                               "Never had periods", "Not known")
+                                    ), # labels from rds DD 
+         
+         # condensed categories to pre and post meno 
+         d_R1menopause_cat3 = case_when(d_R1menopause %in% c(1, 3) ~ 1,
+                                        d_R1menopause %in% c(2, 4) ~ 2,
+                                        d_R1menopause %in% c(9, 888) ~ 888
+                                        ),
+         d_R1menopause_lab3 = factor(x = d_R1menopause_cat3,
+                                     levels = c(1, 2, 888),
+                                     labels = c("Postmenopausal", "Premenopausal", "Not known")
+                                     )
+         )
+
+
+dev_an_df %>% tabyl(d_R1menopause)
+dev_an_df %>% tabyl(d_R1menopause_lab6)
+dev_an_df %>% tabyl(d_R1menopause_lab3)
+dev_an_df %>% tabyl(d_R1menopause_lab6, d_R1menopause_lab3)
+
+# check with HRT - HRT should only be in menopausal women
+
+dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
+dev_an_df %>% tabyl(AgeatEntry, d_R1menopause_lab3)
 
 
 ### Age at menopause -----------------------------------------------
 # categories: <=50, 51-53, >53
-
+# COME BACK TO THIS - DISCUSS WITH MICHAEL ---------------------------
+dev_an_df %>% tabyl(meno_age_est)
+str(dev_an_df$meno_age_est)
 
 
 
