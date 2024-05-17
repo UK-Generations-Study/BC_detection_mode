@@ -41,7 +41,8 @@ density_vars <- mean_density_df
 ## select variables from risk factor -------------------------------
 
 rf_vars <- riskfactors_df %>% 
-  select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits)
+  select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
+         brbendis, fambrca)
 
 
 
@@ -457,7 +458,7 @@ dev_an_df <- dev_an_df %>%
   ),
   d_R1alcohol_units_cat = case_when(d_R1alcohol_units == 0 ~ 0, # 0 units
                                     d_R1alcohol_units > 0 & d_R1alcohol_units < 10 ~ 1, # 1 to 9 units
-                                    d_R1alcohol_units >= 10 & d_R1alcohol_units < 20 ~ 2, # 10 to 19 units
+                                    d_R1alcohol_units >= 10 & d_R1alcohol_units < 20 ~ 2, # 10 to 19 units  
                                     d_R1alcohol_units >= 20 & d_R1alcohol_units < 30 ~ 3, # 20 to 29 units
                                     d_R1alcohol_units >= 30 ~ 4
                                     ),
@@ -481,6 +482,22 @@ dev_an_df %>% tabyl(d_R1alcohol_units_lab, d_R1alcohol_status_lab)
 ### Benign breast disease ----------------------------------------
 # binary y/n
 
+dev_an_df %>% tabyl(brbendis)
+str(dev_an_df$brbendis)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bbd = case_when(brbendis == 1 ~ 1,
+                           brbendis == 2 ~ 0,
+                           TRUE ~ 888
+                           ),
+         d_bbd_lab = factor(x = d_bbd, 
+                            levels = c(0, 1, 888),
+                            labels = c("No", "Yes", "Not known"))
+         )
+
+dev_an_df %>% tabyl(d_bbd)
+dev_an_df %>% tabyl(d_bbd_lab)
+dev_an_df %>% tabyl(d_bbd, d_bbd_lab)
 
 
 ### BMI ----------------------------------------------------------
