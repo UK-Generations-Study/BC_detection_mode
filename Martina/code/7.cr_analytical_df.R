@@ -41,7 +41,7 @@ density_vars <- mean_density_df
 ## select variables from risk factor -------------------------------
 
 rf_vars <- riskfactors_df %>% 
-  select(tcode)
+  select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits)
 
 
 
@@ -51,6 +51,7 @@ rf_vars <- riskfactors_df %>%
 dev_an_df <- dm_cases %>% 
   left_join(ca_vars, by = "tcode") %>% 
   left_join(dm_vars, by = "tcode") %>% 
+  left_join(rf_vars, by = "tcode") %>% 
   left_join(density_vars, by = "tcode") 
 
 str(dev_an_df)
@@ -86,7 +87,7 @@ dev_an_df <- dev_an_df %>%
 # checks:
 #View(dev_an_df[,c("tcode", "diagdate", "date_entry", "d_R1toBC", "d_R1toBC_y")])
 
-str(dev_an_df$)
+
 summary(dev_an_df$d_R1toBC_y)
 
 dev_an_df %>% tabyl(d_R1toBC_y)
@@ -427,8 +428,55 @@ dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 ### Alcohol (units per week) -----------------------------------
 # categories(0, 1-9, 10-19, 20-29, >=30)
 
+# process alcohol status: 
+str(dev_an_df$R1alcoholstatus)
+dev_an_df %>% tabyl(R1alcoholstatus)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1alcohol_status = ifelse(R1alcoholstatus %in% c(9, NA), 888, R1alcoholstatus
+                                   ),
+         d_R1alcohol_status= ordered(x = d_R1alcohol_status, c("0", "1", "2")
+                                   
+                                   ),
+         d_R1alcohol_status_lab = factor(x = d_R1alcohol_status,
+                                       levels = 0:2,
+                                       labels = c("Never", "Current", "Past"))
+         )
 
+dev_an_df %>% tabyl(d_R1alcohol_status)
+dev_an_df %>% tabyl(d_R1alcohol_status_lab)
+dev_an_df %>% tabyl(d_R1alcohol_status, d_R1alcohol_status_lab)
+
+# process alcohol units per week (r1): 
+str(dev_an_df$R1alcoholunits)
+dev_an_df %>% tabyl(R1alcoholunits)
+summary(dev_an_df$R1alcoholunits)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1alcohol_units = ifelse(is.na(R1alcoholunits), 8888, R1alcoholunits # using 8888 as 888 value could be plausible
+  ),
+  d_R1alcohol_units_cat = case_when(d_R1alcohol_units == 0 ~ 0, # 0 units
+                                    d_R1alcohol_units > 0 & d_R1alcohol_units < 10 ~ 1, # 1 to 9 units
+                                    d_R1alcohol_units >= 10 & d_R1alcohol_units < 20 ~ 2, # 10 to 19 units
+                                    d_R1alcohol_units >= 20 & d_R1alcohol_units < 30 ~ 3, # 20 to 29 units
+                                    d_R1alcohol_units >= 30 ~ 4
+                                    ),
+  d_R1alcohol_units_lab = factor(x = d_R1alcohol_units_cat,
+                                 levels = 0:4,
+                                 labels = c("0", "1 to 9", "10 to 19", "20 to 29", "30 or more"))
+                                    
+                            
+  )
+
+dev_an_df %>% tabyl(d_R1alcohol_units)
+dev_an_df %>% tabyl(d_R1alcohol_units_cat)
+check <- dev_an_df %>% tabyl(d_R1alcohol_units, d_R1alcohol_units_cat)
+dev_an_df %>% tabyl(d_R1alcohol_units_lab)
+check <- dev_an_df %>% tabyl(d_R1alcohol_units, d_R1alcohol_units_lab)
+dev_an_df %>% tabyl(d_R1alcohol_units_cat, d_R1alcohol_units_lab)
+
+# tab units and status to check consistency 
+dev_an_df %>% tabyl(d_R1alcohol_units_lab, d_R1alcohol_status_lab)
 
 ### Benign breast disease ----------------------------------------
 # binary y/n
