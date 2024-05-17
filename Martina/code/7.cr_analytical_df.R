@@ -44,7 +44,8 @@ rf_vars <- riskfactors_df %>%
   select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
          brbendis, fambrca, fambrcaN,
          bodysizebminow,
-         hrtstatus, R1menopause, meno_age_est)
+         hrtstatus, R1menopause, meno_age_est,
+         menarcheage, ocstatus)
 
 
 
@@ -603,7 +604,26 @@ dev_an_df %>% tabyl(AgeatEntry, d_R1hrtstatus)
 ### Age at menarche -----------------------------------------------
 # categories: <13, >=13 
 
+dev_an_df %>% tabyl(menarcheage)
+str(dev_an_df$menarcheage)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_menarche = ifelse(menarcheage %in% c(999, 888, NA), 888, menarcheage),
+         d_age_menarche_cat = case_when(d_age_menarche < 13 ~ 1, # less than 13 
+                                        d_age_menarche >= 13 & d_age_menarche < 888 ~ 2, # 13 and over
+                                        d_age_menarche == 888 ~ 888 # not known
+                                        ),
+         d_age_menarche_lab = factor(x = d_age_menarche_cat,
+                                     levels = c(1, 2, 888),
+                                     labels = c("less than 13", "13 and over", "Not known"))
+    
+  )
+
+dev_an_df %>% tabyl(d_age_menarche)
+dev_an_df %>% tabyl(d_age_menarche_cat)
+dev_an_df %>% tabyl(d_age_menarche_lab)
+dev_an_df %>% tabyl(menarcheage, d_age_menarche_lab)
+dev_an_df %>% tabyl(d_age_menarche_lab, d_age_menarche_cat)
 
 ### Menopausal status at baseline -----------------------------------
 # binary: pre/post 
