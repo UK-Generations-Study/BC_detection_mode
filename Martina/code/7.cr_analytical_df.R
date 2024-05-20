@@ -45,7 +45,8 @@ rf_vars <- riskfactors_df %>%
          brbendis, fambrca, fambrcaN,
          bodysizebminow,
          hrtstatus, R1menopause, meno_age_est,
-         menarcheage, ocstatus)
+         menarcheage, ocstatus,
+         PhysMetTotal, pregparitycnt, R1smokingstatus, ses)
 
 
 
@@ -695,7 +696,90 @@ dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
 ### Physical activity --------------------------------------------------
 # categories: METs per week <= 25, 25.1 to 50, 50.1 to 75, > 75 - this might need revising and check recommendations 
 
+dev_an_df %>% tabyl(PhysMetTotal)
+summary(dev_an_df$PhysMetTotal)
+str(dev_an_df$PhysMetTotal)
 
+n_miss(dev_an_df$PhysMetTotal)
+
+dev_an_df %>% 
+  filter(PhysMetTotal < 900) %>% 
+  ggplot(aes(PhysMetTotal)) +
+  geom_histogram()
+
+# process qunatitative
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1physmet_total = as.numeric(if_else(PhysMetTotal %in% c(8888, 9999, NA), 8888, PhysMetTotal))
+         ) %>% 
+  ungroup()
+
+dev_an_df %>% 
+  filter(PhysMetTotal < 900) %>% 
+  mean_table(d_R1physmet_total)
+
+check <- dev_an_df %>% 
+  filter(PhysMetTotal < 900) %>% 
+  tabyl(d_R1physmet_total)
+
+
+# quartiles
+# create quintiles
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1physmet_quart = case_when(d_R1physmet_total == 8888 ~ NA,
+                                      d_R1physmet_total != 8888 ~ ntile(d_R1physmet_total, 4),
+                                      TRUE ~ NA )
+  ) %>% 
+  group_by(d_R1physmet_quart
+  ) %>% 
+  mutate(d_R1physmet_quart_m = case_when(d_R1physmet_total == 8888 ~ NA,
+                                        d_R1physmet_total != 8888 ~ round(median(d_R1physmet_total), 2),
+                                        TRUE ~ NA)
+  ) %>% 
+  ungroup() %>% 
+  mutate(d_R1physmet_quart = factor(
+    x = d_R1physmet_quart,
+    levels = 1:4
+  ))
+
+dev_an_df %>% tabyl(d_R1physmet_quart, d_R1physmet_quart_m)
+
+check <- dev_an_df %>% tabyl(d_R1physmet_total, d_R1physmet_quart)
+
+
+# meeting guidelines 
+METhw <- 9
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1physmet_who = case_when(d_R1physmet_total < METhw ~ 0,
+                                    d_R1physmet_total >= METhw & d_R1physmet_total < 8888 ~ 1,
+                                    d_R1physmet_total == 8888 ~ 888),
+         d_R1physmet_who_lab = factor(x = d_R1physmet_who,
+                                      levels = c(0, 1, 888),
+                                      labels = c("No", "Yes", "Not known"))
+        )
+
+dev_an_df %>% tabyl(d_R1physmet_who_lab)
+
+# only 64 don't meet guidelines so probably not very useful 
+
+
+# Louise's original categories 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1physmet_cat = case_when(d_R1physmet_total <= 25.0 ~ 1,
+                                     d_R1physmet_total > 25.0 & d_R1physmet_total <= 50.0 ~ 2,
+                                     d_R1physmet_total > 50.0 & d_R1physmet_total <= 75.0 ~ 3,
+                                     d_R1physmet_total > 75.0 & d_R1physmet_total < 8888 ~ 4,
+                                     d_R1physmet_total == 8888 ~ 888
+                                     ), 
+          d_R1physmet_lab = factor(x = d_R1physmet_cat,
+                                   levels = c(1, 2, 3, 4, 888),
+                                   labels = c("<=25.0", "25.1 to 50.0", "50.1 to 75.0", ">75.1", "Not known")
+                                   ) 
+         )
+
+dev_an_df %>% tabyl(d_R1physmet_cat, d_R1physmet_lab)
+check <- dev_an_df %>% tabyl(d_R1physmet_total, d_R1physmet_lab)
 
 
 ### Parity ---------------------------------------------------------
@@ -729,13 +813,21 @@ dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
 ### Smoking -----------------------------------------------------------
 # categories: never, former, current 
 
+dev_an_df %>% tabyl(R1smokingstatus)
+str(dev_an_df$R1smokingstatus)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1smokingstatus = ifelse(R1smokingstatus %in% c(6, 9, NA), 888, R1smokingstatus), 
+         d_R1smokingstatus_lab = factor(x = d_R1smokingstatus,
+                                        levels = c(0, 1, 2, 888),
+                                        labels = c("Never", "Former", "Current", "Not known"))
+         )
 
-
-
+dev_an_df %>% tabyl(d_R1smokingstatus)
+dev_an_df %>% tabyl(d_R1smokingstatus_lab)
 
 ## MAMMO DENSITY ----------------------------------------------------
-
+# quartiles
 
 
 # df summary -----------------------------------------------------------
