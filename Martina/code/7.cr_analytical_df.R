@@ -843,7 +843,7 @@ dev_an_df <- dev_an_df %>%
                                      d_R1physmet_leisure >= METhw & d_R1physmet_leisure < 2*METhw ~ 1,
                                      d_R1physmet_leisure >= 2*METhw & d_R1physmet_leisure < 888 ~ 2,
                                      d_R1physmet_leisure == 8888 ~ 888),
-         d_R1physmet_leis_who_lab = factor(x = d_R1physmet_who,
+         d_R1physmet_leis_who_lab = factor(x = d_R1physmet_leis_who,
                                       levels = c(0, 1, 2, 888),
                                       labels = c("<9", "9-18", ">18", "Not known"))
   )
@@ -856,9 +856,8 @@ check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
 
 
 
-
 ### Parity ---------------------------------------------------------
-# binary y/n
+# binary y/n - ever parous
 
 
 
@@ -870,7 +869,7 @@ check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
 
 
 
-### Number of children ----------------------------------------------------
+### Number parous pregnancies ----------------------------------------------------
 # categories: 1, 2, 3, >=4 
 
 
@@ -881,7 +880,7 @@ check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
 # categories: Affluent achievers, rising prosperity, comfortable communities, 
 #             financially streched, urban adversity and non-private households 
 
-
+# NOTE: 20/05/2024 - agreed not to use acorn
 
 
 

@@ -26,7 +26,7 @@ source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHu
 
 # 2. PREPARE RISK FACTORS ---------------------------------
 # initial processing only, analytical variables will be derived in a different part 
-source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/2.prep_riskfactors.r")
+source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/2.prep_riskfactors_v2.r")
 
 # 3. PREPARE CASUMMARY ---------------------------------
 # initial processing only, analytical variables will be derived in a different part 

@@ -43,8 +43,10 @@ n_distinct(riskfactors_im$TCode)
 # Remove records with missing tcode and rename TCode to tcode
 riskfactors_df <- riskfactors_im %>%
   #mutate(tcode = TCode) %>% 
-  filter(!is.na(TCode)) %>% 
+  filter(!is.na(TCode)) 
   #select(-TCode)
+
+n_distinct(riskfactors_df$TCode)
 
 # Check for duplicates
 n_distinct(riskfactors_df)
@@ -107,7 +109,67 @@ print(paste("Number in riskfactors after removing those with no tcode, duplicate
 # View(riskfactors_df[,c("tcode", "date_entry", "date_birth", "AgeatEntry", "age_start365", "age_entry_365")])
 # 
 
+# Functions -----------------------------------------------------------------
 
+menarcheage_sensible_range <- FALSE
+
+append_oc_data <- function(data) {
+  # Sanity checking all those with ocstatus==0 should have ocever %in% c(0/888/999) (true)
+  # all(data[!is.na(data$ocstatus) & data$ocstatus == 0,]$ocever %in% c(0, 888, 999,NA))
+  # Sanity checking all those with ocstatus %in% c(1, 2) should have ocever %in% c(1/888/999) (true)
+  # all(data[!is.na(data$ocstatus) & data$ocstatus %in% c(1, 2),]$ocever %in% c(1, 888, 999,NA))
+  
+  # Collapse 888/999 into 888
+  #data$x_ocever <- ifelse(data$ocever %in% c(999, 888, NA), 888, data$ocever)
+  data$x_ocstatus <- ifelse(data$ocstatus %in% c(9999, 999, 888, NA), 888, data$ocstatus)
+  
+  # Sanity checking that ocLage is always after oc1age (true)
+  # all(apply(data[,c('oc1age', 'ocLage')], 1, function(x) all(diff(x[!is.na(x) & !x%in%c(999, 888)]) >= 0)))
+  
+  # Sanity checking that ocLage and oc1age are always before AgeatEntry (true)
+  # all((is.na(data$oc1age) | data$oc1age %in% c(999,888)) | (data$oc1age <= data$AgeatEntry))
+  # all((is.na(data$ocLage) | data$ocLage %in% c(999,888)) | (data$ocLage <= data$AgeatEntry))
+  
+  # Sanity checking that if ocstatus==0, oc1age and ocLage should be 999/888/NA (true)
+  # all(data[!is.na(data$ocstatus) & data$ocstatus == 0,]$oc1age %in% c(999, 888, NA))
+  
+  # Collapse 888/999 into 888
+  data$x_age_started_oc <- ifelse(data$oc1age %in% c(999, 888, NA), 888, data$oc1age)
+  data$x_age_lastused_oc <- ifelse(data$ocLage %in% c(999, 888, NA), 888, data$ocLage)
+  
+  data$x_oclength <- as.numeric(data$oclength)
+  
+  # oclength is summed total duration of OC use; not yet in dataframe ( (true)07/05/2024)
+  # Sanity checking that if ocstatus==0, oclength should be 999/888/NA
+  # all(data[!is.na(data$ocstatus) & data$ocstatus == 0,]$x_oclength %in% c(999, 888, NA))
+  
+  # Sanity checking that oclength is always <= AgeatEntry (quite liberal, but true)
+  # all(data$x_oclength %in% c(999,888,NA) | (data$x_oclength <= data$AgeatEntry))
+  
+  # Collapse 888/999 into 888
+  data$x_oclength <- ifelse(data$x_oclength %in% c(999, 888, NA), 888, data$x_oclength)
+  
+  return(data)
+}
+
+
+
+append_menarche_data <- function(data) { 
+  # Sanity checking all those with menarcheever==no should have menarcheage==999/888/777/NA (true)
+  # all(data[!is.na(data$menarcheever) & data$menarcheever == 2,]$menarcheage %in% c(999, 888, 777, NA))
+  # Sanity checking all those with menarcheage == 777 should have menarcheever==2/8/9 (true)
+  # all(data[!is.na(data$menarcheage) & data$menarcheage == 777,]$menarcheever %in% c(2, 8, 9))
+  # Sanity checking that menarcheage is always before AgeatEntry (true)
+  # all((is.na(data$menarcheage) | data$menarcheage %in% c(999,888,777)) | (data$menarcheage <= data$AgeatEntry))
+  
+  # Collapse 888/999 into 888
+  data$x_age_menarche <- ifelse(data$menarcheage %in% c(999, 888, NA), 888, data$menarcheage)
+  
+  # Set those outside of sensible range to 888, if required. 12 yrs +/- 5 yrs
+  if(menarcheage_sensible_range) data$x_age_menarche <- ifelse(data$x_age_menarche <= 7 | data$x_age_menarche >= 17, 888, data$x_age_menarche)
+  
+  return(data)
+}
 
 add_identification_data <- function(data){
   
@@ -177,7 +239,10 @@ add_identification_data <- function(data){
 }
 
 
-# add parity --------------------------
+
+
+
+
 
 
 # Function to remove dates past the entry date - can be generalised for any date
@@ -332,6 +397,17 @@ add_parity_data <- function(data){
   
 }
 
-riskfactors_df1 <- riskfactors_df %>% 
-  add_identification_data()
+
+# Prepare data ---------------------------------------------
+
+riskfactors_df <- riskfactors_df %>% 
+  add_identification_data() %>% 
+  append_oc_data() %>% 
+  append_menarche_data() %>% 
   add_parity_data()
+
+
+riskfactors_df <- riskfactors_df1 %>% 
+  mutate(tcode = x_tcode,
+         date_birth = x_dob_shifted,
+         date_entry = x_date_entry_shifted)
