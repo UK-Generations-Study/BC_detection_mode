@@ -47,7 +47,8 @@ rf_vars <- riskfactors_df %>%
          hrtstatus, R1menopause, meno_age_est,
          menarcheage, ocstatus,
          PhysMetTotal, PhysMetRecTot,
-         pregparitycnt, R1smokingstatus, ses)
+         pregparitycnt, R1smokingstatus, ses,
+         x_parous, x_parity, x_age_menarche, x_ocstatus, x_breastfed, x_age_birth_1)
 
 
 
@@ -859,12 +860,27 @@ check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
 ### Parity ---------------------------------------------------------
 # binary y/n - ever parous
 
+#processed in script 2 (functions from MSc data processing)
+dev_an_df %>% tabyl(x_parous)
 
+dev_an_df %>% tabyl(pregparitycnt)
 
+dev_an_df %>% tabyl(x_parity)
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_parous_lab = factor(x = x_parous,
+                               levels = c(0, 1, 888),
+                               labels = c("Not parous", "Parous", "Not known")))
+
+dev_an_df %>% tabyl(d_parous_lab, x_parous)
+
+dev_an_df %>% tabyl(x_parity, d_parous_lab)
 
 ### Age at first birth -------------------------------------------------
 # categories: <20, 20-24, 25-29, 30-34, >=35
+
+dev_an_df %>% tabyl(x_age_birth_1) # 777 not parous, 888 not known
+
 
 
 
@@ -872,7 +888,26 @@ check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
 ### Number parous pregnancies ----------------------------------------------------
 # categories: 1, 2, 3, >=4 
 
+#processed in script 2 (functions from MSc data processing)
+dev_an_df %>% tabyl(pregparitycnt)
 
+dev_an_df %>% tabyl(x_parity)
+
+
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_parity = x_parity,
+         # categorical according to Louise
+         d_parity_cat = case_when(d_parity == 0 ~ 0,
+                                  d_parity == 1 ~ 1,
+                                  d_parity == 2 ~ 2,
+                                  d_parity == 3 ~ 3,
+                                  d_parity >= 4 ~ 4),
+         d_parity_lab = factor(x = d_parity_cat,
+                               level = c(0, 1, 2, 3, 4),
+                               labels = c("0", "1", "2", "3", ">=4")
+                               )
+         )
 
 
 
