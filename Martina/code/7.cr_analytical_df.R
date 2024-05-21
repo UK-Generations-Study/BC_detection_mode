@@ -140,6 +140,18 @@ hist(dev_an_df$diagage)
 dev_an_df %>% tabyl(AgeatEntry)
 hist(dev_an_df$AgeatEntry)
 
+
+### Age at mammo ------------------------------------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_mammo = if_else(is.na(MammoDat_f) | is.na(date_birth), 888, trunc(as.numeric(MammoDat_f - date_birth)/365.25)
+                               )
+         )
+
+dev_an_df %>% tabyl(d_age_mammo)
+
+View(dev_an_df[,c("tcode", "MammoDat_f", "date_birth", "d_age_mammo")])
+
 ## TUMOUR CHARACTERISTICS -------------------------------------------
 
 ### Invasive status ----------------------------------------------------
@@ -414,8 +426,8 @@ dev_an_df %>% tabyl(her2_Status)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_her2_status = as.factor(case_when(her2_Status == "Negative" ~ 0,
-                                           her2_Status == "Positive" | her2_Status == "Borderline" ~ 1,
-                                           is.na(her2_Status) ~ 888
+                                           her2_Status == "Positive"  ~ 1,
+                                           is.na(her2_Status) | her2_Status == "Borderline" ~ 888
   )
   ),
   d_her2_status = ordered(x = d_her2_status, c("0", "1", "888")
@@ -529,7 +541,7 @@ dev_an_df <- dev_an_df %>%
                                      d_bmi_entry >= 18.5 & d_bmi_entry <= 24.9 ~ 2, # 18.5 to 24.9
                                      d_bmi_entry >= 25 & d_bmi_entry <= 29.9 ~ 3, # 25 to 29.9 
                                      d_bmi_entry >= 30 & d_bmi_entry < 888 ~ 4, # >= 30
-                                     d_bmi_entry == 888 ~ 888, # not known
+                                     d_bmi_entry c(888, 989) ~ 888, # not known
                                      TRUE ~ 888
                                      ),
          d_bmi_entry_cat = ordered(x = d_bmi_entry_cat, c("1", "2", "3", "4", "888")),
@@ -995,10 +1007,74 @@ dev_an_df %>% tabyl(d_R1smokingstatus_lab)
 
 
 ## MAMMO DENSITY ----------------------------------------------------
-# quartiles
+
+summary(dev_an_df$mean_density)
+dev_an_df %>% tabyl(MD_avail)
+dev_an_df %>% tabyl(mean_density, MD_avail)
+
+## recode MD avail variable
+
+dev_an_df <- dev_an_df %>% 
+  mutate(MD_avail = case_when(MD_avail == "Y" ~ 1,
+                              is.na(MD_avail) ~ 0
+                              ),
+         MD_avail_lab = factor(x = MD_avail,
+                               levels = 0:1,
+                               labels = c("No", "Yes")
+                               )
+         )
+
+dev_an_df %>% tabyl(MD_avail, MD_avail_lab)
+
+## recode mean density - if missing then 888 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(md = case_when(MD_avail == 1 ~ mean_density,
+                        MD_avail == 0 ~ 888 )) # all missing should be those without available density, if NA present then there is an error somewhere
+
+summary(dev_an_df$md)
+
+check <- dev_an_df %>% tabyl(md, MD_avail)
+str(dev_an_df$md)
+
+### quartiles --------------------------------------------------------------------
+
+# mean_density variable has missing as NA, md variable has missing as 888 
+# there should be the same number of missing as the 888s in MD, if more there is an error 
 
 
+# not coding missing as 888 here as it wasn't working properly and may introduce error in analysis
+dev_an_df <- dev_an_df %>% 
+  mutate(
+         md_qrt = ntile(mean_density, 4)
+  ) %>%
+  group_by(md_qrt
+  ) %>%
+  mutate(md_qrt_m = round(median(mean_density), 2)
+  ) %>%
+  ungroup()
 
+
+dev_an_df %>% tabyl(md_qrt)
+dev_an_df %>% tabyl(md_qrt_m)
+
+check <- dev_an_df %>% tabyl(md, md_qrt)
+
+dev_an_df %>% 
+  group_by(md_qrt) %>% 
+  mean_table(mean_density)
+
+
+### high/low density 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(md_bin = case_when(md_qrt == 1 ~ "Low",
+                            md_qrt %in% c(3,4) ~ "High",
+                            md_qrt == 2 ~ "Normal",
+                            is.na(md_qrt) ~ "Not known"))
+
+dev_an_df %>% tabyl(md_bin)
+dev_an_df %>% tabyl(md_bin, md_qrt)
 
 # df summary -----------------------------------------------------------
 stview(dfSummary(dev_an_df))
