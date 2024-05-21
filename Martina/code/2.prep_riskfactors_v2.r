@@ -407,7 +407,7 @@ riskfactors_df <- riskfactors_df %>%
   add_parity_data()
 
 
-riskfactors_df <- riskfactors_df1 %>% 
+riskfactors_df <- riskfactors_df %>% 
   mutate(tcode = x_tcode,
          date_birth = x_dob_shifted,
          date_entry = x_date_entry_shifted)

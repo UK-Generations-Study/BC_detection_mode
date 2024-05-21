@@ -48,7 +48,8 @@ rf_vars <- riskfactors_df %>%
          menarcheage, ocstatus,
          PhysMetTotal, PhysMetRecTot,
          pregparitycnt, R1smokingstatus, ses,
-         x_parous, x_parity, x_age_menarche, x_ocstatus, x_breastfed, x_age_birth_1)
+         x_parous, x_parity, x_age_menarche, x_ocstatus, x_breastfed, x_age_birth_1, x_age_birth_last,
+         x_breastfeeding_duration, x_breastfed)
 
 
 
@@ -669,11 +670,39 @@ dev_an_df %>% tabyl(AgeatEntry, d_R1menopause_lab3)
 
 ### Age at menopause -----------------------------------------------
 # categories: <=50, 51-53, >53
-# COME BACK TO THIS - DISCUSS WITH MICHAEL ---------------------------
+
 dev_an_df %>% tabyl(meno_age_est)
 str(dev_an_df$meno_age_est)
 
+# from MSc data functions: 
 
+# x_age_menopause
+# will crosscheck against age at last birth variable - has to be older
+# could potentially recalculate meno_age_est using x_age_birth_last as a guide
+# potential issues with assuming 888 for last birth makes age_meno_est valid - could have a later age for birth but due to parity discrepancies not recorded it. Currently treating this as a downside of the method, could remove.
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_menopause = case_when(d_R1menopause %in% c(1, 3) & x_age_birth_last < 700 & x_age_birth_last < meno_age_est & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth known and before meno_age_est
+                                     d_R1menopause %in% c(1, 3) & x_age_birth_last %in% c(777,888) & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth not known/NA so assume age is valid
+                                     d_R1menopause %in% c(1, 3) ~ 999, # Postmeno, but due to conditions above, not able to calculate the age
+                                     d_R1menopause %in% c(9, 888) ~ 888, # Menopausal status not known - could use a different error code? Different levels of unknown for this variable 
+                                     TRUE ~ 777), # Pre menopausal 
+         d_age_menopause_cat = case_when(d_age_menopause <= 50 ~ 1,
+                                         d_age_menopause > 50 & d_age_menopause <= 53 ~ 2,
+                                         d_age_menopause > 53 & d_age_menopause < 700 ~ 3,
+                                         d_age_menopause == 777 ~ 777,
+                                         d_age_menopause %in% c(888, 999) ~ 888,
+                                         TRUE ~ NA),
+         d_age_menopause_lab = factor(x = d_age_menopause_cat,
+                                      levels = c(1, 2, 3, 777, 888),
+                                      labels = c("<50", "51 to 53", ">53", "Pre-menopausal", "Not known"))
+  )
+
+
+dev_an_df %>% tabyl(d_age_menopause)
+dev_an_df %>% tabyl(d_age_menopause, d_R1menopause_lab6)
+dev_an_df %>% tabyl(d_age_menopause_lab)
+dev_an_df %>% tabyl(d_age_menopause_cat)
+dev_an_df %>% tabyl(d_age_menopause_lab, d_age_menopause_cat)
 
 ### OC status --------------------------------------------------------
 # categories: never, former, current 
@@ -910,6 +939,32 @@ dev_an_df <- dev_an_df %>%
          )
 
 
+### Ever breast fed -----------------------------------------------------------------
+
+# Note - derived in script 2 in parity processing functions 
+# entry status - see comments in script 2 for details
+
+dev_an_df %>% tabyl(x_breastfed)
+str(dev_an_df$x_breastfed)
+
+# rename for consistency with analytical variables:
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_breastfed = x_breastfed)
+
+
+
+### Duration of breastfeeding -----------------------------------------------------
+# cut off at entry so baseline
+# Cumulative duration of breastfeeding weeks for all parous (>=26 weeks) pregnancies (calculated up to entry date)
+# Note - derived in script 2 in parity processing functions 
+
+dev_an_df %>% tabyl(x_breastfeeding_duration)
+str(dev_an_df$x_breastfeeding_duration)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_duration = x_breastfeeding_duration)
+
 
 ### SES -------------------------------------------------------------
 # categories: Affluent achievers, rising prosperity, comfortable communities, 
@@ -935,8 +990,14 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_R1smokingstatus)
 dev_an_df %>% tabyl(d_R1smokingstatus_lab)
 
+
+
+
+
 ## MAMMO DENSITY ----------------------------------------------------
 # quartiles
+
+
 
 
 # df summary -----------------------------------------------------------
