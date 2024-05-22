@@ -172,6 +172,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_inv_status, d_inv_status_lab)
 dev_an_df %>% tabyl(d_inv_status_lab, breast_cancer_invasive)
 dev_an_df %>% tabyl(d_inv_status_lab, breast_cancer_dcis)
+dev_an_df %>% tabyl(d_inv_status_lab)
 
 ### Grade ----------------------------------------------------------------
 # categories: 1,2,3,n/k
@@ -241,25 +242,27 @@ dev_an_df %>% tabyl(stage)
 dev_an_df %>% tabyl(stage, d_inv_status_lab)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_stage = as.factor(case_when(stage == "0" ~ 0,
-                                       startsWith(stage, "1") ~ 1,
-                                       startsWith(stage, "2") ~ 2, 
-                                       startsWith(stage, "3") ~ 3,
-                                       startsWith(stage, "4") ~ 4,
-                                       stage == "II" ~ 2,
-                                       stage == "III" ~ 3, 
+  mutate(d_stage = as.factor(case_when(stage == "0" ~ 0, # most dcis
+                                       d_inv_status == 1 & startsWith(stage, "1") ~ 1,
+                                       d_inv_status == 1 & startsWith(stage, "2") ~ 2, 
+                                       d_inv_status == 1 & startsWith(stage, "3") ~ 3,
+                                       d_inv_status == 1 & startsWith(stage, "4") ~ 4,
+                                       d_inv_status == 1 & stage == "II" ~ 2,
+                                       d_inv_status == 1 & stage == "III" ~ 3,
+                                       d_inv_status == 0 & (!is.na(stage) | stage !=0) ~ 999, # dcis
                                        is.na(stage) ~ 888 # missing
                                        )
                              ),
-         d_stage = ordered(x = d_stage, c("0", "1", "2", "3", "4", "888"))
+         d_stage = ordered(x = d_stage, c("0", "1", "2", "3", "4", "888", "999"))
          )
   
 
 dev_an_df %>% tabyl(stage, d_stage)
 dev_an_df %>% tabyl(d_stage)
+dev_an_df %>% tabyl(d_stage, d_inv_status)
 
 
-### Stage - trick -------------------------------------------------------
+# stage is not in the model so no trick needed
 
 
 ### Morphology -----------------------------------------------------------
@@ -339,6 +342,26 @@ dev_an_df %>% tabyl(d_morph7_lab)
 dev_an_df %>% tabyl(d_morph7_lab, d_morph7)
 dev_an_df %>% tabyl(d_morphology_lab, d_morph7_lab)
 
+dev_an_df %>% tabyl(d_morphology_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_morph7_lab, d_inv_status_lab)
+
+### Morphology - trick ------------------------------------------------------
+# recode dcis that are not already in ductal to be in ductal (refernce group 1)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_morph7_tr = case_when(as.numeric(d_inv_status) == 0 & as.numeric(d_morph7) >= 2 ~ 1,
+                                 TRUE ~ as.numeric(d_morph7)
+                                 ),
+         d_morph7_tr_lab = factor(x = d_morph7_tr,
+                               levels = c(1, 2, 3, 4, 5, 6, 7),
+                               labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other"))
+         )
+
+
+dev_an_df %>% tabyl(d_morph7_tr, d_inv_status_lab)
+dev_an_df %>% tabyl(d_morph7_tr_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_morph7_tr_lab)
+
 ### n of positive nodes ----------------------------------------------------
 # categories: 0, 1-3, 4-10, >10, n/k
 # L's notes said this should be replaced by binary nodes variable - below
@@ -380,6 +403,25 @@ dev_an_df %>% tabyl(d_pos_nodes, d_pos_nodes_lab)
 
 dev_an_df %>% tabyl(d_pos_nodes_n)
 
+### positive nodes - trick ---------------------------------------------------
+
+# recode dcis to be 0 (no)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_pos_nodes_tr = case_when(as.character(d_inv_status) == "0" & as.character(d_pos_nodes) == "1" ~ "0",
+                                    TRUE ~ as.character(d_pos_nodes)),
+         d_pos_nodes_tr = ordered(x = d_pos_nodes_tr, levels = c("0", "1", "888")),
+         d_pos_nodes_tr_lab = factor(x = d_pos_nodes_tr,
+                                     levels = c("0", "1", "888"),
+                                     labels = c("Negative", "Positive", "Not known"))
+         )
+
+dev_an_df %>% tabyl(d_pos_nodes_tr)
+dev_an_df %>% tabyl(d_pos_nodes_tr_lab)
+dev_an_df %>% tabyl(d_pos_nodes_tr_lab, d_pos_nodes_lab)
+dev_an_df %>% tabyl(d_pos_nodes_tr_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_pos_nodes_lab, d_inv_status_lab)
+
 ### Size -------------------------------------------------------------
 # categories: <21, 21-50, >50, n/k
 dev_an_df %>% tabyl(Tsize)
@@ -418,6 +460,32 @@ dev_an_df %>% tabyl(Tsize, d_tumour_size) %>%
 dev_an_df %>% tabyl(d_tumour_size_n, d_tumour_size) %>% 
   adorn_totals()
 
+dev_an_df %>% tabyl(d_tumour_size_lab)
+
+### Size - trick ---------------------------------------------------------
+
+# make dcis to be all in <21 category if not missing 
+
+dev_an_df %>% tabyl(d_tumour_size_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_tumour_size)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_tmsize_tr = case_when(as.character(d_inv_status) == "0" & as.character(d_tumour_size) %in% c("2", "3") ~ "1", 
+                                 TRUE ~ d_tumour_size
+                                 ),
+         d_tmsize_tr = ordered(x = d_tmsize_tr, levels = c("1", "2", "3", "888")
+                               ),
+         d_tmsize_tr_lab = factor(x = d_tmsize_tr,
+                                  levels = c(1, 2, 3, 888),
+                                  labels = c("<21", "21-50", ">50", "Not known"))
+         )
+
+dev_an_df %>% tabyl(d_tmsize_tr, d_tumour_size)
+dev_an_df %>% tabyl(d_tmsize_tr, d_inv_status_lab)
+dev_an_df %>% tabyl(d_tmsize_tr)
+dev_an_df %>% tabyl(d_tmsize_tr_lab)
+
+
 ### ER status ---------------------------------------------------------
 # categories: negative, positive, n/k 
 dev_an_df %>% tabyl(er_Status)
@@ -438,6 +506,29 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_er_status)
 dev_an_df %>% tabyl(d_er_status, d_er_status_lab)
 dev_an_df %>% tabyl(er_Status, d_er_status_lab)
+
+### ER status - trick --------------------------------------------------------
+# recode all dcis to be positive
+
+# Louise has coded all missin dcis as positive as well - is that right? 
+# also all missing dicis to positive - need to check that 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_er_tr = case_when(as.character(d_inv_status) == "0" & as.character(d_er_status) %in% c("0", "888") ~ "1", 
+                             TRUE ~ d_er_status
+  ),
+  d_er_tr = ordered(x = d_er_tr, c("0", "1", "888")
+  ),
+  d_er_tr_lab = factor(x = d_er_tr,
+                           levels = c(0, 1, 888),
+                           labels = c("Negative", "Positive", "Not known"))
+  )
+
+dev_an_df %>% tabyl(d_er_tr)
+dev_an_df %>% tabyl(d_er_tr, d_er_tr_lab)
+dev_an_df %>% tabyl(d_er_tr_lab, d_er_status_lab)
+dev_an_df %>% tabyl(d_er_tr_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_er_tr_lab)
 
 ### PR status --------------------------------------------------------
 # categories: negative, positive, n/k 
@@ -461,6 +552,27 @@ dev_an_df %>% tabyl(d_pr_status, d_pr_status_lab)
 dev_an_df %>% tabyl(pr_Status, d_pr_status_lab)
 
 
+### PR status - trick --------------------------------------------------------
+# recode all dcis to be positive
+
+# Louise has coded all missin dcis as positive as well - is that right? 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_pr_tr = case_when(as.character(d_inv_status) == "0" & as.character(d_pr_status) %in% c("0", "888") ~ "1", 
+                             TRUE ~ d_pr_status
+  ),
+  d_pr_tr = ordered(x = d_pr_tr, c("0", "1", "888")
+  ),
+  d_pr_tr_lab = factor(x = d_pr_tr,
+                       levels = c(0, 1, 888),
+                       labels = c("Negative", "Positive", "Not known"))
+  )
+
+dev_an_df %>% tabyl(d_pr_tr)
+dev_an_df %>% tabyl(d_pr_tr, d_pr_tr_lab)
+dev_an_df %>% tabyl(d_pr_tr_lab, d_pr_status_lab)
+dev_an_df %>% tabyl(d_pr_tr_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_pr_tr_lab)
 
 
 
@@ -486,6 +598,29 @@ dev_an_df %>% tabyl(d_her2_status)
 dev_an_df %>% tabyl(d_her2_status, d_her2_status_lab)
 dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 
+
+### HER2 status - trick --------------------------------------------------
+# recode all dcis to be negative if not missing
+
+# Louise has coded all missin dcis as positive as well - is that right? 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_her2_tr = case_when(as.character(d_inv_status) == "0" & as.character(d_her2_status) %in% c("0", "888") ~ "1", 
+                             TRUE ~ d_her2_status
+  ),
+  d_her2_tr = ordered(x = d_her2_tr, c("0", "1", "888")
+  ),
+  d_her2_tr_lab = factor(x = d_her2_tr,
+                       levels = c(0, 1, 888),
+                       labels = c("Negative", "Positive", "Not known"))
+  )
+
+dev_an_df %>% tabyl(d_her2_tr)
+dev_an_df %>% tabyl(d_her2_tr, d_her2_tr_lab)
+dev_an_df %>% tabyl(d_her2_tr_lab, d_her2_status_lab)
+dev_an_df %>% tabyl(d_her2_tr_lab)
+dev_an_df %>% tabyl(d_her2_status_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_her2_tr_lab, d_inv_status_lab)
 
   
 ## RISK FACTORS -----------------------------------------------------
