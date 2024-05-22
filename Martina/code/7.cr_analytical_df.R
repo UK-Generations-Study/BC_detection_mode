@@ -718,16 +718,16 @@ dev_an_df %>% tabyl(d_bmi_entry)
 # categorical prep
 dev_an_df <- dev_an_df %>% 
   mutate(d_bmi_entry_cat = case_when(d_bmi_entry < 18.5 ~ 1, # < 18.5
-                                     d_bmi_entry >= 18.5 & d_bmi_entry <= 24.9 ~ 2, # 18.5 to 24.9
-                                     d_bmi_entry >= 25 & d_bmi_entry <= 29.9 ~ 3, # 25 to 29.9 
+                                     d_bmi_entry >= 18.5 & d_bmi_entry < 25 ~ 2, # 18.5 to 25
+                                     d_bmi_entry >= 25 & d_bmi_entry < 30 ~ 3, # 25 to 30
                                      d_bmi_entry >= 30 & d_bmi_entry < 888 ~ 4, # >= 30
-                                     d_bmi_entry c(888, 989) ~ 888, # not known
+                                     d_bmi_entry %in% c(888, 989) ~ 888, # not known
                                      TRUE ~ 888
                                      ),
          d_bmi_entry_cat = ordered(x = d_bmi_entry_cat, c("1", "2", "3", "4", "888")),
          d_bmi_entry_lab = factor(x = d_bmi_entry_cat,
                                   levels = c(1, 2, 3, 4, 888),
-                                  labels = c("<18.5", "18.5 to 24.9", "25 to 29.9", ">=30", "Not known"))
+                                  labels = c("<18.5", "18.5 to 25", "25 to 30", ">=30", "Not known"))
          )
 
 dev_an_df %>% tabyl(d_bmi_entry_cat)
@@ -780,22 +780,7 @@ dev_an_df %>% tabyl(fambrcaN, fambrca) %>%
 dev_an_df %>% tabyl(d_fambrcaN, d_fambrca) %>% 
   adorn_totals()
 
-### HRT status -------------------------------------------------------
-# categories: never, former, current 
-dev_an_df %>% tabyl(hrtstatus)
-str(dev_an_df$hrtstatus)
 
-dev_an_df <- dev_an_df %>% 
-  mutate(d_R1hrtstatus = case_when(hrtstatus %in% c(888,999,9999) | is.na(hrtstatus) ~ 888, # Merging error values into one - potential loss of information but also easier to track
-                                   TRUE ~ hrtstatus),
-         d_R1hrtstatus_lab = factor(x = d_R1hrtstatus,
-                                    levels = c(0, 1, 2, 888),
-                                    labels = c("Never", "Former", "Current", "Not known"))
-    )
-
-dev_an_df %>% tabyl(d_R1hrtstatus)
-dev_an_df %>% tabyl(d_R1hrtstatus, d_R1hrtstatus_lab)
-dev_an_df %>% tabyl(AgeatEntry, d_R1hrtstatus)
 
 ### Age at menarche -----------------------------------------------
 # categories: <13, >=13 
@@ -854,9 +839,7 @@ dev_an_df %>% tabyl(d_R1menopause_lab6)
 dev_an_df %>% tabyl(d_R1menopause_lab3)
 dev_an_df %>% tabyl(d_R1menopause_lab6, d_R1menopause_lab3)
 
-# check with HRT - HRT should only be in menopausal women
 
-dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
 dev_an_df %>% tabyl(AgeatEntry, d_R1menopause_lab3)
 
 
@@ -896,6 +879,60 @@ dev_an_df %>% tabyl(d_age_menopause_lab)
 dev_an_df %>% tabyl(d_age_menopause_cat)
 dev_an_df %>% tabyl(d_age_menopause_lab, d_age_menopause_cat)
 
+
+### age at menopause - trick --------------------------------------------------
+# pre menopausal to go into < 50 group 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_meno_tr = case_when(d_R1menopause_cat3 == 2 ~ 1,
+                                   TRUE ~ d_age_menopause_cat),
+         d_age_meno_tr_lab = factor(x = d_age_meno_tr,
+                                 levels = c(1, 2, 3, 888),
+                                 labels = c("<50", "51 to 53", ">53", "Not known")))
+
+dev_an_df %>% tabyl(d_age_meno_tr)
+dev_an_df %>% tabyl(d_age_meno_tr, d_R1menopause_lab3)
+dev_an_df %>% tabyl(d_age_meno_tr_lab)
+
+
+### HRT status -------------------------------------------------------
+# categories: never, former, current 
+dev_an_df %>% tabyl(hrtstatus)
+str(dev_an_df$hrtstatus)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1hrtstatus = case_when(hrtstatus %in% c(888,999,9999) | is.na(hrtstatus) ~ 888, # Merging error values into one - potential loss of information but also easier to track
+                                   d_R1menopause_cat3 == 2 ~ 777, # pre menopausal
+                                   TRUE ~ hrtstatus),
+         d_R1hrtstatus_lab = factor(x = d_R1hrtstatus,
+                                    levels = c(0, 1, 2, 777, 888),
+                                    labels = c("Never", "Former", "Current", "Pre-menopausal", "Not known"))
+  )
+
+dev_an_df %>% tabyl(d_R1hrtstatus)
+dev_an_df %>% tabyl(d_R1hrtstatus, d_R1hrtstatus_lab)
+dev_an_df %>% tabyl(AgeatEntry, d_R1hrtstatus)
+# HRT should only be in menopausal women
+
+dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
+
+### HRT status - trick ------------------------------------------------------------
+# recode pre-menopausal as never 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 2 ~ 0,
+                                   TRUE ~ d_R1hrtstatus),
+         d_R1hrt_tr_lab = factor(x = d_R1hrt_tr,
+                                    levels = c(0, 1, 2, 888),
+                                    labels = c("Never", "Former", "Current", "Not known")))
+
+dev_an_df %>% tabyl(d_R1hrt_tr)
+dev_an_df %>% tabyl(d_R1hrt_tr_lab, d_R1menopause_lab3)
+dev_an_df %>% tabyl(d_R1hrt_tr_lab)
+
+
+
+
 ### OC status --------------------------------------------------------
 # categories: never, former, current 
 dev_an_df %>% tabyl(ocstatus)
@@ -913,6 +950,26 @@ dev_an_df %>% tabyl(d_ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab)
 dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
+
+
+### OC status - trick -----------------------------------------------------
+# recode post-menopausal as never 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_oc_tr = case_when(d_R1menopause_cat3 == 1 ~ 0,
+                                    TRUE ~ d_ocstatus),
+         d_oc_tr_lab = factor(x = d_oc_tr,
+                                     levels = c(0, 1, 2, 888),
+                                     labels = c("Never", "Former", "Current", "Not known")))
+
+dev_an_df %>% tabyl(d_oc_tr)
+dev_an_df %>% tabyl(d_oc_tr_lab, d_R1menopause_lab3)
+dev_an_df %>% tabyl(d_oc_tr_lab)
+
+dev_an_df %>% tabyl(d_ocstatus_lab, d_R1menopause_lab3)
+
+
+
 
 ### Physical activity total --------------------------------------------------
 
@@ -1102,7 +1159,7 @@ dev_an_df %>% tabyl(x_parity, d_parous_lab)
 
 dev_an_df %>% tabyl(x_age_birth_1) # 777 not parous, 888 not known
 
-
+# ADD CATEGORICAL
 
 
 
@@ -1130,6 +1187,9 @@ dev_an_df <- dev_an_df %>%
                                )
          )
 
+dev_an_df %>% tabyl(d_parity)
+dev_an_df %>% tabyl(d_parity_cat)
+dev_an_df %>% tabyl(d_parity_lab)
 
 ### Ever breast fed -----------------------------------------------------------------
 
