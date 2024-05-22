@@ -150,7 +150,7 @@ dev_an_df <- dev_an_df %>%
 
 dev_an_df %>% tabyl(d_age_mammo)
 
-View(dev_an_df[,c("tcode", "MammoDat_f", "date_birth", "d_age_mammo")])
+#View(dev_an_df[,c("tcode", "MammoDat_f", "date_birth", "d_age_mammo")])
 
 ## TUMOUR CHARACTERISTICS -------------------------------------------
 
@@ -176,23 +176,64 @@ dev_an_df %>% tabyl(d_inv_status_lab, breast_cancer_dcis)
 ### Grade ----------------------------------------------------------------
 # categories: 1,2,3,n/k
 
+# this wrongly includes dcis
+
 dev_an_df %>% tabyl(grade)
 
 dev_an_df %>% tabyl(grade, d_inv_status_lab)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_grade = as.factor(case_when(grade %in% c("1", "low", "Low") ~ 1,
-                             grade %in% c("2", "intermediate", "Intermediate") ~ 2,
-                             grade %in% c("3", "high", "High") ~ 3,
-                             grade %in% c("4", "7") ~ 777, # invalid value
-                             is.na(grade) ~ 888 # missing
-                             )),
-         d_grade = ordered(x = d_grade, c("1", "2", "3", "777", "888"))
+  mutate(d_grade = case_when(
+                            d_inv_status == 1 & grade %in% c("1", "low", "Low") ~ 1,
+                            d_inv_status == 1 & grade %in% c("2", "intermediate", "Intermediate") ~ 2,
+                            d_inv_status == 1 & grade %in% c("3", "high", "High") ~ 3,
+                            d_inv_status == 0 & !is.na(grade) ~ 999, # dcis grade not valid 
+                            grade %in% c("4", "7") ~ 777, # invalid value
+                            is.na(grade) ~ 888 # missing
+                             ),
+         d_grade = ordered(x = d_grade, c("1", "2", "3", "777", "888", "999"))
          )
 
 
 dev_an_df %>% tabyl(grade, d_grade)
-dev_an_df %>% tabyl(d_grade)
+dev_an_df %>% tabyl(d_grade, d_inv_status_lab)
+
+
+### Grade - trick ---------------------------------------------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_grade_tr = case_when(as.character(d_grade) %in% c("1", "999") ~ "1", # making dcis part of reference group (grade 1)
+                                as.character(d_grade) %in% c("888", "777") ~ "888", # not known
+                                TRUE ~ as.character(d_grade)
+                                )
+         )
+
+dev_an_df %>% tabyl(d_grade_tr, d_grade)
+dev_an_df %>% tabyl(d_grade_tr)
+
+
+# Louises's logic from stata using raw grade variable 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_grade2 = case_when(
+     grade %in% c("1", "low", "Low") ~ 1,
+     grade %in% c("2", "intermediate", "Intermediate") ~ 2,
+    grade %in% c("3", "high", "High") ~ 3,
+    grade %in% c("4", "7") ~ 999, # invalid value
+    is.na(grade) ~ NA)) # missing
+
+dev_an_df %>% tabyl(d_grade2)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_grade_L = if_else(d_inv_status == 0 & d_grade2 >= 0 & d_grade2 <= 999, 1, d_grade2))
+
+dev_an_df %>% tabyl(d_grade_L)
+dev_an_df %>% tabyl(d_grade_L, d_grade2)
+
+dev_an_df %>% tabyl(d_grade_L, d_grade_tr) %>% 
+  adorn_totals() %>% 
+  adorn_title()  
+  
 
 ### Stage -----------------------------------------------------------------
 dev_an_df %>% tabyl(stage)
@@ -216,6 +257,10 @@ dev_an_df <- dev_an_df %>%
 
 dev_an_df %>% tabyl(stage, d_stage)
 dev_an_df %>% tabyl(d_stage)
+
+
+### Stage - trick -------------------------------------------------------
+
 
 ### Morphology -----------------------------------------------------------
 # categories: ductal, lobular, mixed, mucinous, other 
@@ -312,10 +357,10 @@ dev_an_df %>% tabyl(N)
 dev_an_df <- dev_an_df %>% 
   mutate(d_pos_nodes_n = case_when(nodes_pos == "Y" ~ "777", # unlikely value
                                    is.na(nodes_pos) ~ "888", # is missing
-                                   TRUE ~ nodes_pos
+                                   TRUE ~ nodes_pos # numeric
                                    
                                       ) ,
-         d_pos_nodes_n = as.numeric(d_pos_nodes_n) ,
+         d_pos_nodes_n = as.numeric(d_pos_nodes_n) , # probably could have done this as part of the above code
 
          d_pos_nodes = as.factor(case_when(d_pos_nodes_n == 0 ~ 0,
                                            d_pos_nodes_n >= 1 & d_pos_nodes_n < 777 ~ 1,
