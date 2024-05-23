@@ -1159,7 +1159,39 @@ dev_an_df %>% tabyl(x_parity, d_parous_lab)
 
 dev_an_df %>% tabyl(x_age_birth_1) # 777 not parous, 888 not known
 
-# ADD CATEGORICAL
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_agebirth1_cat = case_when(x_age_birth_1 < 20 ~ 1,
+                                     x_age_birth_1 >= 20 & x_age_birth_1 < 25 ~ 2,
+                                     x_age_birth_1 >= 25 & x_age_birth_1 < 30 ~ 3,
+                                     x_age_birth_1 >= 30 & x_age_birth_1 < 35 ~ 4,
+                                     x_age_birth_1 >= 35 & x_age_birth_1 < 777 ~ 5,
+                                     x_age_birth_1 == 777 ~ 777, # non parous
+                                     x_age_birth_1 == 888 ~ 888,
+                                     ),
+         d_agebirth1_lab = factor(x = d_agebirth1_cat,
+                                  levels = c(1, 2, 3, 4, 5, 777, 888),
+                                  labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35", "Non-parous", "Not known"))
+         )
+  
+dev_an_df %>% tabyl(d_agebirth1_cat, d_agebirth1_lab)
+dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
+
+### Age at first birth - trick -------------------------------------------
+# recode all non parous to be in the lowest age group - seems wrong but doing to replicate L's analysis 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_agebirth1_tr = case_when(d_agebirth1_cat == 777 ~ 1,
+                             TRUE ~ d_agebirth1_cat),
+         d_agebirth1_tr_lab = factor(x = d_agebirth1_tr,
+                              levels = c(1, 2, 3, 4, 5, 888),
+                              labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35", "Not known")))
+
+dev_an_df %>% tabyl(d_agebirth1_tr)
+dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_parous_lab)
+dev_an_df %>% tabyl(d_agebirth1_tr_lab)
+
+dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_agebirth1_lab)
 
 
 
@@ -1190,6 +1222,23 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_parity)
 dev_an_df %>% tabyl(d_parity_cat)
 dev_an_df %>% tabyl(d_parity_lab)
+
+### N parous pregnancies - trick -------------------------------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_parity_tr = case_when(d_parity_cat == 0 ~ 1,
+                                    TRUE ~ d_parity_cat),
+         d_parity_tr_lab = factor(x = d_parity_tr,
+                                     levels = c(1, 2, 3, 4),
+                                     labels = c("1", "2", "3", ">=4")))
+
+dev_an_df %>% tabyl(d_parity_tr)
+dev_an_df %>% tabyl(d_parity_tr_lab, d_parous_lab)
+dev_an_df %>% tabyl(d_parity_tr_lab)
+
+dev_an_df %>% tabyl(d_parity_tr_lab, d_parity_lab)
+
+
 
 ### Ever breast fed -----------------------------------------------------------------
 
