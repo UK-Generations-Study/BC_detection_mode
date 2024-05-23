@@ -36,7 +36,8 @@ ca_vars <- cancer_df %>%
 ## select variables from mean density ----------------------------
 
 # selecting all as for now as compiled in script 6
-density_vars <- mean_density_df 
+density_vars <- mean_density_df %>% 
+  select(tcode, MammoDat_f, MD_avail, mean_density, sd_density)
   
 ## select variables from risk factor -------------------------------
 
@@ -114,7 +115,7 @@ dev_an_df <- dev_an_df %>%
                            d_MDtoBC_y >=3 & d_MDtoBC_y <6 ~ 2,
                            d_MDtoBC_y >= 6 ~ 3,
                            TRUE ~ NA),
-    d_MDtoBC_clab = factor(
+    d_MDtoBC_lab = factor(
       x = d_MDtoBC_cat, 
       levels = 1:3,
       labels = c("<3 years", "3-5 years", ">=6 years")
@@ -122,7 +123,7 @@ dev_an_df <- dev_an_df %>%
     )
 
 dev_an_df %>% tabyl(d_MDtoBC_y, d_MDtoBC_cat)
-dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_clab)
+dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_lab)
 
 #View(dev_an_df[,c("tcode", "diagdate", "MammoDat_f", "d_MDtoBC_y",  "d_MDtoBC_cat", "d_MDtoBC_clab")])
 
@@ -164,7 +165,7 @@ dev_an_df <- dev_an_df %>%
          d_inv_status_lab = factor(
            x = d_inv_status,
            levels = 0:1,
-           labels = c("In situ", "Invasive")
+           labels = c("DCIS", "Invasive")
          )
          )
 
@@ -189,22 +190,26 @@ dev_an_df <- dev_an_df %>%
                             d_inv_status == 1 & grade %in% c("2", "intermediate", "Intermediate") ~ 2,
                             d_inv_status == 1 & grade %in% c("3", "high", "High") ~ 3,
                             d_inv_status == 0 & !is.na(grade) ~ 999, # dcis grade not valid 
-                            grade %in% c("4", "7") ~ 777, # invalid value
-                            is.na(grade) ~ 888 # missing
+                            is.na(grade) |  grade %in% c("4", "7") ~ 888 # missing
                              ),
-         d_grade = ordered(x = d_grade, c("1", "2", "3", "777", "888", "999"))
+         d_grade = ordered(x = d_grade, c("1", "2", "3", "888", "999")
+                           ),
+         d_grade_lab = factor(x = d_grade,
+                              levels = c(1, 2, 3, 999, 888),
+                              labels = c("1", "2", "3", "DCIS", "Not known"))
          )
 
 
 dev_an_df %>% tabyl(grade, d_grade)
 dev_an_df %>% tabyl(d_grade, d_inv_status_lab)
+dev_an_df %>% tabyl(d_grade_lab)
 
 
 ### Grade - trick ---------------------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_grade_tr = case_when(as.character(d_grade) %in% c("1", "999") ~ "1", # making dcis part of reference group (grade 1)
-                                as.character(d_grade) %in% c("888", "777") ~ "888", # not known
+                                as.character(d_grade) %in% c("888") ~ "888", # not known
                                 TRUE ~ as.character(d_grade)
                                 )
          )
@@ -1099,9 +1104,10 @@ dev_an_df <- dev_an_df %>%
   ) %>% 
   group_by(d_R1physmet_leis_quart
   ) %>% 
-  mutate(d_R1physmet_leis_quart_m = case_when(d_R1physmet_leisure == 8888 ~ 888,
+  mutate(d_R1physmet_leis_quart_m = as.factor(case_when(d_R1physmet_leisure == 8888 ~ 888,
                                          d_R1physmet_leisure != 8888 ~ round(median(d_R1physmet_leisure), 2),
-                                         TRUE ~ NA)
+                                         TRUE ~ NA)),
+         
   ) %>% 
   ungroup() %>% 
   mutate(d_R1physmet_leis_quart = factor(
@@ -1304,27 +1310,27 @@ dev_an_df %>% tabyl(mean_density, MD_avail)
 ## recode MD avail variable
 
 dev_an_df <- dev_an_df %>% 
-  mutate(MD_avail = case_when(MD_avail == "Y" ~ 1,
+  mutate(d_md_avail = case_when(MD_avail == "Y" ~ 1,
                               is.na(MD_avail) ~ 0
                               ),
-         MD_avail_lab = factor(x = MD_avail,
+         d_md_avail_lab = factor(x = d_md_avail,
                                levels = 0:1,
                                labels = c("No", "Yes")
                                )
          )
 
-dev_an_df %>% tabyl(MD_avail, MD_avail_lab)
+dev_an_df %>% tabyl(MD_avail, d_md_avail_lab)
 
 ## recode mean density - if missing then 888 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(md = case_when(MD_avail == 1 ~ mean_density,
-                        MD_avail == 0 ~ 888 )) # all missing should be those without available density, if NA present then there is an error somewhere
+  mutate(d_md = case_when(d_md_avail == 1 ~ mean_density,
+                        d_md_avail == 0 ~ 888 )) # all missing should be those without available density, if NA present then there is an error somewhere
 
-summary(dev_an_df$md)
+summary(dev_an_df$d_md)
 
-check <- dev_an_df %>% tabyl(md, MD_avail)
-str(dev_an_df$md)
+check <- dev_an_df %>% tabyl(d_md, d_md_avail)
+str(dev_an_df$d_md)
 
 ### quartiles --------------------------------------------------------------------
 
@@ -1335,35 +1341,83 @@ str(dev_an_df$md)
 # not coding missing as 888 here as it wasn't working properly and may introduce error in analysis
 dev_an_df <- dev_an_df %>% 
   mutate(
-         md_qrt = ntile(mean_density, 4)
+         d_md_qrt = ntile(mean_density, 4)
   ) %>%
-  group_by(md_qrt
+  group_by(d_md_qrt
   ) %>%
-  mutate(md_qrt_m = round(median(mean_density), 2)
+  mutate(d_md_qrt_m = round(median(mean_density), 2)
   ) %>%
   ungroup()
 
 
-dev_an_df %>% tabyl(md_qrt)
-dev_an_df %>% tabyl(md_qrt_m)
+dev_an_df %>% tabyl(d_md_qrt)
+dev_an_df %>% tabyl(d_md_qrt_m)
 
-check <- dev_an_df %>% tabyl(md, md_qrt)
+check <- dev_an_df %>% tabyl(d_md, d_md_qrt)
 
 dev_an_df %>% 
-  group_by(md_qrt) %>% 
+  group_by(d_md_qrt) %>% 
   mean_table(mean_density)
 
 
-### high/low density 
+### high/low density --------------------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
-  mutate(md_bin = case_when(md_qrt == 1 ~ "Low",
-                            md_qrt %in% c(3,4) ~ "High",
-                            md_qrt == 2 ~ "Normal",
-                            is.na(md_qrt) ~ "Not known"))
+  mutate(d_md_cat = case_when(d_md_qrt == 1 ~ "Low",
+                            d_md_qrt == 4 ~ "High",
+                            d_md_qrt %in% c(2, 3) ~ "Normal",
+                            is.na(d_md_qrt) ~ "Not known"))
 
-dev_an_df %>% tabyl(md_bin)
-dev_an_df %>% tabyl(md_bin, md_qrt)
+dev_an_df %>% tabyl(d_md_cat)
+dev_an_df %>% tabyl(d_md_cat, d_md_qrt)
 
-# df summary -----------------------------------------------------------
+
+
+
+## MODE OF DETECTION --------------------------------------------------------------------
+
+dev_an_df %>% tabyl(ancat_dmode_v2)
+
+# rename for shorter name
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_dmode = ancat_dmode_v2)
+
+
+
+
+
+# df summary - quick descriptives for all variables
 stview(dfSummary(dev_an_df))
+
+dfSummary(dev_an_df)
+
+# 4. Comprise analytical dataset ------------------------------------------------------------
+an_df <- dev_an_df %>% 
+  select(tcode, date_birth, date_entry, diagdate, diagage, AgeatEntry, incident, side, 
+         source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, 
+         MammoDat_f, mean_density, sd_density, 
+         starts_with("d_"))
+
+stview(dfSummary(an_df))
+
+dfSummary(an_df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
