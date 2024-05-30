@@ -129,6 +129,17 @@ dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_lab)
 
 str(dev_an_df)
 
+### Time between mammo and entry -------------------------------------
+dev_an_df <- dev_an_df %>% 
+  mutate(
+    d_R1toMD = as.numeric(MammoDat_f - date_entry),
+    d_R1toMD_y = round(d_R1toMD/365.25, 1)
+    )
+
+summary(dev_an_df$d_R1toMD_y)
+hist(dev_an_df$d_R1toMD_y)
+#View(dev_an_df[,c("tcode", "date_entry", "MammoDat_f", "d_R1toMD_y")])
+
 ### Age at breast cancer diagnosis -------------------------------------
 # does not need preparing as it looks okay 
 
@@ -1381,7 +1392,8 @@ dev_an_df %>% tabyl(ancat_dmode_v2)
 # rename for shorter name
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_dmode = ancat_dmode_v2)
+  mutate(d_dmode = ancat_dmode_v2) %>% 
+  ungroup()
 
 
 
