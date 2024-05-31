@@ -1392,7 +1392,11 @@ dev_an_df %>% tabyl(ancat_dmode_v2)
 # rename for shorter name
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_dmode = ancat_dmode_v2) %>% 
+  mutate(d_dmode = ancat_dmode_v2,
+         # numeric dmode for modelling
+         d_dmode_n = case_when(d_dmode == "I" ~ 1,
+                              d_dmode == "SD" ~ 0,
+                              TRUE ~ NA)) %>% 
   ungroup()
 
 
