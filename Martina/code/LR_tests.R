@@ -14,7 +14,7 @@ an_df %>%
 
  
   
-model <-glm(d_dmode_n ~ d_grade,
+model <-glm(d_dmode_n ~ d_grade_lab,
              data = an_df,
              family = "binomial")
 summary(model)
@@ -48,7 +48,14 @@ model <- an_df %>%
 summary(model)
 
 
+df <- an_df %>% 
+  mutate(d_grade_f = as.factor(d_grade))
 
+model <-glm(d_dmode_n ~ d_grade_f,
+            data = df,
+            family = "binomial")
+
+summary(model)
 
 
 # option 2 
@@ -58,4 +65,4 @@ tidy_model <- model %>%
 
 tidy_model
 
-an_df %>% tabyl(d_bmi_entry_cat)
+an_df %>% tabyl(d_grade)
