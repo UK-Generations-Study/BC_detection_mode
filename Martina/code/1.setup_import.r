@@ -56,7 +56,9 @@ p_load(readxl,
        kableExtra, 
        DiagrammeR, 
        patchwork, 
-       summarytools 
+       summarytools,
+       writexl,
+       datadictionary
        )
 
 options(scipen=200000)

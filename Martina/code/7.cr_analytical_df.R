@@ -80,9 +80,9 @@ dev_an_df <- dev_an_df %>%
     d_R1toBC = as.numeric(diagdate - date_entry),
     d_R1toBC_y = round(d_R1toBC/365.25, 1),
     d_R1toBC_cat = case_when(d_R1toBC_y < 3 ~ 1,
-                             d_R1toBC_y >= 3 & d_R1toBC_y <= 5.9 ~ 2,
-                             d_R1toBC_y >= 6 & d_R1toBC_y <= 8.9 ~ 3,
-                             d_R1toBC_y >= 9 & d_R1toBC_y <= 11.9 ~ 4,
+                             d_R1toBC_y >= 3 & d_R1toBC_y < 6 ~ 2,
+                             d_R1toBC_y >= 6 & d_R1toBC_y < 9 ~ 3,
+                             d_R1toBC_y >= 9 & d_R1toBC_y < 12 ~ 4,
                              d_R1toBC_y >= 12 ~ 5,
                              ),
     d_R1toBC_cat = ordered(x = d_R1toBC_cat, c("1", "2", "3", "4", "5") # ordering so when factor is created it stays ordered
@@ -1400,20 +1400,21 @@ dev_an_df <- dev_an_df %>%
 
 
 # df summary - quick descriptives for all variables
-stview(dfSummary(dev_an_df))
+#stview(dfSummary(dev_an_df))
 
-dfSummary(dev_an_df)
+#dfSummary(dev_an_df)
 
 # 4. Comprise analytical dataset ------------------------------------------------------------
 an_df <- dev_an_df %>% 
   select(tcode, date_birth, date_entry, diagdate, diagage, AgeatEntry, incident, side, 
          source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, 
          MammoDat_f, mean_density, sd_density, 
-         starts_with("d_"))
+         starts_with("d_")) %>% 
+  select(-d_grade2, -d_grade_L)
 
-stview(dfSummary(an_df))
+#stview(dfSummary(an_df))
 
-dfSummary(an_df)
+#dfSummary(an_df)
 
 
 
