@@ -32,7 +32,8 @@ setwd(wd)
 library(pacman)
 
 p_load(readxl, 
-       tidyverse, 
+       tidyverse,
+       stringr,
        psych, 
        reshape2, 
        magrittr, 
@@ -58,7 +59,13 @@ p_load(readxl,
        patchwork, 
        summarytools,
        writexl,
-       datadictionary
+       datadictionary,
+       broom, # tidy up results from regressions
+       gtsummary,
+       lmtest, # likelihood-ratio tests
+       parameters, # # alternative to tidy up results from regressions
+       see,          # alternative to visualise forest plots
+       skimr # alternative to dataset overview 
        )
 
 options(scipen=200000)

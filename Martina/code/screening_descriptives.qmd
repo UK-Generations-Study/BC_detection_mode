@@ -170,7 +170,7 @@ par_df %>%
 
 ```
 
-### Menopause related 
+### Menopause related
 
 ```{r}
 #| echo: false

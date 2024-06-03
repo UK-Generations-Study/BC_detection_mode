@@ -1,0 +1,177 @@
+---
+title: "Analysis"
+author: "MB"
+format: 
+  html: 
+    embed-resources: true
+editor: visual
+---
+
+# Set up
+
+The Master script links all parts of data preparation in 7 processing scripts. The code below excecutes the master file, running all 7 scripts within. The final product is the analytical dataset called an_df which combined all required variables from casummary, risk factors, mode of detection and mammographic density.
+
+```{r}
+#| include: false
+
+# execute master file 
+source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/master.R")
+```
+
+Data summary
+
+```{r}
+skim(an_df)
+```
+
+```{r}
+dfSummary(an_df)
+```
+
+# 1. Preparation
+
+Create lists of model variables as objects in the environment for easier manipulation.
+
+Relevel reference groups within some exploratory variables.
+
+Mammographic density is a special variable that will be used for subanalyses on cases with mammographic density only (to adjust for in the model)
+
+```{r}
+## Store explanatory variables as an object -------------------------------
+
+# select categorical variables that are not labelled
+
+# exploratory vars 
+all_expl_variables <- c("d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat")
+  
+lifestyle <- c("d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who")
+  
+reproductive <- c("d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat")
+  
+orther_rf <- c("d_bbd", "d_fambrca")
+
+# mammo density excluded from the lists - special variable for subanalyses
+
+# covariates 
+all_covariates <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y", "d_inv_status", "d_grade_cat", "d_morph7", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status")  
+  
+tumour_char <- c("d_inv_status", "d_grade_cat", "d_morph7", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status")
+  
+time_vars <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y")
+
+
+# with labels instead of categories --------------------------------------
+# select categorical variables that are not labelled
+
+# exploratory vars 
+all_expl_variables <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
+  
+lifestyle <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who")
+  
+reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
+  
+orther_rf <- c("d_bbd", "d_fambrca")
+
+# mammo density excluded from the lists - special variable for subanalyses
+
+# covariates 
+all_covariates <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y", "d_inv_status", "d_grade_lab", "d_morph7", "d_pos_nodes_lab", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status")  
+  
+tumour_char <- c("d_inv_status", "d_grade_lab", "d_morph7", "d_pos_nodes_lab", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status")
+  
+time_vars <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y")
+```
+
+Ensure there are no missing values in outcome.
+
+Decide on how to deal with missing values in other variables. When tried to filter out all rows with any missing values in explanatory variables the sample size was very low (only around 600) so complete case analysis is not an option.
+
+```{r}
+
+an_df %>% tabyl(d_dmode_n)
+
+# remove rows with missing error codes in specified columns
+# error_codes <- c(888, 777)
+# 
+# data <- an_df %>%
+#   filter(!if_any(all_of(all_expl_variables), ~ . %in% error_codes))
+
+```
+
+# 2. Univariate analysis
+
+```{r}
+
+# option 1 
+model <- an_df %>% 
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+            family = binomial(link = "logit"))
+summary(model)
+
+# create tidy model with original estimates 
+tidy_model <- tidy(model)
+conf_intervals <- confint(model)
+
+
+# Get confidence intervals and convert to a data frame
+conf_intervals <- confint(model)
+conf_intervals_df <- as.data.frame(conf_intervals)
+colnames(conf_intervals_df) <- c("conf.low", "conf.high")
+
+# Ensure the term column is added to conf_intervals_df
+conf_intervals_df$term <- rownames(conf_intervals_df)
+
+# Combine the tidy model and confidence intervals
+tidy_model <- tidy_model %>%
+  left_join(conf_intervals_df, by = "term") %>%
+  mutate(
+    odds_ratio = exp(estimate),
+    conf.low.odds = exp(conf.low),
+    conf.high.odds = exp(conf.high)
+  ) %>%
+  select(term, estimate, std.error, conf.low, conf.high, statistic, p.value, odds_ratio, conf.low.odds, conf.high.odds)
+
+
+tidy_model
+
+
+
+
+# option 2 exponentiate in one
+
+tidy_model <- an_df %>% 
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+            family = binomial(link = "logit")) %>% 
+  tidy(exponentiate = TRUE, conf.int = TRUE) #%>%  # exponentiate and produce CIs
+  #mutate(across(where(is.numeric), round, digits = 2))  # round all numeric columns
+
+tidy_model
+
+
+
+
+# option 3 to display both - works the best
+model <- an_df %>% 
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+            family = binomial(link = "logit")) 
+summary(model)
+
+tidy_model <- model %>% 
+  tidy(exponentiate = TRUE, conf.int = TRUE)
+tidy_model
+
+
+
+
+
+
+
+
+# example relevelling 
+
+# model <- data %>%
+#   mutate(d_R1alcohol_status_lab = relevel(d_R1alcohol_status_lab, ref = "Current")) %>%
+#   glm(d_dmode_n ~ d_R1alcohol_status_lab, data = ., family = binomial)
+# 
+# summary(model)
+```

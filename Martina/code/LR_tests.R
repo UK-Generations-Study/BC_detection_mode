@@ -1,5 +1,5 @@
 
-p_load(broom)
+
 
 # plotting LR relationship 
 an_df %>% 
@@ -14,16 +14,16 @@ an_df %>%
 
  
   
-model <-glm(d_dmode_n ~ d_grade_lab,
+model <-glm(d_dmode_n ~ d_tumour_size,
              data = an_df,
              family = "binomial")
 summary(model)
 
 odds_ratios <- exp(cbind(OR = coef(model), confint(model)))
 
-tidy_model <- tidy(model)
-tidy_model$odds_ratio <- exp(tidy_model$estimate)
-tidy_model
+# tidy_model <- tidy(model)
+# tidy_model$odds_ratio <- exp(tidy_model$estimate)
+# tidy_model
 
 conf_intervals <- confint(model)
 
@@ -42,20 +42,10 @@ tidy_model
 # pipe option for glm 
 
 model <- an_df %>% 
-  mutate(d_grade_f = as.factor(d_grade)) %>% 
-  glm(formula = d_dmode_n ~ d_grade_f,
+  glm(formula = d_dmode_n ~ d_grade_lab,
             family = "binomial")
 summary(model)
 
-
-df <- an_df %>% 
-  mutate(d_grade_f = as.factor(d_grade))
-
-model <-glm(d_dmode_n ~ d_grade_f,
-            data = df,
-            family = "binomial")
-
-summary(model)
 
 
 # option 2 
