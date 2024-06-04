@@ -79,14 +79,13 @@ dev_an_df <- dev_an_df %>%
   mutate(
     d_R1toBC = as.numeric(diagdate - date_entry),
     d_R1toBC_y = round(d_R1toBC/365.25, 1),
-    d_R1toBC_cat = case_when(d_R1toBC_y < 3 ~ 1,
+    d_R1toBC_cat = as.factor(case_when(d_R1toBC_y < 3 ~ 1,
                              d_R1toBC_y >= 3 & d_R1toBC_y < 6 ~ 2,
                              d_R1toBC_y >= 6 & d_R1toBC_y < 9 ~ 3,
                              d_R1toBC_y >= 9 & d_R1toBC_y < 12 ~ 4,
-                             d_R1toBC_y >= 12 ~ 5,
-                             ),
-    #d_R1toBC_cat = ordered(x = d_R1toBC_cat, c("1", "2", "3", "4", "5") # ordering so when factor is created it stays ordered
-                           #),
+                             d_R1toBC_y >= 12 ~ 5
+                             )),
+    d_R1toBC_cat = fct_relevel(d_R1toBC_cat, "1", "2", "3", "4", "5"),
     d_R1toBC_lab = factor(x = d_R1toBC_cat,
                           levels = 1:5,
                           labels = c("<3 years", "3 to 5 years", "6 to 8 years", "9 to 11 years", ">12 years" ))
@@ -104,6 +103,7 @@ dev_an_df %>% tabyl(d_R1toBC_y)
 dev_an_df %>% tabyl(d_R1toBC_y, d_R1toBC_cat)
 dev_an_df %>% tabyl(d_R1toBC_y, d_R1toBC_lab)
 dev_an_df %>% tabyl(d_R1toBC_lab)
+dev_an_df %>% tabyl(d_R1toBC_lab, d_R1toBC_cat)
 
 ### Time between mammo and BC --------------------------------
 
@@ -111,14 +111,15 @@ dev_an_df <- dev_an_df %>%
   mutate(
     d_MDtoBC = as.numeric(diagdate - MammoDat_f),
     d_MDtoBC_y = round(d_MDtoBC/365.25, 1),
-    d_MDtoBC_cat = case_when(d_MDtoBC_y < 3 ~ 1,
+    d_MDtoBC_cat = as.factor(case_when(d_MDtoBC_y < 3 ~ 1,
                            d_MDtoBC_y >=3 & d_MDtoBC_y <6 ~ 2,
                            d_MDtoBC_y >= 6 ~ 3,
-                           TRUE ~ NA),
+                           TRUE ~ 888)),
+    d_MDtoBC_cat = fct_relevel(d_MDtoBC_cat, "1", "2", "3", "888"),
     d_MDtoBC_lab = factor(
       x = d_MDtoBC_cat, 
-      levels = 1:3,
-      labels = c("<3 years", "3-5 years", ">=6 years")
+      levels = c(1, 2, 3, 888),
+      labels = c("<3 years", "3-5 years", ">=6 years", "No density")
     )
     )
 
@@ -170,9 +171,9 @@ dev_an_df %>% tabyl(d_age_mammo)
 # categories: invasive/insitu
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_inv_status = case_when(breast_cancer_invasive == 1 ~ 1,
+  mutate(d_inv_status = as.factor(case_when(breast_cancer_invasive == 1 ~ 1,
                                 breast_cancer_dcis == 1 ~ 0,
-                                TRUE ~ NA),
+                                TRUE ~ NA)),
          d_inv_status_lab = factor(
            x = d_inv_status,
            levels = 0:1,
@@ -203,9 +204,9 @@ dev_an_df <- dev_an_df %>%
                             d_inv_status == 0 & !is.na(grade) ~ 999, # dcis grade not valid 
                             is.na(grade) |  grade %in% c("4", "7") ~ 888 # missing
                              ),
-         # d_grade = ordered(x = d_grade, c("1", "2", "3", "888", "999")
-         #                   ),
+         
          d_grade_cat = as.factor(d_grade),
+         d_grade_cat = fct_relevel(d_grade_cat, "1", "2", "3", "888", "999"),
          d_grade_lab = factor(x = d_grade,
                               levels = c(1, 2, 3, 999, 888),
                               labels = c("1", "2", "3", "DCIS", "Not known"))
@@ -215,6 +216,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(grade, d_grade)
 dev_an_df %>% tabyl(d_grade, d_inv_status_lab)
 dev_an_df %>% tabyl(d_grade_lab)
+dev_an_df %>% tabyl(d_grade_lab, d_grade_cat)
 
 
 ### Grade - trick ---------------------------------------------------------------
@@ -315,7 +317,7 @@ dev_an_df <- dev_an_df %>%
                                            TRUE ~ 12 # other
                                            )
                                  ),
-        # d_morphology = ordered(x = d_morphology, c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "888"))
+        d_morphology = fct_relevel(d_morphology, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "888")
          ) %>% 
   mutate(
           d_morphology_lab = factor(
@@ -336,7 +338,7 @@ dev_an_df <- dev_an_df %>%
                              d_morphology == 3 ~ 6, # Mucinous or colloid
                              d_morphology %in% c(2, 6, 7, 8, 11, 12) ~ 7, # Other
                              d_morphology == 888 ~ 888)), # Not known
-         #d_morph7 = ordered(x = d_morph7, c("1", "2", "3", "4", "5", "6", "7", "888")),
+         d_morph7 = fct_relevel(d_morph7, "1", "2", "3", "4", "5", "6", "7", "888"),
          d_morph7_lab = factor(x = d_morph7,
                                levels = c(1, 2, 3, 4, 5, 6, 7, 888),
                                labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other", "Not known"))
@@ -409,7 +411,7 @@ dev_an_df <- dev_an_df %>%
                                  
                                            
                                  ) ,
-        #d_pos_nodes = ordered(x = d_pos_nodes, c("0", "1", "888")),
+        d_pos_nodes_cat = fct_relevel(d_pos_nodes_cat, "0", "1", "888"),
         d_pos_nodes_lab = factor(x = d_pos_nodes_cat,
                                  levels = c(0, 1, 888),
                                  labels = c("Negative", "Positive", "Not known")
@@ -457,8 +459,8 @@ dev_an_df <- dev_an_df %>%
                                              d_tumour_size_n == 888 | d_tumour_size_n == 777 ~ 888 # not known
                                              )
                                    ),
-         #d_tumour_size = ordered(x = d_tumour_size, c("1", "2", "3", "888")
-                                 #),
+         d_tumour_size = fct_relevel(d_tumour_size, "1", "2", "3", "888"),
+                                
          d_tumour_size_lab = factor(x = d_tumour_size,
                                 levels = c(1, 2, 3, 888),
                                 labels = c("<21", "21-50", ">50", "Not known")
@@ -478,6 +480,7 @@ dev_an_df %>% tabyl(d_tumour_size_n, d_tumour_size) %>%
   adorn_totals()
 
 dev_an_df %>% tabyl(d_tumour_size_lab)
+dev_an_df %>% tabyl(d_tumour_size_lab, d_tumour_size)
 
 ### Size - trick ---------------------------------------------------------
 
@@ -513,8 +516,8 @@ dev_an_df <- dev_an_df %>%
                                            is.na(er_Status) ~ 888
                                            )
                                  ),
-         #d_er_status = ordered(x = d_er_status, c("0", "1", "888")
-                              #),
+         d_er_status = fct_relevel(d_er_status, "0", "1", "888"
+                              ),
          d_er_status_lab = factor(x = d_er_status,
                                   levels = c(0, 1, 888),
                                   labels = c("Negative", "Positive", "Not known"))
@@ -557,8 +560,8 @@ dev_an_df <- dev_an_df %>%
                                            is.na(pr_Status) ~ 888
   )
   ),
- # d_pr_status = ordered(x = d_pr_status, c("0", "1", "888")
-  #),
+ d_pr_status = fct_relevel(d_pr_status, "0", "1", "888"
+  ),
   d_pr_status_lab = factor(x = d_pr_status,
                            levels = c(0, 1, 888),
                            labels = c("Negative", "Positive", "Not known"))
@@ -604,8 +607,8 @@ dev_an_df <- dev_an_df %>%
                                            is.na(her2_Status) | her2_Status == "Borderline" ~ 888
   )
   ),
-  # d_her2_status = ordered(x = d_her2_status, c("0", "1", "888")
-  # ),
+  d_her2_status = fct_relevel(d_her2_status, "0", "1", "888"
+   ),
   d_her2_status_lab = factor(x = d_her2_status,
                            levels = c(0, 1, 888),
                            labels = c("Negative", "Positive", "Not known"))
@@ -652,9 +655,8 @@ dev_an_df %>% tabyl(R1alcoholstatus)
 dev_an_df <- dev_an_df %>% 
   mutate(d_R1alcohol_status = ifelse(R1alcoholstatus %in% c(9, NA), 888, R1alcoholstatus
                                    ),
-         d_R1alcohol_status_cat = as.factor(d_R1alcohol_status
-         # d_R1alcohol_status= ordered(x = d_R1alcohol_status, c("0", "1", "2")
-         #                           
+         d_R1alcohol_status_cat = as.factor(d_R1alcohol_status),
+         d_R1alcohol_status_cat= fct_relevel(d_R1alcohol_status_cat, "0", "1", "2"
                                    ),
          d_R1alcohol_status_lab = factor(x = d_R1alcohol_status,
                                        levels = 0:2,
@@ -679,6 +681,7 @@ dev_an_df <- dev_an_df %>%
                                     d_R1alcohol_units >= 20 & d_R1alcohol_units < 30 ~ 3, # 20 to 29 units
                                     d_R1alcohol_units >= 30 ~ 4
                                     )),
+  d_R1alcohol_units_cat = fct_relevel(d_R1alcohol_units_cat, "0", "1", "2", "3", "4"),
   d_R1alcohol_units_lab = factor(x = d_R1alcohol_units_cat,
                                  levels = 0:4,
                                  labels = c("0", "1 to 9", "10 to 19", "20 to 29", "30 or more"))
@@ -705,11 +708,12 @@ str(dev_an_df$brbendis)
 dev_an_df <- dev_an_df %>% 
   mutate(d_bbd = as.factor(case_when(brbendis == 1 ~ 1,
                            brbendis == 2 ~ 0,
-                           TRUE ~ 888
+                           TRUE ~ 888 # no missing
                            )),
+         d_bbd = fct_relevel(d_bbd, "0", "1"),
          d_bbd_lab = factor(x = d_bbd, 
-                            levels = c(0, 1, 888),
-                            labels = c("No", "Yes", "Not known"))
+                            levels = c(0, 1),
+                            labels = c("No", "Yes"))
          )
 
 dev_an_df %>% tabyl(d_bbd)
@@ -742,7 +746,7 @@ dev_an_df <- dev_an_df %>%
                                      d_bmi_entry %in% c(888, 989) ~ 888, # not known
                                      TRUE ~ 888
                                      )),
-         #d_bmi_entry_cat = ordered(x = d_bmi_entry_cat, c("1", "2", "3", "4", "888")),
+         d_bmi_entry_cat = fct_relevel(d_bmi_entry_cat, "1", "2", "3", "4", "888"),
          d_bmi_entry_lab = factor(x = d_bmi_entry_cat,
                                   levels = c(1, 2, 3, 4, 888),
                                   labels = c("<18.5", "18.5 to 25", "25 to 30", ">=30", "Not known"))
@@ -761,10 +765,11 @@ dev_an_df %>% tabyl(fambrca)
 dev_an_df <- dev_an_df %>% 
   mutate(d_fambrca = as.factor(case_when(fambrca == 0 ~ 0,
                                fambrca == 1 ~ 1,
-                               TRUE ~ 888)),
+                               TRUE ~ 888)), # no missing
+         d_fambrca = fct_relevel(d_fambrca, "0", "1"),
          d_fambrca_lab = factor(x = d_fambrca,
-                                levels = c(0, 1, 888),
-                                labels = c("No", "Yes", "Not known"))
+                                levels = c(0, 1),
+                                labels = c("No", "Yes"))
          )
 
 dev_an_df %>% tabyl(d_fambrca)
@@ -776,26 +781,27 @@ dev_an_df %>% tabyl(fambrcaN)
 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_fambrcaN = case_when(fambrcaN == 0 ~ 0,
+  mutate(d_fambrcaN_cat = as.factor(case_when(fambrcaN == 0 ~ 0,
                                fambrcaN == 1 ~ 1,
                                fambrcaN >= 2 ~ 2,
-                               TRUE ~ 888),
-         d_fambrcaN_lab = factor(x = d_fambrcaN,
-                                levels = c(0, 1, 2, 888),
-                                labels = c("0", "1", "2 or more", "Not known")
+                               TRUE ~ 888)), # no missing
+         d_fambrcaN_cat = fct_relevel(d_fambrcaN_cat, "0", "1", "2"),
+         d_fambrcaN_lab = factor(x = d_fambrcaN_cat,
+                                levels = c(0, 1, 2),
+                                labels = c("0", "1", ">=2")
                                 )
   )
 
-dev_an_df %>% tabyl(d_fambrcaN)
+dev_an_df %>% tabyl(d_fambrcaN_cat)
 dev_an_df %>% tabyl(d_fambrcaN_lab)
-dev_an_df %>% tabyl(d_fambrcaN, d_fambrcaN_lab)
+dev_an_df %>% tabyl(d_fambrcaN_cat, d_fambrcaN_lab)
 
 
 # cross check: 
 dev_an_df %>% tabyl(fambrcaN, fambrca) %>% 
   adorn_totals()
 
-dev_an_df %>% tabyl(d_fambrcaN, d_fambrca) %>% 
+dev_an_df %>% tabyl(d_fambrcaN_cat, d_fambrca) %>% 
   adorn_totals()
 
 
@@ -812,6 +818,7 @@ dev_an_df <- dev_an_df %>%
                                         d_age_menarche >= 13 & d_age_menarche < 888 ~ 2, # 13 and over
                                         d_age_menarche == 888 ~ 888 # not known
                                         )),
+         d_age_menarche_cat = fct_relevel(d_age_menarche_cat, "1", "2", "888"),
          d_age_menarche_lab = factor(x = d_age_menarche_cat,
                                      levels = c(1, 2, 888),
                                      labels = c("less than 13", "13 and over", "Not known"))
@@ -842,12 +849,13 @@ dev_an_df <- dev_an_df %>%
          
          # condensed categories to pre and post meno 
          d_R1menopause_cat3 = as.factor(case_when(d_R1menopause %in% c(1, 3) ~ 1,
-                                        d_R1menopause %in% c(2, 4) ~ 2,
-                                        d_R1menopause %in% c(9, 888) ~ 888
+                                        d_R1menopause %in% c(2, 4) ~ 0
+                                        #d_R1menopause %in% c(9, 888) ~ 888 # no cases here
                                         )),
+         d_R1menopause_cat3 = fct_relevel(d_R1menopause_cat3, "0", "1"),
          d_R1menopause_lab3 = factor(x = d_R1menopause_cat3,
-                                     levels = c(1, 2, 888),
-                                     labels = c("Postmenopausal", "Premenopausal", "Not known")
+                                     levels = c(0, 1),
+                                     labels = c("Premenopausal", "Postmenopausal")
                                      )
          )
 
@@ -856,7 +864,7 @@ dev_an_df %>% tabyl(d_R1menopause)
 dev_an_df %>% tabyl(d_R1menopause_lab6)
 dev_an_df %>% tabyl(d_R1menopause_lab3)
 dev_an_df %>% tabyl(d_R1menopause_lab6, d_R1menopause_lab3)
-
+dev_an_df %>% tabyl(d_R1menopause_lab6, d_R1menopause_cat3)
 
 dev_an_df %>% tabyl(AgeatEntry, d_R1menopause_lab3)
 
@@ -885,6 +893,7 @@ dev_an_df <- dev_an_df %>%
                                          d_age_menopause == 777 ~ 777,
                                          d_age_menopause %in% c(888, 999) ~ 888,
                                          TRUE ~ NA)),
+         d_age_menopause_cat = fct_relevel(d_age_menopause_cat, "1", "2", "3", "777", "888"),
          d_age_menopause_lab = factor(x = d_age_menopause_cat,
                                       levels = c(1, 2, 3, 777, 888),
                                       labels = c("<50", "51 to 53", ">53", "Pre-menopausal", "Not known"))
@@ -920,15 +929,17 @@ str(dev_an_df$hrtstatus)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_R1hrtstatus = case_when(hrtstatus %in% c(888,999,9999) | is.na(hrtstatus) ~ 888, # Merging error values into one - potential loss of information but also easier to track
-                                   d_R1menopause_cat3 == 2 ~ 777, # pre menopausal
+                                   d_R1menopause_cat3 == 0 ~ 777, # pre menopausal
                                    TRUE ~ hrtstatus),
          d_R1hrtstatus_cat = as.factor(d_R1hrtstatus),
+         d_R1hrtstatus_cat = fct_relevel(d_R1hrtstatus_cat, "0", "1", "2", "777", "888"),
          d_R1hrtstatus_lab = factor(x = d_R1hrtstatus,
                                     levels = c(0, 1, 2, 777, 888),
                                     labels = c("Never", "Former", "Current", "Pre-menopausal", "Not known"))
   )
 
 dev_an_df %>% tabyl(d_R1hrtstatus)
+dev_an_df %>% tabyl(d_R1hrtstatus_cat, d_R1hrtstatus)
 dev_an_df %>% tabyl(d_R1hrtstatus, d_R1hrtstatus_lab)
 dev_an_df %>% tabyl(AgeatEntry, d_R1hrtstatus)
 # HRT should only be in menopausal women
@@ -939,7 +950,7 @@ dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
 # recode pre-menopausal as never 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 2 ~ 0,
+  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 0 ~ 0,
                                    TRUE ~ d_R1hrtstatus),
          d_R1hrt_tr_lab = factor(x = d_R1hrt_tr,
                                     levels = c(0, 1, 2, 888),
@@ -960,6 +971,7 @@ str(dev_an_df$ocstatus)
 dev_an_df <- dev_an_df %>% 
   mutate(d_ocstatus = ifelse(ocstatus %in% c(9999, 999, 888, NA), 888, ocstatus),
          d_ocstatus_cat = as.factor(d_ocstatus),
+         d_ocstatus_cat = fct_relevel(d_ocstatus_cat, "0", "1", "2", "888"),
          d_ocstatus_lab = factor(x = d_ocstatus,
                                  levels = c(0, 1, 2, 888),
                                  labels = c("Never", "Former", "Current", "Not known")
@@ -970,7 +982,7 @@ dev_an_df %>% tabyl(d_ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab)
 dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
-
+dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus_cat)
 
 ### OC status - trick -----------------------------------------------------
 # recode post-menopausal as never 
@@ -1143,6 +1155,7 @@ dev_an_df <- dev_an_df %>%
                                      d_R1physmet_leisure >= METhw & d_R1physmet_leisure < 2*METhw ~ 1,
                                      d_R1physmet_leisure >= 2*METhw & d_R1physmet_leisure < 888 ~ 2,
                                      d_R1physmet_leisure == 8888 ~ 888)),
+         d_R1physmet_leis_who = fct_relevel(d_R1physmet_leis_who, "0", "1", "2", "888"),
          d_R1physmet_leis_who_lab = factor(x = d_R1physmet_leis_who,
                                       levels = c(0, 1, 2, 888),
                                       labels = c("<9", "9-18", ">18", "Not known"))
@@ -1151,7 +1164,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_R1physmet_leis_who_lab)
 
 check <- dev_an_df %>% tabyl(d_R1physmet_leisure, d_R1physmet_leis_who_lab)
-
+dev_an_df %>% tabyl(d_R1physmet_leis_who_lab, d_R1physmet_leis_who)
 
 
 
@@ -1168,9 +1181,10 @@ dev_an_df %>% tabyl(x_parity)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_parous_cat = as.factor(x_parous),
+         d_parous_cat = fct_relevel(d_parous_cat, "0", "1"),
          d_parous_lab = factor(x = x_parous,
-                               levels = c(0, 1, 888),
-                               labels = c("Not parous", "Parous", "Not known")))
+                               levels = c(0, 1),
+                               labels = c("Not parous", "Parous")))
 
 dev_an_df %>% tabyl(d_parous_lab, x_parous)
 
@@ -1191,6 +1205,7 @@ dev_an_df <- dev_an_df %>%
                                      x_age_birth_1 == 777 ~ 777, # non parous
                                      x_age_birth_1 == 888 ~ 888,
                                      )),
+         d_agebirth1_cat = fct_relevel(d_agebirth1_cat, "1", "2", "3", "4", "5", "777", "888"),
          d_agebirth1_lab = factor(x = d_agebirth1_cat,
                                   levels = c(1, 2, 3, 4, 5, 777, 888),
                                   labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35", "Non-parous", "Not known"))
@@ -1235,6 +1250,7 @@ dev_an_df <- dev_an_df %>%
                                   d_parity == 2 ~ 2,
                                   d_parity >= 3 ~ 3,
                         )),
+         d_parity_cat = fct_relevel(d_parity_cat, "0", "1", "2", "3"),
          d_parity_lab = factor(x = d_parity_cat,
                                level = c(0, 1, 2, 3),
                                labels = c("0", "1", "2", ">=3")
@@ -1248,18 +1264,22 @@ dev_an_df %>% tabyl(d_parity_lab)
 ### N parous pregnancies - trick -------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_parity_tr = case_when(as.numeric(d_parity_cat) == 0 ~ 1,
-                                    TRUE ~ as.numeric(d_parity_cat)),
+  mutate(d_parity_tr = as.factor(case_when(as.character(d_parity_cat) == 0 | as.character(d_parity_cat) ==1 ~ "1",
+                                    TRUE ~ as.character(d_parity_cat))
+                                 ),
+         d_parity_tr = fct_relevel(d_parity_tr, "1", "2", "3"),
          d_parity_tr_lab = factor(x = d_parity_tr,
-                                     levels = c(1, 2, 3, 4),
-                                     labels = c("1", "2", "3", ">=4")))
+                                     levels = c(1, 2, 3),
+                                     labels = c("1", "2", ">=3")))
 
 dev_an_df %>% tabyl(d_parity_tr)
+dev_an_df %>% tabyl(d_parity_tr, d_parity_cat)
+
+
 dev_an_df %>% tabyl(d_parity_tr_lab, d_parous_lab)
 dev_an_df %>% tabyl(d_parity_tr_lab)
 
 dev_an_df %>% tabyl(d_parity_tr_lab, d_parity_lab)
-
 
 
 ### Ever breast fed -----------------------------------------------------------------
@@ -1306,6 +1326,7 @@ str(dev_an_df$R1smokingstatus)
 dev_an_df <- dev_an_df %>% 
   mutate(d_R1smokingstatus = ifelse(R1smokingstatus %in% c(6, 9, NA), 888, R1smokingstatus),
          d_R1smokingstatus_cat = as.factor(d_R1smokingstatus),
+         d_R1smokingstatus_cat = fct_relevel(d_R1smokingstatus_cat, "0", "1", "2", "888"),
          d_R1smokingstatus_lab = factor(x = d_R1smokingstatus,
                                         levels = c(0, 1, 2, 888),
                                         labels = c("Never", "Former", "Current", "Not known"))
@@ -1313,7 +1334,7 @@ dev_an_df <- dev_an_df %>%
 
 dev_an_df %>% tabyl(d_R1smokingstatus)
 dev_an_df %>% tabyl(d_R1smokingstatus_lab)
-
+dev_an_df %>% tabyl(d_R1smokingstatus_cat)
 
 
 
@@ -1380,10 +1401,11 @@ dev_an_df %>%
 ### high/low density --------------------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_md_cat = case_when(d_md_qrt == 1 ~ "Low",
+  mutate(d_md_cat = as.factor(case_when(d_md_qrt == 1 ~ "Low",
                             d_md_qrt == 4 ~ "High",
                             d_md_qrt %in% c(2, 3) ~ "Normal",
-                            is.na(d_md_qrt) ~ "Not known"))
+                            is.na(d_md_qrt) ~ "Not known")),
+         d_md_cat = fct_relevel(d_md_cat, "Low", "Normal", "High", "Not known"))
 
 dev_an_df %>% tabyl(d_md_cat)
 dev_an_df %>% tabyl(d_md_cat, d_md_qrt)

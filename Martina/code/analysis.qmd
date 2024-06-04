@@ -100,6 +100,10 @@ an_df %>% tabyl(d_dmode_n)
 
 # 2. Univariate analysis
 
+Trick models - test model with
+
+# test
+
 ```{r}
 
 # option 1 
@@ -151,10 +155,56 @@ tidy_model
 
 
 # option 3 to display both - works the best
+
+
+
+
 model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+  glm(formula = d_dmode_n ~ d_parity_lab,
             family = binomial(link = "logit")) 
 summary(model)
+
+
+
+
+# compare these 2 models
+model <- an_df %>% 
+  filter(d_parous_cat == 1) %>%
+  glm(formula = d_dmode_n ~ d_parity_lab,
+            family = binomial(link = "logit")) 
+summary(model)
+
+
+model <- an_df %>% 
+  glm(formula = d_dmode_n ~ d_parity_tr1 + d_parous_cat,
+            family = binomial(link = "logit")) 
+summary(model)
+
+# -------------------------------------------------------------------
+
+
+
+
+
+
+
+
+model <- an_df %>% 
+  glm(formula = d_dmode_n ~ d_parity_tr1 + d_parous_cat,
+            family = binomial(link = "logit")) 
+summary(model)
+
+
+an_df %>% 
+  tabyl(d_parity_tr1)
+
+an_df %>% tabyl(d_parity_tr_lab)
+
+
+
+
+
+
 
 tidy_model <- model %>% 
   tidy(exponentiate = TRUE, conf.int = TRUE)
@@ -174,4 +224,20 @@ tidy_model
 #   glm(d_dmode_n ~ d_R1alcohol_status_lab, data = ., family = binomial)
 # 
 # summary(model)
+```
+
+### Strategy
+
+Step 1. Tabulate all exposures with outcome (exposure, outcome)
+
+## Alcohol
+
+```{r}
+
+an_df %$% tabpct(d_R1alcohol_status_cat, d_dmode_n, percent = "row", graph = F)
+an_df %$% tabpct(d_R1alcohol_status_lab, d_dmode, percent = "row", graph = F)
+
+
+an_df %>%  tabyl(d_dmode_n, d_dmode) 
+an_df %>%  tabyl(d_R1alcohol_status_cat, d_R1alcohol_status_lab)
 ```

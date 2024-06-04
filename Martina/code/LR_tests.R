@@ -56,3 +56,11 @@ tidy_model <- model %>%
 tidy_model
 
 an_df %>% tabyl(d_grade)
+
+
+# testing method from MSC -------------------------------------------------------------------------------------------
+
+model <- 
+
+
+
