@@ -1,9 +1,15 @@
 ---
-title: "Analysis"
-author: "MB"
+title: "Detection mode project - Analysis"
+author: "Martina Brayley"
+date: 05/06/2024
+date-format: long
 format: 
   html: 
     embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: true
+    theme: [cosmo, style.css]
 editor: visual
 ---
 
@@ -18,17 +24,17 @@ The Master script links all parts of data preparation in 7 processing scripts. T
 source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/master.R")
 ```
 
-Data summary
+Data summary - commented out as output too large
 
 ```{r}
-skim(an_df)
+#skim(an_df)
 ```
 
 ```{r}
-dfSummary(an_df)
+#dfSummary(an_df)
 ```
 
-# 1. Preparation
+# Preparation
 
 Create lists of model variables as objects in the environment for easier manipulation.
 
@@ -68,7 +74,7 @@ all_expl_variables <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1
   
 lifestyle <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who")
   
-reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
+reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
   
 orther_rf <- c("d_bbd", "d_fambrca")
 
@@ -84,7 +90,7 @@ time_vars <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y")
 
 Ensure there are no missing values in outcome.
 
-Decide on how to deal with missing values in other variables. When tried to filter out all rows with any missing values in explanatory variables the sample size was very low (only around 600) so complete case analysis is not an option.
+Decide on how to deal with missing values in other variables. When tried to filter out all rows with any missing values in explanatory variables the sample size was very low (only around 600) so complete case analysis may not be an option. In v3 of script 7 error codes were recoded to NA as it is automatically handled in analysis. This dataset should be used. If error codes are of interest, rerun v2 of script 7 in master file, which will produce a dataset with error codes.
 
 ```{r}
 
@@ -96,148 +102,361 @@ an_df %>% tabyl(d_dmode_n)
 # data <- an_df %>%
 #   filter(!if_any(all_of(all_expl_variables), ~ . %in% error_codes))
 
+
+
+# check numbers and percentages of missing values (coded out as output is too long)
+
+# data %>% 
+#   map(pct_miss)
+# 
+# data %>% 
+#   map(n_miss)
 ```
 
-# 2. Univariate analysis
+# Univariate analysis
 
-Trick models - test model with
+Repeat these steps for each exposure:
 
-# test
+1.  Tabulation including missing
+2.   Compute basic OR and chisqr test
+3.  Univariate logistic regression
+
+```{r}
+#| echo: false
+#| include: false
+
+# Example code for single exposure - the function below is derived on this
+
+
+# # Alcohol status 
+# 
+# # cross tabulation
+# an_df %$% tabpct(d_dmode_n, d_R1alcohol_status_lab, percent = "col", graph = F)
+# # OR and chi-squared
+# an_df %$% cc(d_dmode_n, d_R1alcohol_status_lab, graph = F)
+# 
+# # Logistic regression 
+# 
+# model <- an_df %>% 
+#   glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+#             family = binomial(link = "logit")) 
+# 
+# # raw output display in log odds scale
+# summary(model)
+# 
+# # using epiDisplay package to display odds ratios
+# logistic.display(model)
+# 
+# # using tidy from broom package to convert output into a dataframe that can be further manipulated if needed
+# tidy_model <- model %>% 
+#   tidy(exponentiate = TRUE, conf.int = TRUE)
+# tidy_model
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# # age at first birth status - trying because of error and also has missing values
+# 
+# # cross tabulation
+# data %$% tabpct(d_dmode_n, d_agebirth1_lab, percent = "col", graph = F)
+# 
+# data %>% tabyl(d_agebirth1_lab)
+# 
+# an_df %>% tabyl(d_agebirth1_lab)
+# 
+# # OR and chi-squared
+# an_df %$% cc(d_dmode_n, d_agebirth1_lab, graph = F)
+# 
+# # Logistic regression 
+# 
+# model <- an_df %>% 
+#   filter(d_agebirth1_lab != "Not known") %>% 
+#   glm(formula = d_dmode_n ~ d_agebirth1_lab,
+#             family = binomial(link = "logit")) 
+# 
+# # raw output display in log odds scale
+# summary(model)
+# 
+# # using epiDisplay package to display odds ratios
+# logistic.display(model)
+# 
+# # using tidy from broom package to convert output into a dataframe that can be further manipulated if needed
+# tidy_model <- model %>% 
+#   tidy(exponentiate = TRUE, conf.int = TRUE)
+# tidy_model
+
+```
+
+### Univariate analysis function 
 
 ```{r}
 
-# option 1 
-model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
-            family = binomial(link = "logit"))
-summary(model)
+# Define the function
+perform_univariate_analysis <- function(data, outcome, exposure) {
+  # Cross-tabulation with column percentages
+  cat("\nCross-tabulation for", exposure, ":\n")
+  tab_result <- tabpct(data[[outcome]], data[[exposure]], percent = "col", graph = FALSE)
+  print(tab_result)
+  
+  # Odds Ratio and chi-squared
+  cat("\nOdds Ratio and Chi-squared for", exposure, ":\n")
+  tryCatch({
+    or_chi_result <- cc(data[[outcome]], data[[exposure]], graph = FALSE)
+    print(or_chi_result)
+  }, error = function(e) {
+    cat("An error occurred during OR and chi-squared calculation:", e$message, "\n")
+  })
+  
+  # Logistic Regression
+  model <- glm(formula = as.formula(paste(outcome, "~", exposure)),
+               data = data,
+               family = binomial(link = "logit"))
+  
+  # Display summary of logistic regression in log odds scale
+  # cat("\nLogistic Regression Summary for", exposure, ":\n")
+  # print(summary(model))
+  
+  # Display odds ratios using epiDisplay package
+  cat("\nLogistic regression - Odds Ratios for", exposure, ":\n")
+  logistic.display(model)
+  
+  # Capture output of logistic.display
+  odds_ratios <- capture.output(logistic.display(model))
+  # Print captured output
+  cat(odds_ratios, sep = "\n")
+}
 
-# create tidy model with original estimates 
-tidy_model <- tidy(model)
-conf_intervals <- confint(model)
+#test for 1 exposure
+# perform_univariate_analysis(data = an_df, outcome = "d_dmode_n", exposure = "d_R1alcohol_status_lab")
 
+```
 
-# Get confidence intervals and convert to a data frame
-conf_intervals <- confint(model)
-conf_intervals_df <- as.data.frame(conf_intervals)
-colnames(conf_intervals_df) <- c("conf.low", "conf.high")
+## Compute univariate analysis 
 
-# Ensure the term column is added to conf_intervals_df
-conf_intervals_df$term <- rownames(conf_intervals_df)
+```{r}
 
-# Combine the tidy model and confidence intervals
-tidy_model <- tidy_model %>%
-  left_join(conf_intervals_df, by = "term") %>%
-  mutate(
-    odds_ratio = exp(estimate),
-    conf.low.odds = exp(conf.low),
-    conf.high.odds = exp(conf.high)
-  ) %>%
-  select(term, estimate, std.error, conf.low, conf.high, statistic, p.value, odds_ratio, conf.low.odds, conf.high.odds)
+# loop for multiple exposures - Risk factors
+exposures <- all_expl_variables
 
+for (exposure in exposures) {
+  cat("\nAnalyzing exposure:", exposure, "\n")
+  perform_univariate_analysis(data = an_df, outcome = "d_dmode_n", exposure = exposure)
+}
+```
 
-tidy_model
+# Test trick models
 
+There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter inuitive, when the equation is written down including the indicator variables, the maths works.
 
+When we run 2 models:
 
+1.  a model on a subset of parous women only and with the remaining 2 parity related variables
 
-# option 2 exponentiate in one
+```{=html}
+<!-- -->
+```
+2.  a model with all cases, the parous binary variable and the 2 recoded parity related variables (non parous women part of the reference group)
 
-tidy_model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
-            family = binomial(link = "logit")) %>% 
-  tidy(exponentiate = TRUE, conf.int = TRUE) #%>%  # exponentiate and produce CIs
-  #mutate(across(where(is.numeric), round, digits = 2))  # round all numeric columns
+The estimates will be exactly the same. This needs to be tested for all 3 groups of these variables.
 
-tidy_model
+## Parity related variables
 
+```{r}
 
+# tabulate trick vars by parity to see if recoded properly -----------------------
 
+## age at birth
+an_df %>% tabyl(d_agebirth1_tr_lab, d_parous_lab) %>% 
+  adorn_title()
 
-# option 3 to display both - works the best
+## number of parous pregnancies
+an_df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
+  adorn_title()
+# an_df %>% tabyl(d_parity_lab, d_parous_lab) %>% 
+#   adorn_title()
 
+# MODEL A - subset on parous women ------------------------------------------------
 
-
-
-model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_parity_lab,
-            family = binomial(link = "logit")) 
-summary(model)
-
-
-
-
-# compare these 2 models
 model <- an_df %>% 
   filter(d_parous_cat == 1) %>%
-  glm(formula = d_dmode_n ~ d_parity_lab,
-            family = binomial(link = "logit")) 
-summary(model)
+  glm(formula = d_dmode_n ~ d_parity_lab + d_agebirth1_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+logistic.display(model)
 
+# MODEL B - binary parity status in the model -------------------------------------
 
-model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_parity_tr1 + d_parous_cat,
-            family = binomial(link = "logit")) 
-summary(model)
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_parous_cat + d_parity_tr_lab + d_agebirth1_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+logistic.display(model)
 
-# -------------------------------------------------------------------
-
-
-
-
-
-
-
-
-model <- an_df %>% 
-  glm(formula = d_dmode_n ~ d_parity_tr1 + d_parous_cat,
-            family = binomial(link = "logit")) 
-summary(model)
-
-
-an_df %>% 
-  tabyl(d_parity_tr1)
-
-an_df %>% tabyl(d_parity_tr_lab)
-
-
-
-
-
-
-
-tidy_model <- model %>% 
-  tidy(exponentiate = TRUE, conf.int = TRUE)
-tidy_model
-
-
-
-
-
-
-
-
-# example relevelling 
-
-# model <- data %>%
-#   mutate(d_R1alcohol_status_lab = relevel(d_R1alcohol_status_lab, ref = "Current")) %>%
-#   glm(d_dmode_n ~ d_R1alcohol_status_lab, data = ., family = binomial)
-# 
-# summary(model)
 ```
 
-### Strategy
+Trick on parity variables **SUCCESSFULL**
 
-Step 1. Tabulate all exposures with outcome (exposure, outcome)
-
-## Alcohol
+## Menopause related variables
 
 ```{r}
 
-an_df %$% tabpct(d_R1alcohol_status_cat, d_dmode_n, percent = "row", graph = F)
-an_df %$% tabpct(d_R1alcohol_status_lab, d_dmode, percent = "row", graph = F)
+# tabulate trick vars by parity to see if recoded properly 
 
+## age at menopause
+an_df %>% tabyl(d_age_meno_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
 
-an_df %>%  tabyl(d_dmode_n, d_dmode) 
-an_df %>%  tabyl(d_R1alcohol_status_cat, d_R1alcohol_status_lab)
+## HRT use 
+an_df %>% tabyl(d_R1hrt_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+model <- an_df %>% 
+  filter(d_R1menopause_cat3 == 1) %>%
+  glm(formula = d_dmode_n ~ d_age_meno_tr_lab + d_R1hrt_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+logistic.display(model)
+
+# MODEL B - binary parity status in the model -------------------------------------
+
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+logistic.display(model)
 ```
+
+Trick on menopausae variables **SUCCESSFULL**
+
+## Tumour characteristics variables
+
+All DCIS, including those with missing values in the variables below were coded as the reference group. This approach was done also by Louise. Assuming most DCIS would be missing so this seems correct.
+
+```{r}
+# tabulate trick vars by parity to see if recoded properly 
+
+## grade
+an_df %>% tabyl(d_grade_tr, d_inv_status_lab) %>% 
+  adorn_title()
+
+## morphology 
+an_df %>% tabyl(d_morph7_tr, d_inv_status_lab) %>% 
+  adorn_title()
+
+## positive nodes
+an_df %>% tabyl(d_pos_nodes_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## tumour size
+an_df %>% tabyl(d_tmsize_tr, d_inv_status_lab) %>% 
+  adorn_title()
+
+## er status - reference positive
+an_df %>% tabyl(d_er_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## pr status - reference positive
+dev_an_df %>% tabyl(d_pr_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## her2 status - reference positive
+an_df %>% tabyl(d_her2_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+
+# note: keeping morhology as categorical without labels as it affects the outpu
+
+model <- an_df %>% 
+  filter(d_inv_status == 1) %>%
+  glm(formula = d_dmode_n ~ d_grade_lab + d_morph7 + d_pos_nodes_lab + d_tumour_size + d_er_status + d_pr_status + d_her2_status,
+            family = binomial(link = "logit"))
+#summary(model)
+logistic.display(model)
+
+# MODEL B - binary parity status in the model -------------------------------------
+
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_inv_status + d_grade_tr + d_morph7_tr + d_pos_nodes_tr_lab + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+#summary(model)
+logistic.display(model)
+```
+
+Trick on Tumour characteristics variables **SUCCESSFULL**
+
+## Conclusion of trick test 
+
+Trick test on all 3 sets of variables was successful. This means that we can use the trick variables in the multivariate analysis.
+
+# Multivariate analysis 
+
+This is for the main analysis, subanalyses will be an independent section
+
+The main analysis is comprised of 2 parts:
+
+1.   Examining the relationship between risk factors and mode of detection
+2.  Adjusting for mammographic density in a subset of cases with density available
+
+## Part 1: Relationship between risk factors and mode of detection 
+
+An analysis with all selected exposures in the model (adjusted for each other). Also, will need to adjust for time and age variables. Then, adjust for tumour characteristics and explore the difference. If there is no or minimal difference the model adjusted for tumour characteristics will be presented in the supplement.
+
+Therefore, part 1 of the multivariate analysis will include 3 models:
+
+1.  Minimally adjusted - including all risk factor exposures
+2.  Adjusted for time variables
+3.  Fully adjusted - time variables and tumour characteristics.
+
+**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+
+**Model 2**: Model 1 + "diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y" \[ decide whether to include all of these\]
+
+**Model 3**: Model 2 + "d_inv_status", "d_grade_cat", "d_morph7", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
+
+```{r}
+
+# Model 1 -----------------------------------------------------------
+# include parity and meno trick variable instead of original variables
+
+# only included alcohol status - check if we need to do the trick if including both
+
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
+      + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
+      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab,
+            family = binomial(link = "logit"))
+
+#summary(model)
+#logistic.display(model)
+
+# display result as a tidy model table 
+tidy_model <- model %>% 
+  tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+  mutate(OR = estimate) %>% 
+  select(-estimate) %>% 
+  select(term, OR, everything())
+tidy_model
+```
+
+## Part 2: Adjusting for mammographic density
+
+This part will require the same analysis as in part 1 on a **subset of cases with mamographic density**. Then expanding by a 4th model adjusting for mammographic density.
+
+**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+
+**Model 2**: Model 1 + "diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y" \[ decide whether to include all of these\]
+
+**Model 3**: Model 2 + "d_inv_status", "d_grade_cat", "d_morph7", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
+
+**Model 4**: Model 3 +"d_md_qrt" \[as quartiles\]

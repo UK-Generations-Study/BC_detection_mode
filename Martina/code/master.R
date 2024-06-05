@@ -42,5 +42,10 @@ source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHu
 source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/6.cr_mammodensity_selection_v3.r")
 
 # 7. COMPRISE ANALYTICAL DATASET  ------------------------
-source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/7.cr_analytical_df_v2.r")
+
+# missing values treated as error codes 888 - good for exploratory analysis and checking reason for missingness
+#source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/7.cr_analytical_df_v2.r")
+
+# Missing values are treated as NAs in v3 - better for futher analysis
+source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/7.cr_analytical_df_v3.r")
 
