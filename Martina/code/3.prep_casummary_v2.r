@@ -44,13 +44,26 @@ n_distinct(casummary_im$tcode)
 casummary_df <- casummary_im %>%
   filter(!is.na(tcode)) 
 
+
+n_miss(riskfactors_df$date_entry)
+
 # merge date of birth from risk factors 
+
+
+
 birth <- riskfactors_df %>% 
-  select(tcode, date_birth, date_entry)
+  select(tcode, date_birth, date_entry, AgeatEntry)
+
+n_miss(birth$date_entry)
 
 casummary_df <- casummary_df %>% 
   left_join(birth, by = "tcode")
 
+n_miss(casummary_df$date_entry)
+
+# remove those with missing date_entry because they have not completed questionnaires 
+casummary_df <- casummary_df %>% 
+  filter(!is.na(date_entry))
 
 
 # 2. Select BC cases ----------------------------------------------------------------------------------------------------
@@ -107,22 +120,27 @@ casummary_df <- casummary_df %>%
     ) 
     
  
-  
-  
+
+# updated code 30/04/2024
 casummary_df <- casummary_df %>%
   # Order cancer diagnosis within participants by date
   group_by(tcode) %>%
   arrange(tcode, diagage, diagdate, Reginfo_Clusterino, Report_Cluster) %>%
   # cancer diagnosis order
-  mutate(ca_order = as.factor(order(tcode)),
+  mutate(ca_order = as.factor(cumsum(cancer == 1)),
          # confirmed only cancer order
-         conf_ca_order = as.factor(if_else(confirmed ==1 & cancer == 1, cumsum(cancer == 1), 0)),
+         conf_ca_order = as.factor(if_else(confirmed == 1 & cancer == 1, cumsum(confirmed ==1 & cancer == 1), 0)),
+         
          # BC diagnosis (dcis and inv) order within participants by date
          BC_order = as.factor(if_else(breast_cancer == 1, cumsum(breast_cancer == 1), 0)),
          # confirmed only BC diagnosis (dcis and inv) order within participants by date
-         conf_BC_order = as.factor(if_else(confirmed == 1 & breast_cancer == 1, cumsum(breast_cancer == 1), 0)),
+         conf_BC_order = as.factor(if_else(confirmed == 1 & breast_cancer == 1, cumsum(confirmed ==1 & breast_cancer == 1), 0)),
+         
          # BC diagnosis (inv only) order within participants by date
          BC_inv_order = as.factor(if_else(breast_cancer_invasive == 1, cumsum(breast_cancer_invasive == 1), 0)),
+         # confirmed BC diagnosis (inv only) order within participants by date
+         conf_BC_inv_order = as.factor(if_else(confirmed == 1 & breast_cancer_invasive == 1, cumsum(confirmed == 1 & breast_cancer_invasive == 1), 0)),
+         
          # Flag for first cancer is BC (dcis and inv)
          first_ca_BC = as.factor(if_else(BC_order == 1 & ca_order == 1, 1, 0)),
          # Flag for first cancer is BC (invasive only)
@@ -130,7 +148,7 @@ casummary_df <- casummary_df %>%
   ) %>%
   ungroup()
 
-
+#View(casummary_df[, c("tcode", "ICDt", "confirmed", "cancer", "breast_cancer", "breast_cancer_invasive", "breast_cancer_dcis", "ca_order", "conf_ca_order", "conf_BC_order", "conf_BC_inv_order")])
 
 ## select cases -------------------------------------------------------------------------
 

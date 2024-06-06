@@ -848,10 +848,11 @@ mean_density_df <- dev_density_df %>%
   group_by(tcode) %>% 
   arrange(tcode, MammoDat_f) %>% 
   filter(mammo_row == "Y") %>% 
-  mutate(mean_density = mean(Density_Reading),
-         SD_density = SD(Density_Reading)
+  mutate(mean_density = round(mean(Density_Reading),1),
+         sd_density = round(SD(Density_Reading),1),
+         MD_avail = "Y"
          ) %>% 
-  select(tcode, mean_density, SD_density, ancat_dmode_v2) %>% 
+  select(tcode, MammoDat_f, MD_avail, mean_density, sd_density, ancat_dmode_v2) %>% 
   distinct() %>% 
   ungroup()
 

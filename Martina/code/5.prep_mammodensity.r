@@ -68,7 +68,7 @@ check %>% tabyl(mammo_flag)
 
 summary <- dfSummary(mammodensity_df)
 
-stview(summary)
+#stview(summary)
 
 
 # select eligible cases - interval and SD cases 
