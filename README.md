@@ -20,15 +20,15 @@ V2 - missing values treated as error codes 888 - good for exploratory analysis a
 V3 - Missing values are treated as NAs in v3 - better for futher analysis
 
 ### Breast density selection decision tree
-https://expert-dollop-n8m7kve.pages.github.io/Martina/breast_density_selection.drawio.html
+[diagram](https://expert-dollop-n8m7kve.pages.github.io/Martina/breast_density_selection.drawio.html)  
 
 ### Breast density descriptions 
-https://expert-dollop-n8m7kve.pages.github.io/Martina/code/density_descriptives.html
+[density descriptions](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/density_descriptives.html)
 
 ### Mode of detection - analytical dataset descriptives 
-[work in progress]
-https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/screening_descriptives.html 
+work in progress
+[dataset descriptions](https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/screening_descriptives.html) 
 
 ### Analysis 
-[work in progress]
-https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/analysis.html
+work in progress
+[analysis](https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/analysis.html)
