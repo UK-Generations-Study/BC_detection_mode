@@ -1372,9 +1372,9 @@ dev_an_df %>% tabyl(d_md_qrt_m)
 
 check <- dev_an_df %>% tabyl(d_md, d_md_qrt)
 
-dev_an_df %>% 
-  group_by(d_md_qrt) %>% 
-  mean_table(mean_density)
+# dev_an_df %>% 
+#   group_by(d_md_qrt) %>% 
+#   mean_table(mean_density)
 
 
 ### high/low density --------------------------------------------------------------

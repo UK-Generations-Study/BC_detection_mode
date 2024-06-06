@@ -118,7 +118,7 @@ an_df %>% tabyl(d_dmode_n)
 Repeat these steps for each exposure:
 
 1.  Tabulation including missing
-2.   Compute basic OR and chisqr test
+2.  Compute basic OR and chisqr test
 3.  Univariate logistic regression
 
 ```{r}
@@ -191,7 +191,7 @@ Repeat these steps for each exposure:
 
 ```
 
-### Univariate analysis function 
+### Univariate analysis function
 
 ```{r}
 
@@ -235,7 +235,7 @@ perform_univariate_analysis <- function(data, outcome, exposure) {
 
 ```
 
-## Compute univariate analysis 
+## Compute univariate analysis
 
 ```{r}
 
@@ -256,9 +256,8 @@ When we run 2 models:
 
 1.  a model on a subset of parous women only and with the remaining 2 parity related variables
 
-```{=html}
 <!-- -->
-```
+
 2.  a model with all cases, the parous binary variable and the 2 recoded parity related variables (non parous women part of the reference group)
 
 The estimates will be exactly the same. This needs to be tested for all 3 groups of these variables.
@@ -393,20 +392,20 @@ logistic.display(model)
 
 Trick on Tumour characteristics variables **SUCCESSFULL**
 
-## Conclusion of trick test 
+## Conclusion of trick test
 
 Trick test on all 3 sets of variables was successful. This means that we can use the trick variables in the multivariate analysis.
 
-# Multivariate analysis 
+# Multivariate analysis
 
 This is for the main analysis, subanalyses will be an independent section
 
 The main analysis is comprised of 2 parts:
 
-1.   Examining the relationship between risk factors and mode of detection
+1.  Examining the relationship between risk factors and mode of detection
 2.  Adjusting for mammographic density in a subset of cases with density available
 
-## Part 1: Relationship between risk factors and mode of detection 
+## Part 1: Relationship between risk factors and mode of detection
 
 An analysis with all selected exposures in the model (adjusted for each other). Also, will need to adjust for time and age variables. Then, adjust for tumour characteristics and explore the difference. If there is no or minimal difference the model adjusted for tumour characteristics will be presented in the supplement.
 
@@ -437,16 +436,77 @@ model <- an_df %>%
       + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 
-#summary(model)
+# summary(model)
 #logistic.display(model)
 
-# display result as a tidy model table 
-tidy_model <- model %>% 
-  tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-  mutate(OR = estimate) %>% 
-  select(-estimate) %>% 
-  select(term, OR, everything())
-tidy_model
+# display result as a tidy model table with OR  
+ tidy_model <- model %>% 
+   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+   mutate(OR = estimate) %>% 
+   select(-estimate) %>% 
+   select(term, OR, everything())
+ tidy_model 
+ 
+ 
+ # Model 2 ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+# only included alcohol status - check if we need to do the trick if including both
+# including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
+      + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
+      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+      + diagage + d_R1toBC_y,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR  
+ tidy_model <- model %>% 
+   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+   mutate(OR = estimate) %>% 
+   select(-estimate) %>% 
+   select(term, OR, everything())
+ tidy_model 
+
+
+# Model 3 ---------------------------------------------------------------------
+# include parity and meno trick variable instead of original variables
+
+# only included alcohol status - check if we need to do the trick if including both
+# including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+# Adding TC trick variables
+ 
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
+      + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
+      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+      + diagage + d_R1toBC_y
+      + d_inv_status + d_grade_tr + d_morph7_tr + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+ summary(model)
+ logistic.display(model)
+
+# display result as a tidy model table with OR  
+ tidy_model <- model %>% 
+   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+   mutate(OR = round(estimate, 2),
+          std.error = round(std.error, 2),
+          p.value = round(p.value, 4),
+          conf.low = round(conf.low)
+          ) %>% 
+   select(-estimate) %>% 
+   select(term, OR, everything())
+ tidy_model 
 ```
 
 ## Part 2: Adjusting for mammographic density
