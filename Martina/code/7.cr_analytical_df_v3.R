@@ -342,7 +342,17 @@ dev_an_df <- dev_an_df %>%
          d_morph7 = fct_relevel(d_morph7, "1", "2", "3", "4", "5", "6", "7"),
          d_morph7_lab = factor(x = d_morph7,
                                levels = c(1, 2, 3, 4, 5, 6, 7),
-                               labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other"))
+                               labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other")
+                               ),
+         # morph with 4 categories only due to small numbers
+         d_morph4 = as.factor(case_when(as.character(d_morph7) %in% c(3, 4) ~ "3",
+                                        as.character(d_morph7) %in% c(5, 6, 7) ~ "4",
+                                        TRUE ~ as.character(d_morph7)
+                                        )),
+         d_morph4 = fct_relevel(d_morph4, "1", "2", "3", "4"),
+         d_morph4_lab = factor(x = d_morph4,
+                               levels = 1:4,
+                               labels = c("Ductal", "Lobular", "Mixed: ductal and other", "Other"))
          )
 
          
@@ -365,22 +375,36 @@ dev_an_df %>% tabyl(d_morphology_lab, d_morph7_lab)
 dev_an_df %>% tabyl(d_morphology_lab, d_inv_status_lab)
 dev_an_df %>% tabyl(d_morph7_lab, d_inv_status_lab)
 
+dev_an_df %>% tabyl(d_morph7_lab, d_morph4)
+dev_an_df %>% tabyl(d_morphology_lab, d_morph4_lab)
+
 ### Morphology - trick ------------------------------------------------------
 # recode dcis that are not already in ductal to be in ductal (refernce group 1)
 
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_morph7_tr = as.factor(case_when(as.character(d_inv_status) == 0 ~ "1",
+#                                  TRUE ~ as.character(d_morph7)
+#                                  )),
+#          d_morph7_tr_lab = factor(x = d_morph7_tr,
+#                                levels = c(1, 2, 3, 4, 5, 6, 7),
+#                                labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other"))
+#          )
+
+
 dev_an_df <- dev_an_df %>% 
-  mutate(d_morph7_tr = as.factor(case_when(as.character(d_inv_status) == 0 ~ "1",
-                                 TRUE ~ as.character(d_morph7)
-                                 )),
-         d_morph7_tr_lab = factor(x = d_morph7_tr,
-                               levels = c(1, 2, 3, 4, 5, 6, 7),
-                               labels = c("Ductal", "Lobular", "Mixed: ductal and lobular", "Mixed: ductal and other", "Tubular", "Mucinous or colloid", "Other"))
-         )
+  mutate(d_morph4_tr = as.factor(case_when(as.character(d_inv_status) == 0 ~ "1",
+                                           TRUE ~ as.character(d_morph4)
+  )),
+  d_morph4_tr = fct_relevel(d_morph4_tr, "1", "2", "3", "4"),
+  d_morph4_tr_lab = factor(x = d_morph4_tr,
+                           levels = 1:4,
+                           labels = c("Ductal", "Lobular", "Mixed: ductal and other", "Other"))
+  )
 
 
-dev_an_df %>% tabyl(d_morph7_tr, d_inv_status_lab)
-dev_an_df %>% tabyl(d_morph7_tr_lab, d_inv_status_lab)
-dev_an_df %>% tabyl(d_morph7_tr_lab)
+dev_an_df %>% tabyl(d_morph4_tr, d_inv_status_lab)
+dev_an_df %>% tabyl(d_morph4_tr_lab, d_inv_status_lab)
+dev_an_df %>% tabyl(d_morph4_tr_lab)
 
 ### n of positive nodes ----------------------------------------------------
 # categories: 0, 1-3, 4-10, >10, n/k
