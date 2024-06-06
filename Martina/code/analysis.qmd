@@ -10,6 +10,7 @@ format:
     toc-location: left
     number-sections: true
     theme: [cosmo, style.css]
+    page-layout: full
 editor: visual
 ---
 
@@ -553,7 +554,7 @@ model <- an_df %>%
  tidy_model
 ```
 
-#### Notes: 
+#### Notes:
 
 Model 3 and 4 have the same number of observations n = 857. After adjusting for tumour characteristics, there are some changes in the estimates (e.g. BMI - underweight group although CI large, BBD larger effect)
 
