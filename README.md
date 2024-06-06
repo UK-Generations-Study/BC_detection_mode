@@ -27,8 +27,8 @@ V3 - Missing values are treated as NAs in v3 - better for futher analysis
 
 ### Mode of detection - analytical dataset descriptives 
 work in progress
-[dataset descriptions](https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/screening_descriptives.html) 
+[dataset descriptions](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/screening_descriptives.html) 
 
 ### Analysis 
 work in progress
-[analysis](https://github.com/UK-Generations-Study/BC_detection_mode/blob/prep_data(Martina)/Martina/code/analysis.html)
+[analysis](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/analysis.html) 
