@@ -14,6 +14,7 @@ This is the summary of the 7 parts:
 5. PREPARE MAMMODENSITY -------------------------------
 6. CREATE MAMMO DENSITY VARIABLE ------------------------
 7. COMPRISE ANALYTICAL DATASET  ------------------------
+
 There are 2 version of script 7 varying by how they handle missing values. For analysis, v3 is used. (v1 is archived)
 V2 - missing values treated as error codes 888 - good for exploratory analysis and checking reason for missingness
 V3 - Missing values are treated as NAs in v3 - better for futher analysis
