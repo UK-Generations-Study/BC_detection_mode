@@ -1388,7 +1388,11 @@ dev_an_df <- dev_an_df %>%
   ) %>%
   mutate(d_md_qrt_m = round(median(mean_density), 2)
   ) %>%
-  ungroup()
+  ungroup(
+    
+  ) %>% 
+  mutate(d_md_qrt = factor(x = d_md_qrt, 
+                           levels = 1:4))
 
 
 dev_an_df %>% tabyl(d_md_qrt)

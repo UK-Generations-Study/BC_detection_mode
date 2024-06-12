@@ -9,7 +9,7 @@ format:
     toc: true
     toc-location: left
     number-sections: true
-    theme: [cosmo, style.css]
+    theme: [flatly, style.css]
     page-layout: full
 editor: visual
 ---
@@ -20,6 +20,7 @@ The Master script links all parts of data preparation in 7 processing scripts. T
 
 ```{r}
 #| include: false
+#| echo: false
 
 # execute master file 
 source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/master.R")
@@ -44,6 +45,9 @@ Relevel reference groups within some exploratory variables.
 Mammographic density is a special variable that will be used for subanalyses on cases with mammographic density only (to adjust for in the model)
 
 ```{r}
+#| include: false
+#| echo: false
+
 ## Store explanatory variables as an object -------------------------------
 
 # select categorical variables that are not labelled
@@ -122,6 +126,10 @@ Repeat these steps for each exposure:
 2.  Compute basic OR and chisqr test
 3.  Univariate logistic regression
 
+::: callout-important
+Code under the empty heading has been excluded from the html file as not relevant
+:::
+
 ```{r}
 #| echo: false
 #| include: false
@@ -192,9 +200,13 @@ Repeat these steps for each exposure:
 
 ```
 
-### Univariate analysis function
+## Define function for univariate analysis
 
 ```{r}
+#| echo: false
+#| include: false
+
+# Univariate analysis function ----------------------------------------------------
 
 # Define the function
 perform_univariate_analysis <- function(data, outcome, exposure) {
@@ -238,7 +250,11 @@ perform_univariate_analysis <- function(data, outcome, exposure) {
 
 ## Compute univariate analysis
 
+### All cases
+
 ```{r}
+#| echo: false
+#| include: false
 
 # loop for multiple exposures - Risk factors
 exposures <- all_expl_variables
@@ -249,6 +265,111 @@ for (exposure in exposures) {
 }
 ```
 
+### Cases with Breast density
+
+```{r}
+#| echo: false
+#| include: false
+ 
+# loop for multiple exposures - Risk factors
+exposures <- all_expl_variables
+
+# filter data to include only cases with MD
+data <- an_df %>% 
+  filter(d_md_avail == 1)
+
+for (exposure in exposures) {
+  cat("\nAnalyzing exposure:", exposure, "\n")
+  perform_univariate_analysis(data = data, outcome = "d_dmode_n", exposure = exposure)
+}
+
+rm(data)
+```
+
+## Univariate analysis tables
+
+```{r}
+#| echo: false
+
+# set theme for gtsummary tables: 
+
+theme_gtsummary_compact(set_theme = TRUE)
+```
+
+::: callout-note
+Comparing all cases vs cases with MD only
+:::
+
+```{r}
+
+# Univariate analysis with gtsummary - creates nice tables
+
+# all cases:
+t1 <- an_df %>%
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5 to 25", "<18.5", "25 to 30", ">=30")
+  ) %>%
+  select(d_dmode_n, any_of(all_expl_variables)
+         ) %>%
+  tbl_uvregression(
+    method = glm,
+    y = d_dmode_n,
+    method.args = list(family = binomial),
+    exponentiate = TRUE,
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+   ) %>%
+  add_global_p() %>% # add global p-value
+  add_nevent() %>% # add number of events of the outcome
+  bold_labels() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#t1
+
+ 
+# show_header_names(t1) # show header names to rename event N to Interval N
+
+
+# MD cases only:
+t2 <- an_df %>%
+  filter(d_md_avail == 1
+         ) %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5 to 25", "<18.5", "25 to 30", ">=30")
+  ) %>%
+  select(d_dmode_n, any_of(all_expl_variables)
+         ) %>%
+  tbl_uvregression(
+    method = glm,
+    y = d_dmode_n,
+    method.args = list(family = binomial),
+    exponentiate = TRUE,
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+   ) %>%
+  add_global_p() %>% # add global p-value
+  add_nevent() %>% # add number of events of the outcome
+  bold_labels() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+# merge tables --------------------------------------------------------------- 
+
+
+#univariate <- tbl_merge(tbls = list(t1, t2))
+
+
+univariate <- tbl_merge(
+  tbls = list(t1, t2),
+  tab_spanner = c("**All cases**", "**Cases with MD**")
+   ) 
+
+univariate
+
+  
+
+
+
+```
+
 # Test trick models
 
 There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter inuitive, when the equation is written down including the indicator variables, the maths works.
@@ -256,9 +377,6 @@ There are 3 groups of variables that require trick recoding (Tumour characterist
 When we run 2 models:
 
 1.  a model on a subset of parous women only and with the remaining 2 parity related variables
-
-<!-- -->
-
 2.  a model with all cases, the parous binary variable and the 2 recoded parity related variables (non parous women part of the reference group)
 
 The estimates will be exactly the same. This needs to be tested for all 3 groups of these variables.
@@ -286,7 +404,15 @@ model <- an_df %>%
   glm(formula = d_dmode_n ~ d_parity_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**") 
+
+
 
 # MODEL B - binary parity status in the model -------------------------------------
 
@@ -294,11 +420,22 @@ model <- an_df %>%
   glm(formula = d_dmode_n ~ d_parous_cat + d_parity_tr_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+
 
 ```
 
+::: {.callout-note style="color: green"}
 Trick on parity variables **SUCCESSFULL**
+:::
 
 ## Menopause related variables
 
@@ -320,7 +457,13 @@ model <- an_df %>%
   glm(formula = d_dmode_n ~ d_age_meno_tr_lab + d_R1hrt_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
 
 # MODEL B - binary parity status in the model -------------------------------------
 
@@ -328,10 +471,18 @@ model <- an_df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
 ```
 
+::: {.callout-note style="color: green"}
 Trick on menopausae variables **SUCCESSFULL**
+:::
 
 ## Tumour characteristics variables
 
@@ -379,7 +530,13 @@ model <- an_df %>%
   glm(formula = d_dmode_n ~ d_grade_lab + d_morph4 + d_pos_nodes_lab + d_tumour_size + d_er_status + d_pr_status + d_her2_status,
             family = binomial(link = "logit"))
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
 
 # MODEL B - binary parity status in the model -------------------------------------
 
@@ -388,10 +545,18 @@ model <- an_df %>%
             family = binomial(link = "logit"))
 
 #summary(model)
-logistic.display(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
 ```
 
+::: {.callout-note style="color: green"}
 Trick on Tumour characteristics variables **SUCCESSFULL**
+:::
 
 ## Conclusion of trick test
 
@@ -422,7 +587,7 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 
 **Model 3**: subset of those with TC! Model 1 + "diagage", "d_R1toBC_y",
 
-**Model 4**: Model 2 + "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
+**Model 4**: Model 3 + "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
 
 ```{r}
 
@@ -445,13 +610,19 @@ model <- an_df %>%
 # summary(model)
 #logistic.display(model)
 
-# display result as a tidy model table with OR  
- tidy_model <- model %>% 
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-   mutate(OR = estimate) %>% 
-   select(-estimate) %>% 
-   select(term, OR, everything())
- tidy_model 
+# # display result as a tidy model table with OR  
+#  tidy_model <- model %>% 
+#    tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+#    mutate(OR = estimate) %>% 
+#    select(-estimate) %>% 
+#    select(term, OR, everything())
+#  tidy_model 
+
+model1 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
  
  
  # Model 2 ----------------------------------------------------------------
@@ -475,12 +646,20 @@ model <- an_df %>%
 # logistic.display(model)
 
 # display result as a tidy model table with OR  
- tidy_model <- model %>%
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-   mutate(OR = estimate) %>%
-   select(-estimate) %>%
-   select(term, OR, everything())
- tidy_model
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = estimate) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
 
 # Model 3  ----------------------------------------------------------------
 #same as model 2 but on the subset of those with TC
@@ -513,12 +692,20 @@ test <- an_df %>%
 # logistic.display(model)
 
 # display result as a tidy model table with OR
-tidy_model <- model %>%
-  tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-  mutate(OR = estimate) %>%
-  select(-estimate) %>%
-  select(term, OR, everything())
-tidy_model
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = estimate) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+ 
+model3 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model3
 
 # Model 4 ---------------------------------------------------------------------
 
@@ -542,21 +729,78 @@ model <- an_df %>%
  
 
 # display result as a tidy model table with OR
- tidy_model <- model %>%
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-   mutate(OR = round(estimate, 2),
-          std.error = round(std.error, 2),
-          p.value = round(p.value, 4),
-          conf.low = round(conf.low)
-          ) %>%
-   select(-estimate) %>%
-   select(term, OR, everything())
- tidy_model
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = round(estimate, 2),
+ #          std.error = round(std.error, 2),
+ #          p.value = round(p.value, 4),
+ #          conf.low = round(conf.low)
+ #          ) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+
+
 ```
 
-#### Notes:
+### Minimally adjusted vs adjusted model - all cases 
+
+Model 1 - Minimally adjusted - only for other exposures
+
+Model 2 - adjusted for time from entry to BC and age at diagnosis
+
+```{r}
+# create table for model 1 and 2 
+
+model1and2 <- tbl_merge(
+  tbls = list(model1, model2),
+  tab_spanner = c("**Minimally adjusted**", "**Time and age adjusted**")
+   ) 
+
+model1and2
+
+```
+
+::: callout-note
+## Summary
+
+No changes in estimates after adjusting for age at diagnosis and time from entry to diagnosis.
+:::
+
+### Adjusting for TC
+
+Model 3 - model 2 (adjusted model) on subset of cases with TC
+
+Model 4 - adjusting for TC
 
 Model 3 and 4 have the same number of observations n = 857. After adjusting for tumour characteristics, there are some changes in the estimates (e.g. BMI - underweight group although CI large, BBD larger effect)
+
+```{r}
+model3and4 <- tbl_merge(
+  tbls = list(model3, model4),
+  tab_spanner = c("**Time and age adjusted**", "**Adjusted for TC**")
+   ) 
+
+model3and4
+```
+
+::: callout-note
+## Summary
+
+Relatively large changes in estimates for
+
+-   BMI category \<18.5kg/m2 (underweight), although the confidence interval is very wide.
+
+-   Benign breast disease - stronger effect after adjusting for tumour characteristics.
+:::
 
 ## Part 2: Adjusting for mammographic density
 
@@ -564,18 +808,18 @@ This part will require the same analysis as in part 1 on a **subset of cases wit
 
 Not modelling TC here as the sample size would be significantly reduced.
 
-**Model 4**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+**Model 5**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
 
-**Model 5**: Model 4 + "diagage", "d_R1toBC_y"
+**Model 6**: Model 4 + "diagage", "d_R1toBC_y"
 
-**Model 6**: Model 5 + "d_R1toMD_y", "d_MDtoBC_y" \[ decide whether to include all of these\]
+**Model 7**: Model 5 + "d_R1toMD_y", "d_MDtoBC_y" \[ decide whether to include all of these\]
 
-**Model 7**: Model 6 +"d_md_qrt" \[as quartiles\]
+**Model 8**: Model 6 +"d_md_qrt" \[as quartiles\]
 
 ```{r}
 
 
-# Model 4 -----------------------------------------------------------
+# Model 5 -----------------------------------------------------------
 # include parity and meno trick variable instead of original variables
 
 # only included alcohol status - check if we need to do the trick if including both
@@ -597,15 +841,22 @@ model <- an_df %>%
 # logistic.display(model)
 
 # display result as a tidy model table with OR  
- tidy_model <- model %>% 
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-   mutate(OR = estimate) %>% 
-   select(-estimate) %>% 
-   select(term, OR, everything())
- tidy_model 
+ # tidy_model <- model %>% 
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+ #   mutate(OR = estimate) %>% 
+ #   select(-estimate) %>% 
+ #   select(term, OR, everything())
+ # tidy_model 
+
+model5 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
  
  
- # Model 5 ----------------------------------------------------------------
+ # Model 6 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
 
 # only included alcohol status - check if we need to do the trick if including both
@@ -627,15 +878,21 @@ model <- an_df %>%
 # summary(model)
 # logistic.display(model)
 
-# display result as a tidy model table with OR  
- tidy_model <- model %>% 
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-   mutate(OR = estimate) %>% 
-   select(-estimate) %>% 
-   select(term, OR, everything())
- tidy_model 
+# # display result as a tidy model table with OR  
+#  tidy_model <- model %>% 
+#    tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+#    mutate(OR = estimate) %>% 
+#    select(-estimate) %>% 
+#    select(term, OR, everything())
+#  tidy_model 
 
- # Model 6 ----------------------------------------------------------------
+model6 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+ # Model 7 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
 
 # only included alcohol status - check if we need to do the trick if including both
@@ -657,15 +914,21 @@ model <- an_df %>%
 # summary(model)
 # logistic.display(model)
 
-# display result as a tidy model table with OR  
- tidy_model <- model %>% 
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-   mutate(OR = estimate) %>% 
-   select(-estimate) %>% 
-   select(term, OR, everything())
- tidy_model
+# # display result as a tidy model table with OR  
+#  tidy_model <- model %>% 
+#    tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+#    mutate(OR = estimate) %>% 
+#    select(-estimate) %>% 
+#    select(term, OR, everything())
+#  tidy_model
+
+model7 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
  
-# Model 7 ----------------------------------------------------------------
+# Model 8 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
 
 # only included alcohol status - check if we need to do the trick if including both
@@ -688,12 +951,118 @@ model <- an_df %>%
 # summary(model)
 # logistic.display(model)
 
-# display result as a tidy model table with OR  
- tidy_model <- model %>% 
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
-   mutate(OR = estimate) %>% 
-   select(-estimate) %>% 
-   select(term, OR, everything())
- tidy_model
+# # display result as a tidy model table with OR  
+#  tidy_model <- model %>% 
+#    tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+#    mutate(OR = estimate) %>% 
+#    select(-estimate) %>% 
+#    select(term, OR, everything())
+#  tidy_model
 
+model8 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+```
+
+```{r}
+# combine results
+
+model5to8 <- tbl_merge(
+  tbls = list(model5, model6, model7, model8),
+  tab_spanner = c("**Unadjusted**", "**Adjusted for DG age + entry to DG**", "**Adjusted for MDtoDG time**", "**Adjusted for MDtoDG time + MD**")
+   ) 
+
+model5to8
+```
+
+## Part 3: Tumour characteristics only 
+
+For internal purpose or supplemental materials.
+
+**Model 9**: TC only "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
+
+**Model 10**: "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status", "diagage", "R1toBC"
+
+```{r}
+
+# Model 9 ------------------------------------------------------------------------
+
+# Adding TC trick variables
+ 
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ 
+      d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+ 
+
+# display result as a tidy model table with OR
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = round(estimate, 2),
+ #          std.error = round(std.error, 2),
+ #          p.value = round(p.value, 4),
+ #          conf.low = round(conf.low)
+ #          ) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model9 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# Model 9 ------------------------------------------------------------------------
+
+# Adding TC trick variables
+ 
+model <- an_df %>%
+  glm(formula = d_dmode_n ~ 
+      diagage + d_R1toBC_y
+      + d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+ 
+
+# display result as a tidy model table with OR
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = round(estimate, 2),
+ #          std.error = round(std.error, 2),
+ #          p.value = round(p.value, 4),
+ #          conf.low = round(conf.low)
+ #          ) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model10 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+```
+
+```{r}
+# combine results 
+
+
+model9and10 <- tbl_merge(
+  tbls = list(model9, model10),
+  tab_spanner = c("**Unadjusted**", "**Adjusted for DG age + entry to DG**")
+   ) 
+
+model9and10
 ```
