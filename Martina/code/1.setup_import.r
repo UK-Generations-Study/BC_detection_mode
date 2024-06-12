@@ -65,7 +65,8 @@ p_load(readxl,
        lmtest, # likelihood-ratio tests
        parameters, # # alternative to tidy up results from regressions
        see,          # alternative to visualise forest plots
-       skimr # alternative to dataset overview 
+       skimr, # alternative to dataset overview 
+       gt
        )
 
 options(scipen=200000)
