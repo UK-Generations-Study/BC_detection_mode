@@ -53,7 +53,7 @@ Mammographic density is a special variable that will be used for subanalyses on 
 # select categorical variables that are not labelled
 
 # exploratory vars 
-all_expl_variables <- c("d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat")
+all_expl_variables <- c( "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat")
   
 lifestyle <- c("d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who")
   
@@ -75,9 +75,9 @@ time_vars <- c("diagage", "d_R1toBC_y", "d_R1toMD_y", "d_MDtoBC_y")
 # select categorical variables that are not labelled
 
 # exploratory vars 
-all_expl_variables <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
+all_expl_variables <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who_lab", "d_bbd_lab", "d_fambrca_lab", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
   
-lifestyle <- c("d_R1alcohol_status_lab", "d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who")
+lifestyle <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who")
   
 reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
   
@@ -140,14 +140,14 @@ Code under the empty heading has been excluded from the html file as not relevan
 # # Alcohol status 
 # 
 # # cross tabulation
-# an_df %$% tabpct(d_dmode_n, d_R1alcohol_status_lab, percent = "col", graph = F)
+# an_df %$% tabpct(d_dmode_n, d_R1alcohol_units_lab, percent = "col", graph = F)
 # # OR and chi-squared
-# an_df %$% cc(d_dmode_n, d_R1alcohol_status_lab, graph = F)
+# an_df %$% cc(d_dmode_n, d_R1alcohol_units_lab, graph = F)
 # 
 # # Logistic regression 
 # 
 # model <- an_df %>% 
-#   glm(formula = d_dmode_n ~ d_R1alcohol_status_lab,
+#   glm(formula = d_dmode_n ~ d_R1alcohol_units_lab,
 #             family = binomial(link = "logit")) 
 # 
 # # raw output display in log odds scale
@@ -244,7 +244,7 @@ perform_univariate_analysis <- function(data, outcome, exposure) {
 }
 
 #test for 1 exposure
-# perform_univariate_analysis(data = an_df, outcome = "d_dmode_n", exposure = "d_R1alcohol_status_lab")
+# perform_univariate_analysis(data = an_df, outcome = "d_dmode_n", exposure = "d_R1alcohol_units_lab")
 
 ```
 
@@ -290,6 +290,7 @@ rm(data)
 
 ```{r}
 #| echo: false
+#| include: false
 
 # set theme for gtsummary tables: 
 
@@ -302,7 +303,7 @@ Comparing all cases vs cases with MD only
 
 ```{r}
 
-# Univariate analysis with gtsummary - creates nice tables
+# Univariate analysis with gtsummary
 
 # all cases:
 t1 <- an_df %>%
@@ -589,6 +590,8 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 
 **Model 4**: Model 3 + "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
 
+### Code
+
 ```{r}
 
 # Model 1 -----------------------------------------------------------
@@ -600,7 +603,7 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 model <- an_df %>%
   mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>% 
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -619,11 +622,13 @@ model <- an_df %>%
 #  tidy_model 
 
 model1 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
  
+# model1
  
  # Model 2 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
@@ -634,7 +639,7 @@ model1 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- an_df %>%
    mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>%
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -654,8 +659,9 @@ model <- an_df %>%
  # tidy_model
 
 model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -680,7 +686,7 @@ test <- an_df %>%
            ) %>% 
    mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>%
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -700,8 +706,9 @@ test <- an_df %>%
 # tidy_model
  
 model3 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -714,7 +721,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- an_df %>%
    mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>%
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -741,8 +748,9 @@ model <- an_df %>%
  # tidy_model
 
 model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -751,7 +759,14 @@ model4 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 ```
 
-### Minimally adjusted vs adjusted model - all cases 
+### Tables
+
+These tables are for internal purposes only.
+
+::: panel-tabset
+## All cases
+
+***Minimally adjusted vs time and age adjusted***
 
 Model 1 - Minimally adjusted - only for other exposures
 
@@ -766,16 +781,17 @@ model1and2 <- tbl_merge(
    ) 
 
 model1and2
-
 ```
 
 ::: callout-note
 ## Summary
 
-No changes in estimates after adjusting for age at diagnosis and time from entry to diagnosis.
+No changes in estimates after adjusting for age at diagnosis and time from entry to diagnosis
 :::
 
-### Adjusting for TC
+## Cases with TC
+
+**Adjusting for tumour characteristics**
 
 Model 3 - model 2 (adjusted model) on subset of cases with TC
 
@@ -790,6 +806,7 @@ model3and4 <- tbl_merge(
    ) 
 
 model3and4
+
 ```
 
 ::: callout-note
@@ -800,6 +817,7 @@ Relatively large changes in estimates for
 -   BMI category \<18.5kg/m2 (underweight), although the confidence interval is very wide.
 
 -   Benign breast disease - stronger effect after adjusting for tumour characteristics.
+:::
 :::
 
 ## Part 2: Adjusting for mammographic density
@@ -816,6 +834,8 @@ Not modelling TC here as the sample size would be significantly reduced.
 
 **Model 8**: Model 6 +"d_md_qrt" \[as quartiles\]
 
+### Code
+
 ```{r}
 
 
@@ -830,7 +850,7 @@ model <- an_df %>%
          ) %>% 
   mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25") # relevel BMI
          ) %>% 
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -849,8 +869,9 @@ model <- an_df %>%
  # tidy_model 
 
 model5 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -867,7 +888,7 @@ model <- an_df %>%
          ) %>%
    mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>%
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -887,11 +908,11 @@ model <- an_df %>%
 #  tidy_model 
 
 model6 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
-
  # Model 7 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
 
@@ -903,7 +924,7 @@ model <- an_df %>%
          ) %>%
    mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
          ) %>%
-  glm(formula = d_dmode_n ~ d_R1alcohol_status_lab + d_R1smokingstatus_lab 
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
@@ -923,8 +944,9 @@ model <- an_df %>%
 #  tidy_model
 
 model7 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
  
@@ -960,12 +982,17 @@ model <- an_df %>%
 #  tidy_model
 
 model8 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
 ```
+
+### Tables 
+
+This table is for internal purposes only.
 
 ```{r}
 # combine results
@@ -978,13 +1005,21 @@ model5to8 <- tbl_merge(
 model5to8
 ```
 
-## Part 3: Tumour characteristics only 
+::: callout-note
+## Summary
+
+No significant changes after adjusting for mammographic density.
+:::
+
+## Part 3: Tumour characteristics only
 
 For internal purpose or supplemental materials.
 
 **Model 9**: TC only "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
 
 **Model 10**: "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status", "diagage", "R1toBC"
+
+### Code
 
 ```{r}
 
@@ -994,7 +1029,7 @@ For internal purpose or supplemental materials.
  
 model <- an_df %>%
   glm(formula = d_dmode_n ~ 
-      d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
+      d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
             family = binomial(link = "logit"))
 
@@ -1015,8 +1050,9 @@ model <- an_df %>%
  # tidy_model
 
 model9 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -1027,7 +1063,7 @@ model9 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- an_df %>%
   glm(formula = d_dmode_n ~ 
       diagage + d_R1toBC_y
-      + d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
             family = binomial(link = "logit"))
 
@@ -1048,12 +1084,17 @@ model <- an_df %>%
  # tidy_model
 
 model10 <- tbl_regression(model, exponentiate = TRUE) %>% 
-  add_n(location = "label") %>% 
-  add_nevent() %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
 ```
+
+### Table
+
+This table is for internal purpose only.
 
 ```{r}
 # combine results 
@@ -1065,4 +1106,142 @@ model9and10 <- tbl_merge(
    ) 
 
 model9and10
+```
+
+::: callout-note
+## Summary
+
+Grade 3 of BC, positive nodes, tumour size of 21-50mm associated with being an interval case. Adjusting for age at diagnosis and time from entry to diagnosis did not change the estimates.
+:::
+
+# Draft tables for publication
+
+This section is used for developing tables presenting analyses results for publication.
+
+Table 1 and 2 are descriptive tables, which will be created in a separate Quarto file (Screening descriptives). Once the publication tables are finalised, new Quarto document will be produced with the final tables that can be then exported to different formats.
+
+### Table structure: 
+
+**Main tables**
+
+Table 1 - general descriptives (population characteristics)
+
+Table 2 - risk factor descriptives by density (+ figures)
+
+Table 3 - Risk factor descriptives by detection mode with logistic regression results (unadjusted for TC) - all cases
+
+Table 4 - subset on cases with MD. Same model as table 3 + adjusted for MD. Include mediation measures (% change)
+
+**Supplements**
+
+ST 1 - Descriptives for MD cases (same as table 1 but subset)
+
+ST 2 - TC descriptives by detection mode with logistic regression results
+
+ST 3 - Risk factor analysis adjusted for tumour characteristics (sensitivity analysis) - on subset of cases with TC
+
+## Table 3 - Main analysis
+
+Model 2 is the final selected model to present in the analysis. Model 2 is adjusted for all co-exposures + age at diagnosis and time from entry to BC diagnosis
+
+```{r}
+
+# summary Logistic Regression of Model 2  -----------------------------------------
+
+# view existing output
+model2
+
+# remove columns with total and interval N - not simple with gtsummary, trying from scratch without adding the columns
+
+
+# Create clean version of logistic output, without Ns
+model <- an_df %>%
+   mutate(d_bmi_entry_lab = relevel(d_bmi_entry_lab, ref = "18.5 to 25")
+         ) %>%
+  glm(formula = d_dmode_n ~ d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
+      + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
+      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+      + diagage + d_R1toBC_y,
+            family = binomial(link = "logit"))
+
+
+model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
+                  type = "all")
+  
+
+model2
+
+
+
+
+
+# Create descriptives by mode of detection ------------------------------------
+# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_cat3, d_age_meno_tr_lab, d_R1hrt_tr_lab, d_parous_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
+
+descr_model2 <- an_df %>% 
+  select(d_dmode, all_of(all_expl_variables))
+
+names(descr_model2)
+
+
+
+
+ an_df %>% 
+  select(d_dmode, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab, d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_cat3, d_age_meno_lab, d_R1hrt__lab, d_parous_lab, d_parity_tr_lab, d_agebirth1_tr_lab
+         ) %>%
+  tbl_summary(
+    by = d_dmode,
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_R1alcohol_units_lab ~ "Alcohol units",
+              d_R1smokingstatus_lab ~ "Smoking status",
+              d_bmi_entry_lab ~ "BMI",
+              d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
+              d_bbd_lab ~ "Benign breast disease",
+              d_fambrcaN_lab ~ "Family history of BC",
+              d_age_menarche_lab ~ "Age at menarche",
+              d_ocstatus_lab ~ "Oral contraceptives status",
+              d_R1menopause_lab3 ~ "Menopause",
+              d_age_menopause_lab ~ "Age at menopause",
+              d_R1hrtstatus_lab ~ "HRT status",
+              d_parous_lab ~ "Parous",
+              d_parity_lab ~ "N of parous pregnancies",
+              d_agebirth1_lab ~ "Age at first birth")
+    
+              )
+
+  
+
+
+descr_model2
+label = c(d_R1alcohol_units_lab ~ "Alcohol units",
+              d_R1smokingstatus_lab ~ "Smoking status",
+              d_bmi_entry_lab ~ "BMI",
+              d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
+              d_bbd_lab ~ "Benign breast disease",
+              d_fambrcaN_lab ~ "Family history of BC",
+              d_age_menarche_lab ~ "Age at menarche",
+              d_ocstatus_lab ~ "Oral contraceptives status",
+              d_R1menopause_lab3 ~ "Menopause",
+              d_age_menopause_lab ~ "Age at menopause",
+              d_R1hrtstatus_lab ~ "HRT status",
+              d_parous_lab ~ "Parous",
+              d_parity_lab ~ "N of parous pregnancies",
+              d_agebirth1_lab ~ "Age at first birth"
+
+# merge with analysis output -------------------------------------------------
+
+
+
+
+
+
+# format the table -------------------------------------------------------------
 ```
