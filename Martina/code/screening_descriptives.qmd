@@ -55,7 +55,7 @@ tc_df %>%
   ) 
 ```
 
-## Risk factors 
+## Risk factors
 
 ```{r}
 #| echo: false
