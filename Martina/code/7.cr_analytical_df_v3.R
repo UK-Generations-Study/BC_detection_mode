@@ -541,11 +541,11 @@ dev_an_df <- dev_an_df %>%
                                            is.na(er_Status) ~ NA
                                            )
                                  ),
-         d_er_status = fct_relevel(d_er_status, "0", "1"
+         d_er_status = fct_relevel(d_er_status, "1", "0"
                               ),
          d_er_status_lab = factor(x = d_er_status,
-                                  levels = c(0, 1),
-                                  labels = c("Negative", "Positive"))
+                                  levels = c(1, 0),
+                                  labels = c("Positive", "Negative"))
          )
 
 dev_an_df %>% tabyl(d_er_status)
@@ -562,11 +562,11 @@ dev_an_df <- dev_an_df %>%
   mutate(d_er_tr = case_when(as.character(d_inv_status) == "0"  ~ "1", 
                              TRUE ~ d_er_status
   ),
-  #d_er_tr = ordered(x = d_er_tr, c("0", "1", "888")
-  #),
+  d_er_tr = fct_relevel(d_er_tr, "1", "0"
+  ),
   d_er_tr_lab = factor(x = d_er_tr,
-                           levels = c(0, 1),
-                           labels = c("Negative", "Positive"))
+                           levels = c(1, 0),
+                           labels = c("Positive", "Negative"))
   )
 
 dev_an_df %>% tabyl(d_er_tr)
@@ -585,11 +585,11 @@ dev_an_df <- dev_an_df %>%
                                            is.na(pr_Status) ~ NA
   )
   ),
- d_pr_status = fct_relevel(d_pr_status, "0", "1"
+ d_pr_status = fct_relevel(d_pr_status, "1", "0"
   ),
   d_pr_status_lab = factor(x = d_pr_status,
-                           levels = c(0, 1),
-                           labels = c("Negative", "Positive"))
+                           levels = c(1, 0),
+                           labels = c("Positive", "Negative"))
   )
 
 dev_an_df %>% tabyl(d_pr_status)
@@ -606,11 +606,11 @@ dev_an_df <- dev_an_df %>%
   mutate(d_pr_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
                              TRUE ~ as.character(d_pr_status)
   ),
- # d_pr_tr = ordered(x = d_pr_tr, c("0", "1", "888")
-  #),
+  d_pr_tr = fct_relevel(d_pr_tr, "1", "0"
+  ),
   d_pr_tr_lab = factor(x = d_pr_tr,
-                       levels = c(0, 1),
-                       labels = c("Negative", "Positive"))
+                       levels = c(1, 0),
+                       labels = c("Positive", "Negative"))
   )
 
 dev_an_df %>% tabyl(d_pr_tr)
@@ -632,11 +632,11 @@ dev_an_df <- dev_an_df %>%
                                            is.na(her2_Status) | her2_Status == "Borderline" ~ NA
   )
   ),
-  d_her2_status = fct_relevel(d_her2_status, "0", "1"
+  d_her2_status = fct_relevel(d_her2_status, "1", "0"
    ),
   d_her2_status_lab = factor(x = d_her2_status,
-                           levels = c(0, 1),
-                           labels = c("Negative", "Positive"))
+                           levels = c(1, 0),
+                           labels = c("Positive", "Negative"))
   )
 
 dev_an_df %>% tabyl(d_her2_status)
@@ -653,11 +653,11 @@ dev_an_df <- dev_an_df %>%
   mutate(d_her2_tr = case_when(as.character(d_inv_status) == "0"  ~ "1", 
                              TRUE ~ as.character(d_her2_status)
   ),
-  # d_her2_tr = ordered(x = d_her2_tr, c("0", "1", "888")
-  # ),
+   d_her2_tr = fct_relevel(d_her2_tr, "1", "0"
+  ),
   d_her2_tr_lab = factor(x = d_her2_tr,
-                       levels = c(0, 1),
-                       labels = c("Negative", "Positive"))
+                       levels = c(1, 0),
+                       labels = c("Positive", "Negative"))
   )
 
 dev_an_df %>% tabyl(d_her2_tr)
