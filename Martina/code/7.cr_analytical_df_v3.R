@@ -223,7 +223,7 @@ dev_an_df %>% tabyl(d_grade_lab, d_grade_cat)
 ### Grade - trick ---------------------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_grade_tr = as.factor(case_when(d_inv_status == 0 ~ "1", # making dcis part of reference group (grade 1)
+  mutate(d_grade_tr = as.factor(case_when(d_inv_status == 0 & !is.na(d_grade) ~ "1", # making dcis part of reference group (grade 1)
                                 TRUE ~ as.character(d_grade)
                                 )),
          d_grade_tr = fct_relevel(d_grade_tr, "1", "2", "3")
@@ -235,25 +235,25 @@ dev_an_df %>% tabyl(d_grade_tr, d_inv_status)
 
 # Louises's logic from stata using raw grade variable 
 
-dev_an_df <- dev_an_df %>% 
-  mutate(d_grade2 = case_when(
-     grade %in% c("1", "low", "Low") ~ 1,
-     grade %in% c("2", "intermediate", "Intermediate") ~ 2,
-    grade %in% c("3", "high", "High") ~ 3,
-    grade %in% c("4", "7") ~ 999, # invalid value
-    is.na(grade) ~ NA)) # missing
-
-dev_an_df %>% tabyl(d_grade2)
-
-dev_an_df <- dev_an_df %>% 
-  mutate(d_grade_L = if_else(d_inv_status == 0 & d_grade2 >= 0 & d_grade2 <= 999, 1, d_grade2))
-
-dev_an_df %>% tabyl(d_grade_L)
-dev_an_df %>% tabyl(d_grade_L, d_grade2)
-
-dev_an_df %>% tabyl(d_grade_L, d_grade_tr) %>% 
-  adorn_totals() %>% 
-  adorn_title()  
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_grade2 = case_when(
+#      grade %in% c("1", "low", "Low") ~ 1,
+#      grade %in% c("2", "intermediate", "Intermediate") ~ 2,
+#     grade %in% c("3", "high", "High") ~ 3,
+#     grade %in% c("4", "7") ~ 999, # invalid value
+#     is.na(grade) ~ NA)) # missing
+# 
+# dev_an_df %>% tabyl(d_grade2)
+# 
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_grade_L = if_else(d_inv_status == 0 & d_grade2 >= 0 & d_grade2 <= 999, 1, d_grade2))
+# 
+# dev_an_df %>% tabyl(d_grade_L)
+# dev_an_df %>% tabyl(d_grade_L, d_grade2)
+# 
+# dev_an_df %>% tabyl(d_grade_L, d_grade_tr) %>% 
+#   adorn_totals() %>% 
+#   adorn_title()  
   
 
 ### Stage -----------------------------------------------------------------
@@ -392,7 +392,7 @@ dev_an_df %>% tabyl(d_morphology_lab, d_morph4_lab)
 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_morph4_tr = as.factor(case_when(as.character(d_inv_status) == 0 ~ "1",
+  mutate(d_morph4_tr = as.factor(case_when(as.character(d_inv_status) == 0 & !is.na(as.character(d_morph4))  ~ "1",
                                            TRUE ~ as.character(d_morph4)
   )),
   d_morph4_tr = fct_relevel(d_morph4_tr, "1", "2", "3", "4"),
@@ -452,7 +452,7 @@ dev_an_df %>% tabyl(d_pos_nodes_n)
 # recode dcis to be 0 (no)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_pos_nodes_tr = case_when(as.character(d_inv_status) == "0" ~ "0",
+  mutate(d_pos_nodes_tr = case_when(as.character(d_inv_status) == "0" & !is.na(as.character(d_pos_nodes_cat)) ~ "0",
                                     TRUE ~ as.character(d_pos_nodes_cat)),
          #d_pos_nodes_tr = ordered(x = d_pos_nodes_tr, levels = c("0", "1", "888")),
          d_pos_nodes_tr_lab = factor(x = d_pos_nodes_tr,
@@ -515,7 +515,7 @@ dev_an_df %>% tabyl(d_tumour_size_lab, d_inv_status_lab)
 dev_an_df %>% tabyl(d_tumour_size)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_tmsize_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
+  mutate(d_tmsize_tr = case_when(as.character(d_inv_status) == "0" & !is.na(d_tumour_size) ~ "1", 
                                  TRUE ~ as.character(d_tumour_size)
                                  ),
          #d_tmsize_tr = ordered(x = d_tmsize_tr, levels = c("1", "2", "3", "888")
@@ -559,7 +559,7 @@ dev_an_df %>% tabyl(er_Status, d_er_status_lab)
 # also all missing dicis to positive - need to check that 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_er_tr = case_when(as.character(d_inv_status) == "0"  ~ "1", 
+  mutate(d_er_tr = case_when(as.character(d_inv_status) == "0" & !is.na(d_er_status) ~ "1", 
                              TRUE ~ d_er_status
   ),
   d_er_tr = fct_relevel(d_er_tr, "1", "0"
@@ -603,7 +603,7 @@ dev_an_df %>% tabyl(pr_Status, d_pr_status_lab)
 # Louise has coded all missin dcis as positive as well - is that right? 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_pr_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
+  mutate(d_pr_tr = case_when(as.character(d_inv_status) == "0" & !is.na(d_pr_status) ~ "1", 
                              TRUE ~ as.character(d_pr_status)
   ),
   d_pr_tr = fct_relevel(d_pr_tr, "1", "0"
@@ -650,7 +650,7 @@ dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 # Louise has coded all missin dcis as positive as well - is that right? 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_her2_tr = case_when(as.character(d_inv_status) == "0"  ~ "1", 
+  mutate(d_her2_tr = case_when(as.character(d_inv_status) == "0" & !is.na(d_her2_status) ~ "1", 
                              TRUE ~ as.character(d_her2_status)
   ),
    d_her2_tr = fct_relevel(d_her2_tr, "1", "0"
@@ -834,19 +834,22 @@ dev_an_df %>% tabyl(d_fambrcaN_cat, d_fambrca) %>%
 ### Age at menarche -----------------------------------------------
 # categories: <13, >=13 
 
+# 17/06/2024: changed categories from <13 to >=13 to <12, 12-13 and 14+ as agreed with Montse and Amy
+
 dev_an_df %>% tabyl(menarcheage)
 str(dev_an_df$menarcheage)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_age_menarche = ifelse(menarcheage %in% c(999, 888, NA), NA, menarcheage),
-         d_age_menarche_cat = as.factor(case_when(d_age_menarche < 13 ~ 1, # less than 13 
-                                        d_age_menarche >= 13 & d_age_menarche < 888 ~ 2, # 13 and over
+         d_age_menarche_cat = as.factor(case_when(d_age_menarche < 12 ~ 1, # less than 12 
+                                        d_age_menarche >= 12 & d_age_menarche < 14 ~ 2, # 12 to 13 and over
+                                        d_age_menarche >= 14 & d_age_menarche < 888 ~ 3, # 14 and over
                                         is.na(d_age_menarche) ~ NA # not known
                                         )),
-         d_age_menarche_cat = fct_relevel(d_age_menarche_cat, "1", "2"),
+         d_age_menarche_cat = fct_relevel(d_age_menarche_cat, "1", "2", "3"),
          d_age_menarche_lab = factor(x = d_age_menarche_cat,
-                                     levels = c(1, 2),
-                                     labels = c("less than 13", "13 and over"))
+                                     levels = c(1, 2, 3),
+                                     labels = c("<12", "12-13", "14+"))
     
   )
 
@@ -975,7 +978,7 @@ dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
 # recode pre-menopausal as never 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 0 ~ 0,
+  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 0 & !is.na(d_R1hrtstatus)  ~ 0,
                                    TRUE ~ d_R1hrtstatus),
          d_R1hrt_tr_lab = factor(x = d_R1hrt_tr,
                                     levels = c(0, 1, 2),
@@ -1193,45 +1196,6 @@ dev_an_df %>% tabyl(d_parous_lab, x_parous)
 
 dev_an_df %>% tabyl(x_parity, d_parous_lab)
 
-### Age at first birth -------------------------------------------------
-# categories: <20, 20-24, 25-29, 30-34, >=35
-
-dev_an_df %>% tabyl(x_age_birth_1) # 777 not parous, 888 not known
-
-
-dev_an_df <- dev_an_df %>% 
-  mutate(d_agebirth1_cat = as.factor(case_when(x_age_birth_1 < 20 ~ 1,
-                                     x_age_birth_1 >= 20 & x_age_birth_1 < 25 ~ 2,
-                                     x_age_birth_1 >= 25 & x_age_birth_1 < 30 ~ 3,
-                                     x_age_birth_1 >= 30 & x_age_birth_1 < 35 ~ 4,
-                                     x_age_birth_1 >= 35 & x_age_birth_1 < 777 ~ 5,
-                                     x_age_birth_1 == 777 ~ 777, # non parous
-                                     x_age_birth_1 == 888 ~ NA,
-                                     )),
-         d_agebirth1_cat = fct_relevel(d_agebirth1_cat, "1", "2", "3", "4", "5", "777"),
-         d_agebirth1_lab = factor(x = d_agebirth1_cat,
-                                  levels = c(1, 2, 3, 4, 5, 777),
-                                  labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35", "Non-parous"))
-         )
-  
-dev_an_df %>% tabyl(d_agebirth1_cat, d_agebirth1_lab)
-dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
-
-### Age at first birth - trick -------------------------------------------
-# recode all non parous to be in the lowest age group - seems wrong but doing to replicate L's analysis 
-
-dev_an_df <- dev_an_df %>% 
-  mutate(d_agebirth1_tr = case_when(as.character(d_agebirth1_cat) == 777 ~ "1",
-                             TRUE ~ as.character(d_agebirth1_cat)),
-         d_agebirth1_tr_lab = factor(x = d_agebirth1_tr,
-                              levels = c(1, 2, 3, 4, 5),
-                              labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35")))
-
-dev_an_df %>% tabyl(d_agebirth1_tr)
-dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_parous_lab)
-dev_an_df %>% tabyl(d_agebirth1_tr_lab)
-
-dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_agebirth1_lab)
 
 
 
@@ -1249,16 +1213,16 @@ dev_an_df <- dev_an_df %>%
   mutate(d_parity = x_parity,
          # categorical according to Louise 4 categories but 4th level has low numbers - changed to 3
          d_parity_cat = as.factor(case_when(d_parity == 0 ~ 0,
-                                  d_parity == 1 ~ 1,
-                                  d_parity == 2 ~ 2,
-                                  d_parity >= 3 ~ 3,
-                        )),
+                                            d_parity == 1 ~ 1,
+                                            d_parity == 2 ~ 2,
+                                            d_parity >= 3 ~ 3,
+         )),
          d_parity_cat = fct_relevel(d_parity_cat, "0", "1", "2", "3"),
          d_parity_lab = factor(x = d_parity_cat,
                                level = c(0, 1, 2, 3),
                                labels = c("0", "1", "2", ">=3")
-                               )
          )
+  )
 
 dev_an_df %>% tabyl(d_parity)
 dev_an_df %>% tabyl(d_parity_cat)
@@ -1266,23 +1230,74 @@ dev_an_df %>% tabyl(d_parity_lab)
 
 ### N parous pregnancies - trick -------------------------------------------------
 
+# 17/06 - not needed as agreed to remove parity status and use parity as the default variable
+
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_parity_tr = as.factor(case_when(as.character(d_parity_cat) == 0 | as.character(d_parity_cat) ==1 ~ "1",
+#                                            TRUE ~ as.character(d_parity_cat))
+#   ),
+#   d_parity_tr = fct_relevel(d_parity_tr, "1", "2", "3"),
+#   d_parity_tr_lab = factor(x = d_parity_tr,
+#                            levels = c(1, 2, 3),
+#                            labels = c("1", "2", ">=3")))
+# 
+# dev_an_df %>% tabyl(d_parity_tr)
+# dev_an_df %>% tabyl(d_parity_tr, d_parity_cat)
+# 
+# 
+# dev_an_df %>% tabyl(d_parity_tr_lab, d_parous_lab)
+# dev_an_df %>% tabyl(d_parity_tr_lab)
+# 
+# dev_an_df %>% tabyl(d_parity_tr_lab, d_parity_lab)
+
+
+
+### Age at first birth -------------------------------------------------
+# categories: <20, 20-24, 25-29, 30-34, >=35
+
+dev_an_df %>% tabyl(x_age_birth_1) # 777 not parous, 888 not known
+
+
 dev_an_df <- dev_an_df %>% 
-  mutate(d_parity_tr = as.factor(case_when(as.character(d_parity_cat) == 0 | as.character(d_parity_cat) ==1 ~ "1",
-                                    TRUE ~ as.character(d_parity_cat))
-                                 ),
-         d_parity_tr = fct_relevel(d_parity_tr, "1", "2", "3"),
-         d_parity_tr_lab = factor(x = d_parity_tr,
-                                     levels = c(1, 2, 3),
-                                     labels = c("1", "2", ">=3")))
+  mutate(d_agebirth1_cat = as.factor(case_when(x_age_birth_1 < 20 ~ 1,
+                                               x_age_birth_1 >= 20 & x_age_birth_1 < 25 ~ 2,
+                                               x_age_birth_1 >= 25 & x_age_birth_1 < 30 ~ 3,
+                                               x_age_birth_1 >= 30 & x_age_birth_1 < 35 ~ 4,
+                                               x_age_birth_1 >= 35 & x_age_birth_1 < 777 ~ 5,
+                                               x_age_birth_1 == 777 ~ 777, # non parous
+                                               x_age_birth_1 == 888 ~ NA,
+  )),
+  d_agebirth1_cat = fct_relevel(d_agebirth1_cat, "1", "2", "3", "4", "5", "777"),
+  d_agebirth1_lab = factor(x = d_agebirth1_cat,
+                           levels = c(1, 2, 3, 4, 5, 777),
+                           labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35", "Non-parous"))
+  )
 
-dev_an_df %>% tabyl(d_parity_tr)
-dev_an_df %>% tabyl(d_parity_tr, d_parity_cat)
+dev_an_df %>% tabyl(d_agebirth1_cat, d_agebirth1_lab)
+dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
 
 
-dev_an_df %>% tabyl(d_parity_tr_lab, d_parous_lab)
-dev_an_df %>% tabyl(d_parity_tr_lab)
 
-dev_an_df %>% tabyl(d_parity_tr_lab, d_parity_lab)
+
+
+### Age at first birth - trick -------------------------------------------
+# recode all non parous to be in the lowest age group - seems wrong but doing to replicate L's analysis 
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_agebirth1_tr = case_when(as.character(d_agebirth1_cat) == 777 ~ "1",
+                             TRUE ~ as.character(d_agebirth1_cat)),
+         d_agebirth1_tr_lab = factor(x = d_agebirth1_tr,
+                              levels = c(1, 2, 3, 4, 5),
+                              labels = c("<20", "20 to 24", "25 to 29", "30 to 34", ">=35")))
+
+dev_an_df %>% tabyl(d_agebirth1_tr)
+dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_parous_lab)
+dev_an_df %>% tabyl(d_agebirth1_tr_lab)
+
+dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_agebirth1_lab)
+dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_parity_lab)
+
+
 
 
 ### Ever breast fed -----------------------------------------------------------------

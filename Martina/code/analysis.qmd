@@ -1,7 +1,7 @@
 ---
 title: "Detection mode project - Analysis"
 author: "Martina Brayley"
-date: 05/06/2024
+date: last-modified
 date-format: long
 format: 
   html: 
@@ -11,7 +11,14 @@ format:
     number-sections: true
     theme: [flatly, style.css]
     page-layout: full
+    grid:
+      sidebar-width: 300px
+      body-width: 2000px
+      margin-width: 300px
+      gutter-width: 1.5rem
 editor: visual
+execute:
+  warning: false
 ---
 
 # Set up
@@ -75,13 +82,13 @@ Mammographic density is a special variable that will be used for subanalyses on 
 # select categorical variables that are labelled
 
 # exploratory vars 
-all_expl_variables <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who_lab", "d_bbd_lab", "d_fambrca_lab", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab")
+all_expl_variables <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who_lab", "d_bbd_lab", "d_fambrca_lab", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parity_lab", "d_agebirth1_lab")
 
-all_expl_variables_tr <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who_lab", "d_bbd_lab", "d_fambrca_lab", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_meno_tr_lab", "d_R1hrt_tr_lab", "d_parous_lab", "d_parity_tr_lab", "d_agebirth1_tr_lab")
+all_expl_variables_tr <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who_lab", "d_bbd_lab", "d_fambrca_lab", "d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_meno_tr_lab", "d_R1hrt_tr_lab", "d_parity_tr_lab", "d_agebirth1_tr_lab")
   
 lifestyle <- c("d_R1alcohol_units_lab", "d_R1smokingstatus_lab", "d_bmi_entry_lab", "d_R1physmet_leis_who")
   
-reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parous_lab", "d_parity_lab", "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
+reproductive <- c("d_age_menarche_lab", "d_ocstatus_lab", "d_R1menopause_lab3", "d_age_menopause_lab", "d_R1hrtstatus_lab", "d_parity_lab", "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
   
 orther_rf <- c("d_bbd", "d_fambrca")
 
@@ -406,7 +413,7 @@ univariate
 
 # Test trick models
 
-There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter inuitive, when the equation is written down including the indicator variables, the maths works.
+There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter intuitive, when the equation is written down including the indicator variables, the maths works.
 
 When we run 2 models:
 
@@ -415,6 +422,10 @@ When we run 2 models:
 
 The estimates will be exactly the same. This needs to be tested for all 3 groups of these variables.
 
+17/06/2024
+
+Agreed with Amy and Montse to remove the binary parity variable from the model and only use n of pregnancied. The reference group will be 0 children.
+
 ## Parity related variables
 
 ```{r}
@@ -422,20 +433,22 @@ The estimates will be exactly the same. This needs to be tested for all 3 groups
 # tabulate trick vars by parity to see if recoded properly -----------------------
 
 ## age at birth
-df %>% tabyl(d_agebirth1_tr_lab, d_parous_lab) %>% 
+df %>% tabyl(d_agebirth1_tr_lab, d_parity_lab) %>% 
   adorn_title()
 
+df %>%  tabyl(d_parous_lab, d_parity_lab)
+
 ## number of parous pregnancies
-df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
-  adorn_title()
+# df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
+#   adorn_title()
 # df %>% tabyl(d_parity_lab, d_parous_lab) %>% 
 #   adorn_title()
 
 # MODEL A - subset on parous women ------------------------------------------------
 
 model <- df %>% 
-  filter(d_parous_cat == 1) %>%
-  glm(formula = d_dmode_n ~ d_parity_lab + d_agebirth1_tr_lab,
+ filter(d_parity_lab != 0) %>%
+  glm(formula = d_dmode_n ~ d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -451,7 +464,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
 # MODEL B - binary parity status in the model -------------------------------------
 
 model <- df %>%
-  glm(formula = d_dmode_n ~ d_parous_cat + d_parity_tr_lab + d_agebirth1_tr_lab,
+  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -467,8 +480,10 @@ tbl_regression(model, exponentiate = TRUE) %>%
 
 ```
 
-::: {.callout-note style="color: green"}
-Trick on parity variables **SUCCESSFULL**
+::: {.callout-note style="color: red"}
+Trick on parity variables DISCUSS \
+\
+when binary parous status was in the modl the estimates were excact, now slightly different.
 :::
 
 ## Menopause related variables
@@ -637,7 +652,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab,
+      + d_parity_tr_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 
 # summary(model)
@@ -670,7 +685,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y,
             family = binomial(link = "logit"))
 
@@ -713,7 +728,7 @@ model2
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y,
             family = binomial(link = "logit"))
 
@@ -748,7 +763,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_cat3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y
       + d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
@@ -877,7 +892,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab,
+     + d_parity_tr_lab + d_agebirth1_tr_lab,
             family = binomial(link = "logit"))
 
 # summary(model)
@@ -915,7 +930,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y,
             family = binomial(link = "logit"))
 
@@ -951,7 +966,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y + d_MDtoBC_y,
             family = binomial(link = "logit"))
 
@@ -988,7 +1003,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y + d_MDtoBC_y
       + d_md_qrt,
             family = binomial(link = "logit"))
@@ -1189,7 +1204,7 @@ model <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bbd_lab + d_fambrca_lab
       + d_age_menarche_lab + d_ocstatus_lab 
       + d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab 
-      + d_parous_lab + d_parity_tr_lab + d_agebirth1_tr_lab
+     + d_parity_tr_lab + d_agebirth1_tr_lab
       + diagage + d_R1toBC_y,
             family = binomial(link = "logit"))
 
@@ -1208,7 +1223,6 @@ model2 <- tbl_regression(model,
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
                           d_R1hrt_tr_lab ~ "HRT status",
-                          d_parous_lab ~ "Parous",
                           d_parity_tr_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth"
                          )
@@ -1225,7 +1239,7 @@ model2 <- tbl_regression(model,
 
 
 # Create descriptives by mode of detection ------------------------------------
-# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_tr_lab, d_parous_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
+# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
 
 # note: need to rename the non-trick variables according to their trick name to align with the model, which can then allow table merge. 
 
@@ -1269,7 +1283,6 @@ descr_model2 <- descr_model2_df %>%
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
                           d_R1hrt_tr_lab ~ "HRT status",
-                          d_parous_lab ~ "Parous",
                           d_parity_tr_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth"
                 ),
