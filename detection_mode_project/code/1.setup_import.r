@@ -24,9 +24,7 @@
 # 1. Set up ----
 rm(list = ls(all.names = TRUE)) #clears all objects from the environment
 
-# Set working directory 
-wd <- "C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode"
-setwd(wd)
+
 
 #install.packages("pacman")
 library(pacman)
