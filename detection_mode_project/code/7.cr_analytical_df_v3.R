@@ -1281,7 +1281,7 @@ dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
 
 
 ### Age at first birth - trick -------------------------------------------
-# recode all non parous to be in the lowest age group - seems wrong but doing to replicate L's analysis 
+# recode all non parous to be in the lowest age group 
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_agebirth1_tr = case_when(as.character(d_agebirth1_cat) == 777 ~ "1",
@@ -1298,6 +1298,7 @@ dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_agebirth1_lab)
 dev_an_df %>% tabyl(d_agebirth1_tr_lab, d_parity_lab)
 
 
+# trick v2 - coding missing 
 
 
 ### Ever breast fed -----------------------------------------------------------------
@@ -1463,8 +1464,8 @@ an_df <- dev_an_df %>%
   select(tcode, date_birth, date_entry, diagdate, diagage, AgeatEntry, incident, side, 
          source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, 
          MammoDat_f, mean_density, sd_density, 
-         starts_with("d_")) %>% 
-  select(-d_grade2, -d_grade_L)
+         starts_with("d_")) 
+  
 
 #stview(dfSummary(an_df))
 
@@ -1475,7 +1476,8 @@ an_df <- dev_an_df %>%
 #stview(skim(an_df))
 
 
-
+# save R data - html files will be rendered quicker
+saveRDS(an_df, file = "data/an_df.rds")
 
 
 

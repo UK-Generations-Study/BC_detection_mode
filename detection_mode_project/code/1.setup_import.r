@@ -64,7 +64,8 @@ p_load(readxl,
        parameters, # # alternative to tidy up results from regressions
        see,          # alternative to visualise forest plots
        skimr, # alternative to dataset overview 
-       gt
+       gt,
+       here
        )
 
 options(scipen=200000)
