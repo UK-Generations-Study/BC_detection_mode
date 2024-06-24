@@ -65,7 +65,8 @@ p_load(readxl,
        see,          # alternative to visualise forest plots
        skimr, # alternative to dataset overview 
        gt,
-       here
+       here,
+       forestplot
        )
 
 options(scipen=200000)

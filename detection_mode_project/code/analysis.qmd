@@ -1507,6 +1507,15 @@ model6 <- tbl_regression(model,
 
 model6
 
+# create a dataframe with broom::tidy() for forestplots 
+
+tidy_model6 <- model %>%
+   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+   mutate(OR = estimate) %>%
+   select(-estimate) %>%
+   select(term, OR, everything())
+#tidy_model6
+
 
 # Model 8 ----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
@@ -1554,7 +1563,13 @@ model8 <- tbl_regression(model,
 
 model8
 
+# create a dataframe with broom::tidy() for forestplots 
 
+tidy_model8 <- model %>%
+   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+   mutate(OR = estimate) %>%
+   select(-estimate) %>%
+   select(term, OR, everything())
  
 # Descriptives for model 4 -------------------------------------------------
 # subset on those with mammo density 
@@ -1637,7 +1652,7 @@ table4_diff <- table4 %>%
       mutate(pct_diff = if_else(
           is.na(estimate_2) | is.na(estimate_3),
           "",
-          sprintf("%.1f", (estimate_2 - estimate_3) / estimate_2 * 100))
+          sprintf("%.1f", (estimate_3 - estimate_2) / estimate_3 * 100))
     )
     ) %>% 
   modify_header(
@@ -1645,4 +1660,89 @@ table4_diff <- table4 %>%
   )
 
 table4_diff
+```
+
+## Forest plot from table 4
+
+Using tidy_model outputs from model 4 and 6 - these are data frame format.
+
+```{r}
+
+# full join data from both models 
+md_forest_df <- tidy_model6 %>% 
+  full_join(tidy_model8, by = "term", suffix = c("_mdl6", "_mdl8"))
+
+# RESUME HERE
+# create labels and variable names structures 
+md_forest_df1 <- md_forest_df %>% 
+  mutate(variable = case_when(
+    grepl("menopause", term) ~ "menopause",
+    grepl("age_meno", term) ~ "age_meno",
+    grepl("hrt", term) ~ "hrt",
+    grepl("parity", term) ~ "parity" 
+  ))
+
+
+
+
+# create long format 
+md_forest_long <- md_forest_df %>% 
+  filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y")
+         ) %>% 
+  select(term, OR_mdl6, conf.low_mdl6, conf.high_mdl6, OR_mdl8, conf.low_mdl8, conf.high_mdl8
+         ) %>% 
+  mutate(pct_diff = if_else(is.na(OR_mdl6), "-", as.character(round((OR_mdl8 - OR_mdl6) / OR_mdl8 * 100, 1))) 
+         ) %>% 
+  pivot_longer(
+    cols = c(OR_mdl6, conf.low_mdl6, conf.high_mdl6, 
+             OR_mdl8, conf.low_mdl8, conf.high_mdl8
+             ),
+    names_to = c(".value", "mdl"),
+    names_sep = "_"
+  ) 
+
+
+
+
+```
+
+```{r, fig.width=8, fig.height=10}
+
+# develop forest
+
+md_forest_long %>% 
+  group_by(mdl
+           ) %>% 
+  mutate(mean = OR,
+         lower = conf.low,
+         upper = conf.high
+         ) %>% 
+  forestplot(labeltext = c(term, pct_diff),
+             xlog = FALSE,
+             xlab = "OR",
+             boxsize = 0.3,
+             zero = 1,
+             line.margin = 0.5,
+             clip = c(0, 7),
+             ticks = c(0, 1, 2, 3, 4, 5, 6, 7),
+             ci.vertices = T,
+             ci.vertices.height = 0.2,
+             legend = c("Default model", "Adjusted for MD"),
+             title = paste("Final model adjusted vs unadjusted for mamographic breast density")
+             ) %>% 
+  fp_add_lines() %>% 
+  fp_set_style(box = c("grey50","deeppink2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
+               default = gpar(vertices = T),
+               line = "grey40",
+               align = "lrrr",
+               hrz_lines = "#999999",
+               txt_gp = fpTxtGp(label = gpar(cex = 0.8),
+                                    ticks = gpar(cex = 0.8),
+                                    xlab = gpar(cex = 0.8))
+               ) %>% 
+  fp_decorate_graph(graph.pos = 2
+                    ) %>% 
+  fp_add_header(term = c("", "Risk factor"),
+                pct_diff = c("", "% difference")
+                ) 
 ```
