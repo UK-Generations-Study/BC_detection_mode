@@ -294,7 +294,8 @@ dev_an_df %>% tabyl(ICDm)
 dev_an_df <- dev_an_df %>% 
   mutate(ICDm = as.character(ICDm)
          ) %>% 
-  mutate(d_morphology = as.factor(case_when(#specific types with full codes hence first
+  mutate(d_morphology = as.factor(case_when(d_inv_status == 0 ~ NA,
+                                            #specific types with full codes hence first
                                             ICDm == "82113" ~ 5, # Tubular
                                             ICDm == "85213" ~ 7, # Ductular
                                             ICDm == "81403" ~ 8, # Adenocarcinoma, NOS
@@ -423,7 +424,8 @@ dev_an_df %>% tabyl(N)
 # binary y/n
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_pos_nodes_n = case_when(nodes_pos == "Y" ~ "777", # unlikely value
+  mutate(d_pos_nodes_n = case_when(d_inv_status == 0 ~ NA,
+                                   nodes_pos == "Y" ~ "777", # unlikely value
                                    is.na(nodes_pos) ~ "888", # is missing
                                    TRUE ~ nodes_pos # numeric
                                    
@@ -447,6 +449,8 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_pos_nodes_cat, d_pos_nodes_lab)
 
 dev_an_df %>% tabyl(d_pos_nodes_n)
+
+dev_an_df %>% tabyl(d_pos_nodes_lab, d_inv_status_lab)
 
 ### positive nodes - trick ---------------------------------------------------
 
@@ -473,7 +477,8 @@ dev_an_df %>% tabyl(Tsize)
 str(dev_an_df$Tsize)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_tumour_size_n = case_when(Tsize == "." ~ "777", # unlikely value
+  mutate(d_tumour_size_n = case_when(d_inv_status == 0 ~ NA,
+                                     Tsize == "." ~ "777", # unlikely value
                                      is.na(Tsize) ~ "888", # not known
                                      TRUE ~ Tsize
                                      ),
@@ -489,7 +494,7 @@ dev_an_df <- dev_an_df %>%
                                 
          d_tumour_size_lab = factor(x = d_tumour_size,
                                 levels = c(1, 2, 3),
-                                labels = c("<21", "21-50", ">50")
+                                labels = c("<21", "21-50", "50+")
                                 )
          )
 
@@ -507,6 +512,7 @@ dev_an_df %>% tabyl(d_tumour_size_n, d_tumour_size) %>%
 
 dev_an_df %>% tabyl(d_tumour_size_lab)
 dev_an_df %>% tabyl(d_tumour_size_lab, d_tumour_size)
+dev_an_df %>% tabyl(d_tumour_size_lab, d_inv_status_lab)
 
 ### Size - trick ---------------------------------------------------------
 
@@ -537,7 +543,8 @@ dev_an_df %>% tabyl(d_tmsize_tr_lab)
 dev_an_df %>% tabyl(er_Status)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_er_status = as.factor(case_when(er_Status == "Negative" ~ 0,
+  mutate(d_er_status = as.factor(case_when(d_inv_status == 0 ~ NA,
+                                           er_Status == "Negative" ~ 0,
                                            er_Status == "Positive" ~ 1,
                                            is.na(er_Status) ~ NA
                                            )
@@ -552,6 +559,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_er_status)
 dev_an_df %>% tabyl(d_er_status, d_er_status_lab)
 dev_an_df %>% tabyl(er_Status, d_er_status_lab)
+dev_an_df %>% tabyl(d_er_status_lab, d_inv_status_lab)
 
 ### ER status - trick --------------------------------------------------------
 # recode all dcis to be positive
@@ -561,9 +569,9 @@ dev_an_df %>% tabyl(er_Status, d_er_status_lab)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_er_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
-                             TRUE ~ d_er_status
-  ),
-  d_er_tr = fct_relevel(d_er_tr, "1", "0"
+                             TRUE ~ as.character(d_er_status)
+  #),
+ # d_er_tr = fct_relevel(d_er_tr, "1", "0"
   ),
   d_er_tr_lab = factor(x = d_er_tr,
                            levels = c(1, 0),
@@ -581,7 +589,8 @@ dev_an_df %>% tabyl(d_er_tr_lab)
 dev_an_df %>% tabyl(pr_Status)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_pr_status = as.factor(case_when(pr_Status == "Negative" ~ 0,
+  mutate(d_pr_status = as.factor(case_when(d_inv_status == 0 ~ NA,
+                                           pr_Status == "Negative" ~ 0,
                                            pr_Status == "Positive" ~ 1,
                                            is.na(pr_Status) ~ NA
   )
@@ -596,7 +605,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_pr_status)
 dev_an_df %>% tabyl(d_pr_status, d_pr_status_lab)
 dev_an_df %>% tabyl(pr_Status, d_pr_status_lab)
-
+dev_an_df %>% tabyl(d_pr_status_lab, d_inv_status_lab)
 
 ### PR status - trick --------------------------------------------------------
 # recode all dcis to be positive
@@ -606,8 +615,8 @@ dev_an_df %>% tabyl(pr_Status, d_pr_status_lab)
 dev_an_df <- dev_an_df %>% 
   mutate(d_pr_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
                              TRUE ~ as.character(d_pr_status)
-  ),
-  d_pr_tr = fct_relevel(d_pr_tr, "1", "0"
+  #),
+  #d_pr_tr = fct_relevel(d_pr_tr, "1", "0"
   ),
   d_pr_tr_lab = factor(x = d_pr_tr,
                        levels = c(1, 0),
@@ -628,7 +637,8 @@ dev_an_df %>% tabyl(d_pr_tr_lab)
 dev_an_df %>% tabyl(her2_Status)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_her2_status = as.factor(case_when(her2_Status == "Negative" ~ 0,
+  mutate(d_her2_status = as.factor(case_when(d_inv_status == 0 ~ NA,
+                                             her2_Status == "Negative" ~ 0,
                                            her2_Status == "Positive"  ~ 1,
                                            is.na(her2_Status) | her2_Status == "Borderline" ~ NA
   )
@@ -643,6 +653,7 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_her2_status)
 dev_an_df %>% tabyl(d_her2_status, d_her2_status_lab)
 dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
+dev_an_df %>% tabyl(d_her2_status_lab, d_inv_status_lab)
 
 
 ### HER2 status - trick --------------------------------------------------
@@ -653,8 +664,8 @@ dev_an_df %>% tabyl(her2_Status, d_her2_status_lab)
 dev_an_df <- dev_an_df %>% 
   mutate(d_her2_tr = case_when(as.character(d_inv_status) == "0" ~ "1", 
                              TRUE ~ as.character(d_her2_status)
-  ),
-   d_her2_tr = fct_relevel(d_her2_tr, "1", "0"
+  #),
+  # d_her2_tr = fct_relevel(d_her2_tr, "1", "0"
   ),
   d_her2_tr_lab = factor(x = d_her2_tr,
                        levels = c(1, 0),
@@ -1478,7 +1489,7 @@ an_df <- dev_an_df %>%
 
 
 # save R data - html files will be rendered quicker
-saveRDS(an_df, file = "data/an_df.rds")
+saveRDS(an_df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
 
 
 
