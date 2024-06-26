@@ -1651,7 +1651,7 @@ tidy_model8 <- model %>%
    select(-estimate) %>%
    select(term, OR, everything())
  
-# Descriptives for model 4 -------------------------------------------------
+# Descriptives for table 4 -------------------------------------------------
 # subset on those with mammo density 
 
 
@@ -1699,8 +1699,8 @@ descr_MDsubset <- descr_MDsubset_df %>%
                 ),
               type = list(d_bbd_lab ~ "categorical",
                           d_fambrca_lab ~ "categorical")
-              ) %>% 
-  add_overall()
+              ) #%>% 
+ # add_overall()
 
 
 descr_MDsubset
@@ -1848,7 +1848,7 @@ md_forest_long %>%
              ci.vertices = T,
              ci.vertices.height = 0.2,
              legend = c("Default model", "Adjusted for MD"),
-             title = paste("Final model adjusted vs unadjusted for mamographic breast density"),
+             title = paste("Final model adjusted vs unadjusted for mamographic breast density quartiles"),
              is.summary = is_summary
              ) %>% 
   fp_set_style(box = c("grey50","deeppink2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
@@ -1877,7 +1877,7 @@ md_forest_long %>%
   
 ```
 
-#### Continuous MD 
+#### Continuous MD
 
 ```{r}
 
@@ -1966,7 +1966,7 @@ table4b_diff
 
 ```
 
-#### Forest plot with continuous MD 
+#### Forest plot with continuous MD
 
 ```{r}
 # full join data from both models 
@@ -2065,7 +2065,7 @@ md_forest_long %>%
              ci.vertices = T,
              ci.vertices.height = 0.2,
              legend = c("Default model", "Adjusted for MD"),
-             title = paste("Final model adjusted vs unadjusted for cont mamographic breast density"),
+             title = paste("Final model adjusted vs unadjusted for continuous mamographic breast density"),
              is.summary = is_summary
              ) %>% 
   fp_set_style(box = c("grey50","darkorange") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
@@ -2269,12 +2269,12 @@ model3 <- tbl_regression(model,
                   type = "all")
 
 
-# model3a <- tbl_regression(model, exponentiate = TRUE) %>% 
-#   add_n(location = "level")  %>% 
-#   add_nevent(location = "level") %>% 
-#   add_global_p() %>% 
-#   modify_header(stat_nevent = "**Interval N**",
-#                 stat_n = "**Total N**")
+model3a <- tbl_regression(model, exponentiate = TRUE) %>%
+  add_n(location = "level")  %>%
+  add_nevent(location = "level") %>%
+  add_global_p() %>%
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
 
 
 
@@ -2307,7 +2307,7 @@ model <- df %>%
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y
-      + d_inv_status + d_grade_tr + d_morph4_tr + d_pos_nodes_tr_lab 
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
             family = binomial(link = "logit"))
 
@@ -2341,17 +2341,17 @@ model4 <- tbl_regression(model,
   remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
                   type = "all")
 
-model4
+# model4
+# 
+ model4a <- tbl_regression(model, exponentiate = TRUE) %>%
+  add_n(location = "level")  %>%
+   add_nevent(location = "level") %>%
+   add_global_p() %>%
+   modify_header(stat_nevent = "**Interval N**",
+                 stat_n = "**Total N**")
 
-# model4a <- tbl_regression(model, exponentiate = TRUE) %>%
-#   add_n(location = "level")  %>%
-#   add_nevent(location = "level") %>%
-#   add_global_p() %>%
-#   modify_header(stat_nevent = "**Interval N**",
-#                 stat_n = "**Total N**")
-
-model4a
-model3a
+# model4a
+# model3a
 
 
 # create a dataframe with broom::tidy() for forestplots 
@@ -2361,6 +2361,78 @@ tidy_model4 <- model %>%
    mutate(OR = estimate) %>%
    select(-estimate) %>%
    select(term, OR, everything())
+
+
+ # Descriptives for model 4 -------------------------------------------------
+# subset on those with mammo density 
+
+
+descr_TCsubset_df <- df %>% 
+  select(d_dmode,  all_of(all_expl_variables_tr), all_of(all_expl_variables), all_of(tumour_char_tr), all_of(tumour_char), diagage, d_R1toBC_y) %>% 
+  tidyr::drop_na(all_of(tumour_char_tr), all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+  ) %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")
+              ) %>%
+  # recode the names of normal variables to trick to allow merge between regression tables and this descriptive table
+  mutate(d_age_meno_tr_lab = d_age_menopause_lab,
+         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
+         d_agebirth1_tr_lab = d_agebirth1_lab,
+         d_grade_tr = d_grade_lab,
+         d_morph4_tr_lab = d_morph4_lab,
+         d_pos_nodes_tr_lab = d_pos_nodes_lab,
+         d_tmsize_tr_lab = d_tumour_size_lab,
+         d_er_tr_lab = d_er_status_lab,
+         d_pr_tr_lab = d_pr_status_lab,
+         d_her2_tr_lab = d_her2_status_lab
+         ) %>%
+  select(-d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -diagage, -d_R1toBC_y, -d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab)
+  
+  
+
+# glimpse(descr_MDsubset_df)
+# str(descr_MDsubset_df)
+
+# create gs summary table
+descr_TCsubset <- descr_TCsubset_df %>% 
+  tbl_summary(by = d_dmode,
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
+                ),
+              digits = all_continuous() ~ 2,
+              label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI",
+                          d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of BC",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus_lab ~ "Oral contraceptives status",
+                          d_R1menopause_lab3 ~ "Menopause",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_parity_lab ~ "N of parous pregnancies",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Positive nodes",
+                          d_tmsize_tr_lab ~ "Tumour size",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                ),
+              type = list(d_bbd_lab ~ "categorical",
+                          d_fambrca_lab ~ "categorical")
+              ) #%>% 
+  #add_overall()
+
+
+#descr_TCsubset
+# check numbers against
+# model4a
+# model3a
  
 
 
@@ -2368,11 +2440,30 @@ tidy_model4 <- model %>%
 
 
 ST3 <- tbl_merge(
-  tbls = list(model3, model4),
-  tab_spanner = c("Unadjusted for TC", "Adjusted for TC")
+  tbls = list(descr_TCsubset, model3, model4),
+  tab_spanner = c("Subset with TC" ,"Unadjusted for TC", "Adjusted for TC")
    ) 
    
 
-ST3
+#ST3
+
+
+# adding pct difference -------------------------------------------
+
+#  using gtsummary 
+ST3_diff <- ST3 %>% 
+  modify_table_body(
+    ~ .x %>% 
+      mutate(pct_diff = if_else(
+          is.na(estimate_2) | is.na(estimate_3),
+          "",
+          sprintf("%.1f", (estimate_3 - estimate_2) / estimate_3 * 100))
+    )
+    ) %>% 
+  modify_header(
+    pct_diff = "**Difference (%)**"
+  )
+
+ST3_diff
 
 ```

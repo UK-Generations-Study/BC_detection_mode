@@ -199,19 +199,18 @@ dev_an_df %>% tabyl(grade)
 dev_an_df %>% tabyl(grade, d_inv_status_lab)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_grade = case_when(
+  mutate(d_grade = case_when(d_inv_status == 0  ~ NA, # dcis grade not valid 
                             d_inv_status == 1 & grade %in% c("1", "low", "Low") ~ 1,
                             d_inv_status == 1 & grade %in% c("2", "intermediate", "Intermediate") ~ 2,
                             d_inv_status == 1 & grade %in% c("3", "high", "High") ~ 3,
-                            d_inv_status == 0 & !is.na(grade) ~ 999, # dcis grade not valid 
                             is.na(grade) |  grade %in% c("4", "7") ~ NA # missing
                              ),
          
          d_grade_cat = as.factor(d_grade),
-         d_grade_cat = fct_relevel(d_grade_cat, "1", "2", "3", "999"),
+         d_grade_cat = fct_relevel(d_grade_cat, "1", "2", "3"),
          d_grade_lab = factor(x = d_grade,
-                              levels = c(1, 2, 3, 999),
-                              labels = c("1", "2", "3", "DCIS"))
+                              levels = c(1, 2, 3),
+                              labels = c("1", "2", "3"))
          )
 
 
