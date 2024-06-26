@@ -1703,7 +1703,7 @@ descr_MDsubset <- descr_MDsubset_df %>%
  # add_overall()
 
 
-descr_MDsubset
+#descr_MDsubset
 
 
 
@@ -1718,7 +1718,7 @@ table4 <- tbl_merge(
   
    
 
-table4
+#table4
 ```
 
 Adding pct difference into the table
@@ -2136,7 +2136,7 @@ model10 <- tbl_regression(model,
                   type = "all")
   
 
-model10
+#model10
 
 
 
@@ -2193,7 +2193,7 @@ descr_model10 <- descr_model10_df %>%
               ) %>% 
   add_overall()
 
-descr_model10
+#descr_model10
   
 # merge with analysis output -------------------------------------------------
 
@@ -2225,7 +2225,7 @@ similar layout to table 4
 
 ```{r}
 
-# REWRITE FOR MODEL 3 AND 4 
+
 
 # Model 3 - subset on those with TC----------------------------------------------------------------
  # include parity and meno trick variable instead of original variables
