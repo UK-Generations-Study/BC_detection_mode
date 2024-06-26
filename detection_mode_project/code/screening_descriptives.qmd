@@ -16,7 +16,7 @@ library(gtsummary)
 library(survey)
 
 # needed for scripts 1 to 7
-source("C:/Users/MBrayley/OneDrive - The Institute of Cancer Research/Work/GitHub/BC_detection_mode/Martina/code/master.R")
+source("code/master.R")
 
 ```
 
