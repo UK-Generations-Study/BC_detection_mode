@@ -24,15 +24,20 @@ V2 - missing values treated as error codes 888 - good for exploratory analysis a
 V3 - Missing values are treated as NAs in v3 - better for futher analysis
 
 ### Breast density selection decision tree
-[diagram](https://expert-dollop-n8m7kve.pages.github.io/Martina/breast_density_selection.drawio.html)  
+[diagram](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/density_selection/breast_density_selection.drawio.html)  
 
 ### Breast density descriptions 
-[density descriptions](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/density_descriptives.html)
+preliminary - for checks against Louise's density
+[density descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/density_descriptives.html)
 
 ### Mode of detection - analytical dataset descriptives 
 work in progress
-[dataset descriptions](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/screening_descriptives.html) 
+[dataset descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/screening_descriptives.html) 
 
 ### Analysis 
-work in progress
-[analysis](https://expert-dollop-n8m7kve.pages.github.io/Martina/code/analysis.html) 
+with detailed code
+[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis.html) 
+
+### Publication table and figures
+code hidden, outputs only 
+[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures.html)
