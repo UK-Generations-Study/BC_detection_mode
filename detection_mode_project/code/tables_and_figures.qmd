@@ -192,7 +192,7 @@ ST 4 - TC descriptives by detection mode with logistic regression results
 
 ST 5 - Risk factor analysis adjusted for tumour characteristics (sensitivity analysis) - on subset of cases with TC
 
-# Main tables 
+# Main tables
 
 ## Table 1 - general participant descriptives
 
@@ -719,11 +719,11 @@ md_forest_long %>%
 
 ## ST1 - MD subset general descriptives
 
-## ST 2 - Risk factor descriptives by density 
+## ST 2 - Risk factor descriptives by density
 
 complementing figure 1
 
-## ST 3 - subset on cases with MD 
+## ST 3 - subset on cases with MD
 
 Subanalyses comparing default model with model adjusted for MD
 
@@ -1199,7 +1199,7 @@ ST2 <- tbl_merge(
 ST2
 ```
 
-## ST 5 - Risk factor analysis adjusted for TC 
+## ST 5 - Risk factor analysis adjusted for TC
 
 Sensitivity analysis - default model with model adjusted for TC
 

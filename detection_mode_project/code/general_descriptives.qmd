@@ -1,26 +1,170 @@
 ---
-title: "Descriptives"
-author: "MB"
+title: "Detection mode project: Descriptive tables and figures development"
+author: "Martina Brayley"
+date: last-modified
+date-format: long
 format: 
   html: 
     embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: true
+    theme: [flatly, style.css]
+    page-layout: full
+    grid:
+      sidebar-width: 300px
+      body-width: 2000px
+      margin-width: 300px
+      gutter-width: 1.5rem
 editor: visual
+execute:
+  warning: false
 ---
 
 ```{r}
 #| include: false
 #| echo: false
 
-library(huxtable)
-library(gtsummary)
-library(survey)
+# SET UP ------------------------------------------------------------------------
 
-# needed for scripts 1 to 7
-source("code/master.R")
 
+# execute master file - no need run it as final data now saved
+#source("code/master.R")
+
+print(getwd())
+
+library(pacman)
+p_load(here)
+
+# set up
+setup_path <- here("code", "1.setup_import.r")
+source(setup_path)
+
+# import data
+# data_path <- here("data", "an_df.rds")
+# an_df <- readRDS(data_path)
+
+an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
 ```
 
-# Overall descriptive tables
+```{r}
+#| include: false
+#| echo: false
+
+# DATA PREP ----------------------------------------------------------------------
+
+
+## Store explanatory variables as an object -------------------------------
+
+# select categorical variables that are labelled
+
+# exploratory vars 
+all_expl_variables <- c(
+                         # parity related risk factors
+                        "d_R1menopause_lab3", 
+                        "d_age_menopause_lab", 
+                        "d_R1hrtstatus_lab", 
+                        "d_parity_lab", 
+                        "d_agebirth1_lab",
+                        "d_age_menarche_lab", 
+                        "d_ocstatus_lab", 
+                        # other biological risk factors
+                        "d_bbd_lab", 
+                        "d_fambrca_lab",
+                        # lifestyle risk factors
+                        "d_R1alcohol_units_lab", 
+                        "d_R1smokingstatus_lab", 
+                        "d_bmi_entry_lab", 
+                        "d_R1physmet_leis_who_lab")
+
+all_expl_variables_tr <- c(
+                            # parity related risk factors
+                           "d_R1menopause_lab3", 
+                           "d_age_meno_tr_lab", 
+                           "d_R1hrt_tr_lab", 
+                           "d_parity_lab",
+                           "d_age_menarche_lab", 
+                           "d_ocstatus_lab",
+                            # other biological risk factors
+                           "d_bbd_lab", 
+                           "d_fambrca_lab",
+                           # lifestyle risk factors
+                           "d_agebirth1_tr_lab",
+                           "d_R1alcohol_units_lab", 
+                           "d_R1smokingstatus_lab", 
+                           "d_bmi_entry_lab", 
+                           "d_R1physmet_leis_who_lab" 
+                           )
+  
+
+lifestyle <- c("d_R1alcohol_units_lab", 
+               "d_R1smokingstatus_lab", 
+               "d_bmi_entry_lab", 
+               "d_R1physmet_leis_who")
+  
+reproductive <- c("d_age_menarche_lab", 
+                  "d_ocstatus_lab", 
+                  "d_R1menopause_lab3", 
+                  "d_age_menopause_lab", 
+                  "d_R1hrtstatus_lab", 
+                  "d_parity_lab", 
+                  "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
+  
+orther_rf <- c("d_bbd", 
+               "d_fambrca")
+
+# mammo density excluded from the lists - special variable for subanalyses
+
+# covariates 
+all_covariates <- c(# time varying variables
+                    "diagage", 
+                    "d_R1toBC_y", 
+                    "d_R1toMD_y", 
+                    "d_MDtoBC_y",
+                    # tumour characteristics
+                    "d_inv_status", 
+                    "d_grade_lab", 
+                    "d_morph4", 
+                    "d_pos_nodes_lab", 
+                    "d_tumour_size", 
+                    "d_er_status", 
+                    "d_pr_status", 
+                    "d_her2_status")  
+  
+tumour_char <- c("d_inv_status", 
+                 "d_grade_lab", 
+                 "d_morph4_lab", 
+                 "d_pos_nodes_lab", 
+                 "d_tumour_size_lab", 
+                 "d_er_status_lab", 
+                 "d_pr_status_lab", 
+                 "d_her2_status_lab")
+
+tumour_char_tr <- c("d_inv_status", 
+                    "d_grade_tr", 
+                    "d_morph4_tr_lab", 
+                    "d_pos_nodes_tr_lab", 
+                    "d_tmsize_tr_lab", 
+                    "d_er_tr_lab", 
+                    "d_pr_tr_lab", 
+                    "d_her2_tr_lab")
+  
+time_vars <- c("diagage", 
+               "d_R1toBC_y", 
+               "d_R1toMD_y", 
+               "d_MDtoBC_y")
+
+# create dataset 
+df <- an_df %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+")
+  )
+
+# set theme for gtsummary tables: 
+
+theme_gtsummary_compact(set_theme = TRUE)
+```
+
+# Preliminary descriptive tables
 
 ## Tumour characteristics
 
@@ -61,7 +205,7 @@ tc_df %>%
 #| echo: false
 
 
-rf_df <- an_df %>% 
+rf_df <- df %>% 
   select(d_dmode, d_R1toBC_lab, d_R1toBC_y, d_R1toMD_y, d_MDtoBC_lab, d_MDtoBC_y, 
          d_R1alcohol_status_lab, d_R1alcohol_units_lab, d_R1smokingstatus_lab,
          d_bmi_entry_lab,d_R1physmet_leis_who_lab,
@@ -103,7 +247,7 @@ rf_df %>%
   ) 
 ```
 
-# Descriptive tables by mode of detection
+## Descriptive tables by mode of detection
 
 ## Tumour characteristics
 
@@ -112,7 +256,7 @@ rf_df %>%
 
 # create a dataset with tumour characteristics
 
-tc_df <- an_df %>% 
+tc_df <- df %>% 
   select(d_dmode, d_inv_status_lab, diagage, d_grade_lab, d_morph7_lab, d_pos_nodes_lab, d_tumour_size_lab, d_er_status_lab, d_pr_status_lab, d_her2_status_lab) %>% 
   ungroup()
 
@@ -147,7 +291,7 @@ tc_df %>%
 #| echo: false
 
 
-rf_df <- an_df %>% 
+rf_df <- df %>% 
   select(d_dmode, d_R1toBC_lab, d_R1toBC_y, d_R1toMD_y, d_MDtoBC_lab, d_MDtoBC_y, 
          d_R1alcohol_status_lab, d_R1alcohol_units_lab, d_R1smokingstatus_lab,
          d_bmi_entry_lab,d_R1physmet_leis_who_lab,
@@ -229,7 +373,7 @@ tc_trick_df %>%
 #| echo: false
 
 
-par_df <- an_df %>% 
+par_df <- df %>% 
   select(d_dmode,
          d_parous_lab, d_parity_lab, d_parity_tr_lab, d_agebirth1_lab, d_agebirth1_tr_lab) %>% 
   ungroup()
@@ -281,4 +425,110 @@ meno_df %>%
               )
         
   ) 
+```
+
+# Tables for publication 
+
+## Table 1 - general study population characteristics by detection mode and overall?
+
+Variables to include:
+
+-   Age at cohort entry
+
+-   age at diagnosis
+
+-   invasive status
+
+-   
+
+# Figures for publication 
+
+## Breast density by risk factors
+
+box plots with jitter
+
+```{r}
+# create density subset data 
+
+md_df <- df %>% 
+  filter(d_md_avail == 1)
+```
+
+### Detection mode
+
+```{r}
+# box plots with jitter
+md_df %>% 
+  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
+
+```
+
+## Menopausal status
+
+```{r}
+
+# box plots with jitter
+md_df %>% 
+  ggplot(aes(x = d_R1menopause_lab3, y = d_md, fill = d_R1menopause_lab3)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
+```
+
+## Age at menopause
+
+```{r}
+# box plots with jitter
+md_df %>% 
+  ggplot(aes(x = d_age_menopause_lab, y = d_md, fill = d_age_menopause_lab)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
+```
+
+## HRT status
+
+```{r}
+
+# box plots with jitter
+md_df %>% 
+  ggplot(aes(x = d_R1hrtstatus_lab, y = d_md, fill = d_R1hrtstatus_lab)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
+```
+
+## Parity
+
+```{r}
+# box plots with jitter
+md_df %>% 
+  ggplot(aes(x = d_parity_lab, y = d_md, fill = d_parity_lab)) +
+  geom_jitter(position = position_jitter(width = 0.2), 
+              alpha = 0.2,
+              colour = "grey50") +
+  geom_boxplot(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic()
+```
+
+## Age at first birth
+
+```{r}
+
 ```
