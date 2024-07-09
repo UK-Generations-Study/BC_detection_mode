@@ -427,7 +427,7 @@ meno_df %>%
   ) 
 ```
 
-# Tables for publication 
+# Tables for publication
 
 ## Table 1 - general study population characteristics by detection mode and overall?
 
@@ -441,7 +441,7 @@ Variables to include:
 
 -   
 
-# Figures for publication 
+# Figures for publication
 
 ## Breast density by risk factors
 
