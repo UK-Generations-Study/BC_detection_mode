@@ -978,7 +978,7 @@ dev_an_df <- dev_an_df %>%
                                    TRUE ~ as.character(d_age_menopause_cat)),
          d_age_meno_tr_lab = factor(x = d_age_meno_tr,
                                  levels = c(1, 2, 3),
-                                 labels = c("<50", "51-53", "53+")))
+                                 labels = c("<50", "50-54", "55+")))
 
 dev_an_df %>% tabyl(d_age_meno_tr)
 dev_an_df %>% tabyl(d_age_meno_tr, d_R1menopause_lab3)
@@ -1423,6 +1423,13 @@ summary(dev_an_df$d_md)
 
 check <- dev_an_df %>% tabyl(d_md, d_md_avail)
 str(dev_an_df$d_md)
+
+# scale so 1 unit is 10% - original variable 1% 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_md10 = d_md/10)
+
+View(dev_an_df[,c("d_md10", "d_md")])
+
 
 ### quartiles --------------------------------------------------------------------
 

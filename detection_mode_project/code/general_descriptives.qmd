@@ -34,7 +34,9 @@ execute:
 print(getwd())
 
 library(pacman)
-p_load(here)
+p_load(here,
+       paleteer,
+       ggthemes)
 
 # set up
 setup_path <- here("code", "1.setup_import.r")
@@ -479,7 +481,7 @@ plot1 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
  #scale_fill_brewer(palette="Set2")
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
@@ -515,7 +517,7 @@ plot2 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -537,7 +539,7 @@ plot2 <- md_df %>%
 # violin plots 
 plot3 <- md_df %>% 
   filter(!is.na(d_age_menopause_lab)) %>% 
-  mutate(d_age_menopause_lab = fct_relevel(d_age_menopause_lab, "Pre-menopausal", "<50", "51-53", "53+")) %>% 
+  mutate(d_age_menopause_lab = fct_relevel(d_age_menopause_lab, "Pre-menopausal", "<50", "50-54", "55+")) %>% 
   ggplot(aes(x = d_age_menopause_lab, y = d_md, fill = d_age_menopause_lab)) +
   geom_violin(alpha = 0.4) +
   geom_boxplot(width = 0.1)+
@@ -546,9 +548,11 @@ plot3 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+plot3
 ```
 
 ### HRT status
@@ -578,7 +582,7 @@ plot4 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -608,7 +612,7 @@ plot5 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -627,7 +631,7 @@ plot6 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -647,12 +651,12 @@ plot7 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
-### Oral contraceptives 
+### Oral contraceptives
 
 ```{r}
 # violin plots 
@@ -666,12 +670,12 @@ plot8 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
-### Benign breast disease 
+### Benign breast disease
 
 ```{r}
 # violin plots 
@@ -685,12 +689,12 @@ plot9 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
-### Family history of breast cancer 
+### Family history of breast cancer
 
 ```{r}
 # violin plots 
@@ -704,7 +708,7 @@ plot10 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -724,7 +728,7 @@ plot11 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   #scale_fill_brewer(palette="Accent")
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
@@ -748,7 +752,7 @@ plot12 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -768,7 +772,7 @@ plot13 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
@@ -788,31 +792,217 @@ plot14 <- md_df %>%
        x = "",
        y = "Breast density (%)") +
   #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_classic() +
+  theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
 ### Combined
 
-```{r}
+```{r, fig.width=12, fig.height=16}
 
 # composite plot
-composite_plot <- plot1 + plot2 + plot3 + plot4 + plot5 + plot6 + plot7 + plot8 + plot9 + plot10 + plot11 + plot12 + plot13 + plot14
+composite_plot <- plot2 + plot3 + plot4 +plot8 + plot5 + plot6 + plot7 +plot9 + plot10 + plot13 + plot14 + plot12 + plot11 + plot_layout(ncol = 2)
 
 composite_plot
 
-# reproductive factors
-reproductive_plots <- plot2 + plot3 + plot4 + plot5 + plot6 + plot7 + plot8
-reproductive_plots
 
 
-# other
-other_plots <- plot1 + plot9 + plot10
-other_plots
+```
 
+```{r, fig.width=15, fig.height=8}
 
 # lifestyle factors
-lifestyle_plots <- plot11 +  plot12 + plot13 + plot14
+lifestyle_plots <- (plot9 + plot10 + plot11) /  (plot12 + plot13 + plot14)
 lifestyle_plots
+```
+
+```{r, fig.width=15, fig.height=9}
+
+# reproductive factors
+reproductive_plots <- (plot2 + plot3 + plot4) / (plot5 + plot6) / (plot7 + plot8)
+reproductive_plots
+
+```
+
+## Breast density by tumour characteristics 
+
+### Invasive status
+
+```{r}
+# violin plots 
+tplot1 <- md_df %>% 
+  #filter(!is.na()) %>% 
+  ggplot(aes(x = d_inv_status_lab, y = d_md, fill = d_inv_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Invasive status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot1
+```
+
+### Grade
+
+```{r}
+# violin plots 
+tplot2 <- md_df %>% 
+  filter(!is.na(d_grade_lab)) %>% 
+  ggplot(aes(x = d_grade_lab, y = d_md, fill = d_grade_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Grade",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot2
+```
+
+### Morphology type
+
+```{r}
+# violin plots 
+tplot3 <- md_df %>% 
+  filter(!is.na(d_morph4_lab)) %>% 
+  ggplot(aes(x = d_morph4_lab, y = d_md, fill = d_morph4_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Morphology",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot3
+```
+
+### Positive nodes
+
+```{r}
+# violin plots 
+tplot4 <- md_df %>% 
+  filter(!is.na(d_pos_nodes_lab)) %>% 
+  ggplot(aes(x = d_pos_nodes_lab, y = d_md, fill = d_pos_nodes_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Positive nodes",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot4
+```
+
+### Tumour size
+
+```{r}
+# violin plots 
+tplot5 <- md_df %>% 
+  filter(!is.na(d_tumour_size_lab)) %>% 
+  ggplot(aes(x = d_tumour_size_lab, y = d_md, fill = d_tumour_size_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Tumour size",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot5
+```
+
+### ER status
+
+```{r}
+# violin plots 
+tplot6 <- md_df %>% 
+  filter(!is.na(d_er_status_lab)) %>% 
+  ggplot(aes(x = d_er_status_lab, y = d_md, fill = d_er_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "ER status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot6
+```
+
+### PR status
+
+```{r}
+# violin plots 
+tplot7 <- md_df %>% 
+  filter(!is.na(d_pr_status_lab)) %>% 
+  ggplot(aes(x = d_pr_status_lab, y = d_md, fill = d_pr_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "PR status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot7
+```
+
+### HER2 status
+
+```{r}
+# violin plots 
+tplot8 <- md_df %>% 
+  filter(!is.na(d_her2_status_lab)) %>% 
+  ggplot(aes(x = d_her2_status_lab, y = d_md, fill = d_her2_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "HER2 status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot8
+```
+
+### Combined
+
+```{r, fig.width=12, fig.height=16}
+
+# composite plot
+tcomposite_plot <- tplot1 + tplot2 + tplot3 + tplot4 + tplot5 + tplot6 + tplot7 + tplot8 + plot1 + plot_layout(ncol = 2)
+
+tcomposite_plot
+
+
 ```
