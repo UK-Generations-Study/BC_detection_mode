@@ -166,9 +166,11 @@ df <- an_df %>%
 theme_gtsummary_compact(set_theme = TRUE)
 ```
 
+
 # Preliminary descriptive tables
 
 ## Tumour characteristics
+
 
 ```{r}
 #| echo: false
@@ -201,7 +203,9 @@ tc_df %>%
   ) 
 ```
 
+
 ## Risk factors
+
 
 ```{r}
 #| echo: false
@@ -249,9 +253,11 @@ rf_df %>%
   ) 
 ```
 
+
 ## Descriptive tables by mode of detection
 
 ## Tumour characteristics
+
 
 ```{r}
 #| echo: false
@@ -287,7 +293,9 @@ tc_df %>%
 
 ```
 
+
 ## Risk factors
+
 
 ```{r}
 #| echo: false
@@ -336,9 +344,11 @@ rf_df %>%
   ) 
 ```
 
+
 ## Comparison of trick variables with actual variables
 
 ### Tumour characteristics
+
 
 ```{r}
 # create a dataset with tumour characteristics
@@ -369,7 +379,9 @@ tc_trick_df %>%
   ) 
 ```
 
+
 ### Parity related
+
 
 ```{r}
 #| echo: false
@@ -399,7 +411,9 @@ par_df %>%
 
 ```
 
+
 ### Menopause related
+
 
 ```{r}
 #| echo: false
@@ -429,6 +443,7 @@ meno_df %>%
   ) 
 ```
 
+
 # Tables for publication
 
 ## Table 1 - general study population characteristics by detection mode and overall?
@@ -449,6 +464,7 @@ Variables to include:
 
 box plots with jitter
 
+
 ```{r}
 # create density subset data 
 
@@ -456,7 +472,9 @@ md_df <- df %>%
   filter(d_md_avail == 1)
 ```
 
+
 ### Detection mode
+
 
 ```{r}
 # box plots with jitter
@@ -492,7 +510,9 @@ plot1
   #summary(md_df$d_md)
 ```
 
+
 ### Menopausal status
+
 
 ```{r}
 
@@ -522,7 +542,9 @@ plot2 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Age at menopause
+
 
 ```{r}
 # box plots with jitter
@@ -555,7 +577,9 @@ plot3 <- md_df %>%
 plot3
 ```
 
+
 ### HRT status
+
 
 ```{r}
 
@@ -587,7 +611,9 @@ plot4 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Parity
+
 
 ```{r}
 # # box plots with jitter
@@ -617,7 +643,9 @@ plot5 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Age at first birth
+
 
 ```{r}
 # violin plots 
@@ -636,7 +664,9 @@ plot6 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Age at menarche
+
 
 ```{r}
 
@@ -656,7 +686,9 @@ plot7 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Oral contraceptives
+
 
 ```{r}
 # violin plots 
@@ -675,7 +707,9 @@ plot8 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Benign breast disease
+
 
 ```{r}
 # violin plots 
@@ -694,7 +728,9 @@ plot9 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Family history of breast cancer
+
 
 ```{r}
 # violin plots 
@@ -713,7 +749,9 @@ plot10 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Alcohol units
+
 
 ```{r}
 # violin plots 
@@ -738,7 +776,9 @@ plot11 <- md_df %>%
 # plot11
 ```
 
+
 ### Smoking status
+
 
 ```{r}
 # violin plots 
@@ -757,7 +797,9 @@ plot12 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### BMI
+
 
 ```{r}
 # violin plots 
@@ -777,7 +819,9 @@ plot13 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Physical activity
+
 
 ```{r}
 
@@ -797,7 +841,9 @@ plot14 <- md_df %>%
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
 ```
 
+
 ### Combined
+
 
 ```{r, fig.width=12, fig.height=16}
 
@@ -825,9 +871,11 @@ reproductive_plots
 
 ```
 
+
 ## Breast density by tumour characteristics
 
 ### Invasive status
+
 
 ```{r}
 # violin plots 
@@ -848,7 +896,9 @@ tplot1 <- md_df %>%
 tplot1
 ```
 
+
 ### Grade
+
 
 ```{r}
 # violin plots 
@@ -869,7 +919,9 @@ tplot2 <- md_df %>%
 tplot2
 ```
 
+
 ### Morphology type
+
 
 ```{r}
 # violin plots 
@@ -890,7 +942,9 @@ tplot3 <- md_df %>%
 tplot3
 ```
 
+
 ### Positive nodes
+
 
 ```{r}
 # violin plots 
@@ -911,7 +965,9 @@ tplot4 <- md_df %>%
 tplot4
 ```
 
+
 ### Tumour size
+
 
 ```{r}
 # violin plots 
@@ -932,7 +988,9 @@ tplot5 <- md_df %>%
 tplot5
 ```
 
+
 ### ER status
+
 
 ```{r}
 # violin plots 
@@ -953,7 +1011,9 @@ tplot6 <- md_df %>%
 tplot6
 ```
 
+
 ### PR status
+
 
 ```{r}
 # violin plots 
@@ -974,7 +1034,9 @@ tplot7 <- md_df %>%
 tplot7
 ```
 
+
 ### HER2 status
+
 
 ```{r}
 # violin plots 
@@ -995,7 +1057,9 @@ tplot8 <- md_df %>%
 tplot8
 ```
 
+
 ### Combined
+
 
 ```{r, fig.width=12, fig.height=16}
 
@@ -1006,3 +1070,4 @@ tcomposite_plot
 
 
 ```
+

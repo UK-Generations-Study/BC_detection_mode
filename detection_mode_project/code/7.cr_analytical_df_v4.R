@@ -262,18 +262,21 @@ dev_an_df %>% tabyl(stage)
 dev_an_df %>% tabyl(stage, d_inv_status_lab)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_stage = as.factor(case_when(stage == "0" ~ 0, # most dcis
+  mutate(d_stage = as.factor(case_when(d_inv_status == "0" ~ 0,
+                                       #stage == "0" ~ 0, # most dcis
                                        d_inv_status == 1 & startsWith(stage, "1") ~ 1,
                                        d_inv_status == 1 & startsWith(stage, "2") ~ 2, 
                                        d_inv_status == 1 & startsWith(stage, "3") ~ 3,
                                        d_inv_status == 1 & startsWith(stage, "4") ~ 4,
                                        d_inv_status == 1 & stage == "II" ~ 2,
                                        d_inv_status == 1 & stage == "III" ~ 3,
-                                       d_inv_status == 0 & (!is.na(stage) | stage !=0) ~ 999, # dcis
+                                       #d_inv_status == 0 & (!is.na(stage) | stage !=0) ~ 999, # dcis
                                        is.na(stage) ~ NA # missing
                                        )
-                             )#,
-         #d_stage = ordered(x = d_stage, c("0", "1", "2", "3", "4", "888", "999"))
+                             ),
+         d_stage_cat = factor(x = d_stage, 
+                                 levels = 0:4,
+                                 labels = c("0", "1", "2", "3", "4"))
          )
   
 
@@ -281,7 +284,8 @@ dev_an_df %>% tabyl(stage, d_stage)
 dev_an_df %>% tabyl(d_stage)
 dev_an_df %>% tabyl(d_stage, d_inv_status)
 
-
+dev_an_df %>% tabyl(d_stage_cat)
+dev_an_df %>% tabyl(stage, d_stage_cat)
 # stage is not in the model so no trick needed
 
 
