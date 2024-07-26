@@ -429,6 +429,213 @@ meno_df %>%
   ) 
 ```
 
+# Distribution of breast density
+
+1.  Check density distribution - histogram, box plot, qq plot
+2.  normal distribution test
+
+```{r}
+# create density subset data 
+
+md_df <- df %>% 
+  filter(d_md_avail == 1)
+
+# hist
+md_df %>% 
+  ggplot(aes(x = d_md)) +
+  geom_histogram(binwidth = 5)
+
+# summary 
+summary(md_df$d_md)
+
+# polygon
+md_df %>% 
+  ggplot(aes(x = d_md)) +
+  geom_density(fill = "skyblue", color = "black", alpha = 0.5)
+
+# boxplot
+md_df %>% 
+  ggplot(aes(y = d_md)) +
+  geom_boxplot(width = 0.1)
+
+# empirical density and cumulative distribution
+plotdist(md_df$d_md, histo = TRUE, demp = TRUE)
+
+# qq plot
+qqnorm(md_df$d_md, main = "Q-Q Plot of Sample Data")
+qqline(md_df$d_md, col = "red")
+
+# cullen and frey graph
+par(mfrow=c(1,1))
+descdist(md_df$d_md, discrete = FALSE, boot = 500)
+# note: looks like beta distribution fits visually
+
+# distribution fitting
+fit_w  <- fitdist(md_df$d_md, "weibull") 
+fit_g  <- fitdist(md_df$d_md, "gamma")
+fit_ln <- fitdist(md_df$d_md, "lnorm")
+fit_n <- fitdist(md_df$d_md, "norm")
+fit_exp <- fitdist(md_df$d_md, "exp") 
+fit_unif <- fitdist(md_df$d_md, "unif") 
+summary(fit_ln)
+
+
+
+par(mfrow=c(2,2))
+plot.legend <- c("Weibull", "lognormal", "gamma", "normal", "exp")
+denscomp(list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+cdfcomp (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+qqcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+ppcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+
+
+
+# normal distribution tests - using mean df
+library(nortest)
+ad.test(md_df$d_md)
+#note: not normally distributed 
+
+
+
+```
+
+## Transform density data
+
+square root transformation to approximate normal distribution
+
+better than log transformation - visually approximately normally distributed
+
+test says not normally distributed but it's a large sample size and several visual graphs show approximate normal distribution - this is the selected transformation.
+
+```{r}
+
+md_df <- md_df %>% 
+  mutate(d_md_sqrt = sqrt(d_md))
+
+# check distribution again 
+
+# hist
+md_df %>% 
+  ggplot(aes(x = d_md_sqrt)) +
+  geom_histogram(bins = 30)
+
+# summary 
+summary(md_df$d_md_sqrt)
+
+# polygon
+md_df %>% 
+  ggplot(aes(x = d_md_sqrt)) +
+  geom_density(fill = "skyblue", color = "black", alpha = 0.5)
+
+# boxplot
+md_df %>% 
+  ggplot(aes(y = d_md_sqrt)) +
+  geom_boxplot(width = 0.1)
+
+# empirical density and cumulative distribution
+plotdist(md_df$d_md_sqrt, histo = TRUE, demp = TRUE)
+
+# qq plot
+qqnorm(md_df$d_md_sqrt, main = "Q-Q Plot of Sample Data")
+qqline(md_df$d_md_sqrt, col = "red")
+
+# cullen and frey graph
+par(mfrow=c(1,1))
+descdist(md_df$d_md_sqrt, discrete = FALSE, boot = 500)
+# note: looks like beta distribution fits visually
+
+# distribution fitting
+fit_w  <- fitdist(md_df$d_md_sqrt, "weibull") 
+fit_g  <- fitdist(md_df$d_md_sqrt, "gamma")
+fit_ln <- fitdist(md_df$d_md_sqrt, "lnorm")
+fit_n <- fitdist(md_df$d_md_sqrt, "norm")
+fit_exp <- fitdist(md_df$d_md_sqrt, "exp") 
+fit_unif <- fitdist(md_df$d_md_sqrt, "unif") 
+summary(fit_ln)
+
+
+
+par(mfrow=c(2,2))
+plot.legend <- c("Weibull", "lognormal", "gamma", "normal", "exp")
+denscomp(list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+cdfcomp (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+qqcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+ppcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+
+
+
+# normal distribution tests - using mean df
+library(nortest)
+ad.test(md_df$d_md_sqrt)
+#note: not normally distributed 
+
+shapiro.test(md_df$d_md_sqrt)
+```
+
+log transformation - did not work very well, skewed on the other side now
+
+```{r}
+
+md_df <- md_df %>% 
+  mutate(d_md_log = log(d_md))
+
+# check distribution again 
+
+# hist
+md_df %>% 
+  ggplot(aes(x = d_md_log)) +
+  geom_histogram(bins = 30)
+
+# summary 
+summary(md_df$d_md_log)
+
+# polygon
+md_df %>% 
+  ggplot(aes(x = d_md_log)) +
+  geom_density(fill = "skyblue", color = "black", alpha = 0.5)
+
+# boxplot
+md_df %>% 
+  ggplot(aes(y = d_md_log)) +
+  geom_boxplot(width = 0.1)
+
+# empirical density and cumulative distribution
+plotdist(md_df$d_md_log, histo = TRUE, demp = TRUE)
+
+# qq plot
+qqnorm(md_df$d_md_log, main = "Q-Q Plot of Sample Data")
+qqline(md_df$d_md_log, col = "red")
+
+# cullen and frey graph
+par(mfrow=c(1,1))
+descdist(md_df$d_md_log, discrete = FALSE, boot = 500)
+# note: looks like beta distribution fits visually
+
+# # distribution fitting
+# #fit_w  <- fitdist(md_df$d_md_log, "weibull") 
+# fit_g  <- fitdist(md_df$d_md_log, "gamma")
+# fit_ln <- fitdist(md_df$d_md_log, "lnorm")
+# fit_n <- fitdist(md_df$d_md_log, "norm")
+# fit_exp <- fitdist(md_df$d_md_log, "exp") 
+# fit_unif <- fitdist(md_df$d_md_log, "unif") 
+# summary(fit_ln)
+# 
+# 
+# 
+# par(mfrow=c(2,2))
+# plot.legend <- c("Weibull", "lognormal", "gamma", "normal", "exp")
+# denscomp(list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+# cdfcomp (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+# qqcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+# ppcomp  (list(fit_w, fit_g, fit_ln, fit_n, fit_exp), legendtext = plot.legend)
+
+
+
+# normal distribution tests - using mean df
+ad.test(md_df$d_md_log)
+#note: not normally distributed 
+```
+
 # Tables for publication
 
 ## Table 1 - general study population characteristics by detection mode and overall?
@@ -440,8 +647,6 @@ Variables to include:
 -   age at diagnosis
 
 -   invasive status
-
--   
 
 # Figures for publication
 
@@ -470,7 +675,7 @@ md_df <- df %>%
 #   theme_classic()
 
 #palette <- c("#833275", "#FFBC13")
-
+library(paletteer)
 # violin plots 
 plot1 <- md_df %>% 
   ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
@@ -490,6 +695,10 @@ plot1
   
   #"ggthemes::Superfishel_Stone"
   #summary(md_df$d_md)
+
+
+# t-test 
+t.test(d_md_sqrt ~ d_dmode, data = md_df)
 ```
 
 ### Menopausal status
@@ -520,6 +729,11 @@ plot2 <- md_df %>%
   theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+plot2
+
+# t-test 
+t.test(d_md_sqrt ~ d_R1menopause_lab3, data = md_df)
 ```
 
 ### Age at menopause
@@ -572,7 +786,8 @@ plot3
 
 # violin plots 
 plot4 <- md_df %>% 
-  filter(!is.na(d_R1hrtstatus_lab)) %>% 
+  filter(!is.na(d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab != "Pre-menopausal") %>% 
   mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Pre-menopausal", "Never", "Former", "Current")) %>% 
   ggplot(aes(x = d_R1hrtstatus_lab, y = d_md, fill = d_R1hrtstatus_lab)) +
   geom_violin(alpha = 0.4) +
@@ -585,6 +800,49 @@ plot4 <- md_df %>%
   theme_base() +
   theme(legend.position = "none") +
   scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+
+# anova
+#aov(d_md_sqrt ~ d_R1hrtstatus_lab, data = md_df)
+
+test <- md_df %>% 
+  filter(!is.na(d_R1hrtstatus_lab)) %>% 
+  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Pre-menopausal", "Never", "Former", "Current")) %>% 
+  aov(d_md_sqrt ~ d_R1hrtstatus_lab, data = .)
+
+summary(test)
+
+
+# linear regression
+test <- md_df %>% 
+  filter(!is.na(d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab != "Pre-menopausal") %>% 
+  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current")) %>%
+  lm(d_md_sqrt ~ d_R1hrtstatus_lab, data = .)
+
+summary(test)
+
+plot4
+
+# beta regression 
+# transform data first  to be between 0 and 1 
+
+md_df <- md_df %>% 
+  mutate(d_md_beta = d_md/100)
+
+# Fit the beta regression model
+library(betareg)
+
+beta_model <- md_df %>% 
+  filter(!is.na(d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab != "Pre-menopausal") %>% 
+  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current")) %>%
+  betareg(d_md_beta ~ d_R1hrtstatus_lab, data = .)
+
+# Print the summary of the model
+summary(beta_model)
+
+
 ```
 
 ### Parity

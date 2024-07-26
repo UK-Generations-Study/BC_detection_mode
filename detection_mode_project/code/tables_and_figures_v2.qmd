@@ -372,7 +372,7 @@ table3
 
 This section will include more figures - structure to be decided
 
-### Reproductive, lifestyle and other risk factors 
+### Reproductive, lifestyle and other risk factors
 
 ```{r}
 #| echo: false
@@ -606,8 +606,6 @@ plot13 <- md_df %>%
 
 ```
 
-
-
 ```{r, fig.width=15, fig.height=9}
 #| echo: false
 
@@ -616,7 +614,6 @@ reproductive_plots <- (plot2 + plot3 + plot4) / (plot5 + plot6 + plot7)
 reproductive_plots
 
 ```
-
 
 ```{r, fig.width=15, fig.height=9}
 #| echo: false
@@ -773,8 +770,6 @@ tcomposite_plot
 
 
 ```
-
-
 
 ## Figure 2 - adjusting for MD
 
@@ -1265,10 +1260,9 @@ md_forest_long <- md_forest_df %>%
   ) 
 ```
 
-
 Also the MD estimate for continuous MD looks very strange and I can't seem to fix it, should we remove it form the plots? discuss
 
-after adapting the code for using log scale the difference seems strange - will need to fix that 
+after adapting the code for using log scale the difference seems strange - will need to fix that
 
 categorical MD will be used instead as agreed 15/07/2024 (this version was previously generated but working on some bug with the code after converting to log scale)
 
@@ -2065,7 +2059,7 @@ ST3_diff <- ST3 %>%
 ST3_diff
 ```
 
-## ST 6 - Differences in characteristics between those with and without mammographic density 
+## ST 6 - Differences in characteristics between those with and without mammographic density
 
 this table needs additional formatting changes, labels, add p-value for difference between groups, add time from entry to dg and age at diagnosis
 
