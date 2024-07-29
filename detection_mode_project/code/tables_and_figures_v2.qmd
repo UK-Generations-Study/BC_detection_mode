@@ -776,7 +776,7 @@ tcomposite_plot
 ::: callout-important
 ## Decision needed
 
-Need to decide whether to use quartiles or continuous MD
+Decided to use quartiles on 15/07/2024
 :::
 
 ### Categorical MD (quartiles)
@@ -793,53 +793,26 @@ Need to decide whether to use quartiles or continuous MD
 # only included alcohol status - check if we need to do the trick if including both
 # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
 
-# model <- df %>%
-#    filter(d_md_avail == 1 # include only those with md
-#          ) %>%
-#    drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-#            ) %>% 
-#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-#       + d_R1hrt_tr_lab
-#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
-#       + d_bbd_lab + d_fambrca_lab
-#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-#       + diagage + d_R1toBC_y,
-#             family = binomial(link = "logit")) 
-# 
-# model
-
-
-tidy_model6 <- df %>%
+model <- df %>%
    filter(d_md_avail == 1 # include only those with md
          ) %>%
    drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-           ) %>% 
-  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+           ) %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
       + d_R1hrt_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab
       + d_bbd_lab + d_fambrca_lab
-      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y,
-            family = binomial(link = "logit")) %>% 
-  tidy_and_attach(exponentiate = FALSE) %>% 
-   broom.helpers::tidy_add_reference_rows()
+            family = binomial(link = "logit"))
 
 
-tidy_model6 <- tidy_model6 %>% 
-  select(term, estimate, std.error, statistic, p.value, conf.low, conf.high)
-
-# create a dataframe with broom::tidy() for forestplots 
-
-# tidy_model6 <- model %>%
-#    tidy(exponentiate = FALSE, conf.int = TRUE) %>%
-#    mutate(OR = estimate) %>%
-#    select(-estimate) %>%
-#    select(term, OR, everything()) 
+tidy_model6 <- model %>%
+   tidy(exponentiate = FALSE, conf.int = TRUE) 
 
 
-#tidy_model6
+tidy_model6
 
 
 # Model 8 ----------------------------------------------------------------
@@ -861,21 +834,16 @@ tidy_model8 <- df %>%
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y + d_MDtoBC_y
       + d_md_qrt,
-            family = binomial(link = "logit")) %>% 
-  tidy_and_attach(exponentiate = FALSE) %>% 
-   broom.helpers::tidy_add_reference_rows()
-
-tidy_model8 <- tidy_model8 %>% 
-  select(term, estimate, std.error, statistic, p.value, conf.low, conf.high)
+            family = binomial(link = "logit")) 
 
 
 # create a dataframe with broom::tidy() for forestplots 
 
-# tidy_model8 <- model %>%
-#    tidy(exponentiate = FALSE, conf.int = TRUE) %>%
-#    mutate(OR = estimate) %>%
-#    select(-estimate) %>%
-#    select(term, OR, everything())
+tidy_model8 <- tidy_model8 %>%
+   tidy(exponentiate = FALSE, conf.int = TRUE) #%>%
+   #mutate(OR = estimate) %>%
+   #select(-estimate) %>%
+   #select(term, everything())
  
   
 ```
@@ -903,7 +871,8 @@ md_forest_df <- md_forest_df %>%
                                         "d_R1alcohol_units_lab0",
                                         "d_R1smokingstatus_labNever",
                                         "d_bmi_entry_lab18.5-25",
-                                        "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl6),2),
+                                        "d_R1physmet_leis_who_lab<9"
+                                      ), 0, estimate_mdl6),2),
          estimate_mdl8 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
                                         "d_age_meno_tr_lab<50", 
                                         "d_R1hrt_tr_labNever",
@@ -916,21 +885,27 @@ md_forest_df <- md_forest_df %>%
                                         "d_R1alcohol_units_lab0",
                                         "d_R1smokingstatus_labNever",
                                         "d_bmi_entry_lab18.5-25",
-                                        "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl8),2)
+                                        "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl8),2)#,
+         # conf.low_mdl6 = round(if_else(term %in% c("d_md_qrt2",
+         #                                "d_md_qrt3",
+         #                                "d_md_qrt4"), 0, conf.low_mdl6),2),
+         # conf.high_mdl6 = round(if_else(term %in% c("d_md_qrt2",
+         #                                "d_md_qrt3",
+         #                                "d_md_qrt4"), 0, conf.high_mdl6),2)
          )
 
 
 
 
-# create labels and variable names structures 
-md_forest_df <- md_forest_df %>% 
+# create labels and variable names structures
+md_forest_df <- md_forest_df %>%
   mutate(variable = case_when(
     grepl("menopause", term) ~ "Menopausal status",
     grepl("age_meno", term) ~ "Age at menopause",
     grepl("hrt", term) ~ "HRT status",
     grepl("parity", term) ~ "N of parous pregnancies",
     grepl("agebirth1", term) ~ "Age at first birth",
-    grepl("age_menarche", term) ~ "Age at menarche", 
+    grepl("age_menarche", term) ~ "Age at menarche",
     grepl("ocstatus", term) ~ "Oral contraceptives status",
     grepl("bbd", term) ~ "Benign breast disease",
     grepl("fambrca", term) ~ "Family history of BC",
@@ -946,7 +921,7 @@ md_forest_df <- md_forest_df %>%
       grepl("hrt", term) ~ sub("d_R1hrt_tr_lab", "", term),
       grepl("parity", term) ~ sub("d_parity_lab", "", term),
       grepl("agebirth1", term) ~ sub("d_agebirth1_tr_lab", "", term),
-      grepl("age_menarche", term) ~ sub("d_age_menarche_lab", "", term), 
+      grepl("age_menarche", term) ~ sub("d_age_menarche_lab", "", term),
       grepl("ocstatus", term) ~ sub("d_ocstatus_lab", "", term),
       grepl("bbd", term) ~ sub("d_bbd_lab", "", term),
       grepl("fambrca", term) ~ sub("d_fambrca_lab", "", term),
@@ -958,7 +933,7 @@ md_forest_df <- md_forest_df %>%
     )
     )
 
-# add subheading rows 
+# add subheading rows
 
 subheading_data <- md_forest_df %>%
   distinct(variable) %>%
@@ -969,15 +944,35 @@ md_forest_df <- bind_rows(subheading_data, md_forest_df) %>%
 
 
 
-# create long format 
+# # create long format 
+# md_forest_long <- md_forest_df %>% 
+#   filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y", "d_md_qrt2", "d_md_qrt3", "d_md_qrt4"),
+#          !is.na(level),
+#          level != "Mammographic breast density quartile"
+#          ) %>% 
+#   select(variable, level, term, estimate_mdl6, conf.low_mdl6, conf.high_mdl6, estimate_mdl8, conf.low_mdl8, conf.high_mdl8
+#          ) %>% 
+#   mutate(pct_diff = if_else(is.na(estimate_mdl6), "-", as.character(round((estimate_mdl6 - estimate_mdl8) / estimate_mdl6 * 100, 1))) 
+#          ) %>% 
+#   pivot_longer(
+#     cols = c(estimate_mdl6, conf.low_mdl6, conf.high_mdl6, 
+#              estimate_mdl8, conf.low_mdl8, conf.high_mdl8
+#              ),
+#     names_to = c(".value", "mdl"),
+#     names_sep = "_"
+#   ) %>% 
+#   ungroup()
+
+
+# create long format - with absolute difference
 md_forest_long <- md_forest_df %>% 
-  filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y", "d_md_qrt2", "d_md_qrt3", "d_md_qrt4"),
-         !is.na(level),
-         level != "Mammographic breast density quartile"
+  filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y"),
+         !is.na(level)#,
+         #level != "Mammographic breast density quartile"
          ) %>% 
-  select(level, estimate_mdl6, conf.low_mdl6, conf.high_mdl6, estimate_mdl8, conf.low_mdl8, conf.high_mdl8
+  select(variable, level, term, estimate_mdl6, conf.low_mdl6, conf.high_mdl6, estimate_mdl8, conf.low_mdl8, conf.high_mdl8
          ) %>% 
-  mutate(pct_diff = if_else(is.na(estimate_mdl6), "-", as.character(round((estimate_mdl8 - estimate_mdl6) / estimate_mdl8 * 100, 1))) 
+  mutate(diff = if_else(is.na(estimate_mdl6), "-", as.character(round(estimate_mdl6 - estimate_mdl8),3)) 
          ) %>% 
   pivot_longer(
     cols = c(estimate_mdl6, conf.low_mdl6, conf.high_mdl6, 
@@ -985,79 +980,22 @@ md_forest_long <- md_forest_df %>%
              ),
     names_to = c(".value", "mdl"),
     names_sep = "_"
-  ) 
+  )
+
 
 ```
+
+#### without reference categories
 
 ```{r, fig.width=8, fig.height=10}
 #| echo: false
 #| include: false
+# to delete
 
 # # 3. GENERATE FORESTPLOT
 # 
 # is_summary <- is.na(md_forest_long$estimate)
 # 
-# # develop forest
-# 
-# 
-# test <- md_forest_long %>% 
-#   group_by(mdl
-#            ) %>% 
-#   mutate(mean = estimate,
-#          lower = conf.low,
-#          upper = conf.high
-#          ) %>% 
-#   forestplot(labeltext = level,
-#              is_summary = is_summary)
-# 
-# 
-# 
-# 
-# md_forest_long %>% 
-#   filter(mdl == "mdl6"
-#            ) %>% 
-#   mutate(mean = estimate,
-#          lower = conf.low,
-#          upper = conf.high
-#          ) %>% 
-#   forestplot(labeltext = level#,
-#              # xlog = FALSE,
-#              # xlab = "log OR",
-#              # boxsize = 0.3,
-#              # zero = 1,
-#              # line.margin = 0.5,
-#              # #clip = c(0, 3),
-#              # #ticks = c(0, 0.5, 1, 1.5, 2, 2.5, 3),
-#              # ci.vertices = T,
-#              # ci.vertices.height = 0.2,
-#              # legend = c("Default model", "Adjusted for MD"),
-#              # title = paste("Final model adjusted vs unadjusted for mamographic breast density quartiles"),
-#              # is.summary = is_summary
-#              ) # %>% 
-#   # fp_set_style(box = c("grey50","deeppink2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
-#   #              default = gpar(vertices = T),
-#   #              line = "grey40",
-#   #              summary = gpar(col = NA), # Set summary color to NA
-#   #              align = "lrrr",
-#   #              hrz_lines = gpar(col = NA), # Set line color to NA
-#   #              txt_gp = fpTxtGp(label = gpar(cex = 0.8),
-#   #                                   ticks = gpar(cex = 0.8),
-#   #                                   xlab = gpar(cex = 0.8),
-#   #                               )
-#   #              ) %>% 
-#   # fp_decorate_graph(graph.pos = 2
-#   #                   ) %>% 
-#   # fp_add_header(level = c("", "Risk factor")
-#   #               ) %>% 
-#   # fp_insert_row(level = "",
-#   #               position = 3,
-#   #               mean = NULL,
-#   #               lower = NULL,
-#   #               upper = NULL,
-#   #               is.summary = TRUE,
-#   #               boxsize = NA)
-# 
-# 
 # 
 # # develop forest
 # 
@@ -1068,21 +1006,21 @@ md_forest_long <- md_forest_df %>%
 #          lower = conf.low,
 #          upper = conf.high
 #          ) %>% 
-#   forestplot(labeltext = level,
+#   forestplot(labeltext = c(level, pct_diff),
 #              xlog = FALSE,
 #              xlab = "log OR",
 #              boxsize = 0.3,
-#              zero = 1,
+#              zero = 0,
 #              line.margin = 0.5,
-#              #clip = c(0, 3),
-#              #ticks = c(0, 0.5, 1, 1.5, 2, 2.5, 3),
+#              clip = c(-1, 5),
+#              ticks = c(-1, 0, 1, 2, 3, 4, 5),
 #              ci.vertices = T,
 #              ci.vertices.height = 0.2,
 #              legend = c("Default model", "Adjusted for MD"),
-#              title = paste("Final model adjusted vs unadjusted for mamographic breast density quartiles"),
+#              title = paste("Final model adjusted vs unadjusted for continuous mamographic breast density"),
 #              is.summary = is_summary
 #              ) %>% 
-#   fp_set_style(box = c("grey50","deeppink2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
+#   fp_set_style(box = c("grey50","orangered2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
 #                default = gpar(vertices = T),
 #                line = "grey40",
 #                summary = gpar(col = NA), # Set summary color to NA
@@ -1090,7 +1028,396 @@ md_forest_long <- md_forest_df %>%
 #                hrz_lines = gpar(col = NA), # Set line color to NA
 #                txt_gp = fpTxtGp(label = gpar(cex = 0.8),
 #                                     ticks = gpar(cex = 0.8),
-#                                     xlab = gpar(cex = 0.8),
+#                                     xlab = gpar(cex = 0.8)
+#                                 )
+#                ) %>% 
+#   fp_decorate_graph(graph.pos = 2
+#                     ) %>% 
+#   fp_add_header(level = c("", "Risk factor"),
+#             pct_diff = c("", "% difference")
+#                 ) %>% 
+#   fp_insert_row(level = "",
+#                 position = 3,
+#                 mean = NULL,
+#                 lower = NULL,
+#                 upper = NULL,
+#                 is.summary = TRUE,
+#                 boxsize = NA)
+```
+
+```{r, fig.width=10, fig.height=12}
+# 3. GENERATE FORESTPLOT
+
+md_forest_long <- md_forest_long %>% 
+  arrange(variable) %>% 
+  group_by(mdl) %>% 
+  mutate(mean = estimate,
+         lower = conf.low,
+         upper = conf.high,
+         level_var = level,
+         estimate6 = case_when(mdl == "mdl6" & !is.na(estimate) ~ as.character(estimate),
+                               mdl == "mdl6" & is.na(estimate) ~ "-"),
+         estimate8 = case_when(mdl == "mdl8" & !is.na(estimate) ~ as.character(estimate),
+                               mdl == "mdl8" & is.na(estimate) ~ "-")
+         ) %>% 
+  ungroup() %>% 
+  fill(estimate6, .direction = "down") %>% 
+  fill(estimate8, .direction = "up") 
+  
+
+
+
+# indicate which rows to be bold = summary
+
+
+is_summary <- if_else(
+  md_forest_long$level %in% c("Menopausal status", 
+                               "Age at menopause", 
+                               "HRT status",
+                               "N of parous pregnancies",
+                               "Age at first birth",
+                               "Age at menarche",
+                               "Oral contraceptives status",
+                               "Benign breast disease",
+                               "Family history of BC",
+                               "Alcohol units",
+                               "Smoking status",
+                               "BMI",
+                               "Physical Activity (WHO cat)",
+                               "Mammographic breast density quartile"), TRUE, FALSE
+)
+
+
+# plot
+
+md_forest_long %>% 
+  group_by(mdl
+           ) %>% 
+  mutate(mean = estimate,
+         lower = conf.low,
+         upper = conf.high
+         ) %>% 
+  forestplot(labeltext = c(level, estimate6, estimate8),
+             xlog = FALSE,
+             xlab = "log OR",
+             boxsize = 0.3,
+             zero = 0,
+             line.margin = 0.5,
+             clip = c(-1, 5),
+             ticks = c(-1, 0, 1, 2, 3, 4, 5),
+             ci.vertices = T,
+             ci.vertices.height = 0.2,
+             legend = c("Default model", "Adjusted for MD"),
+             title = paste("Final model adjusted vs unadjusted for mamographic breast density quartiles"),
+             is.summary = is_summary
+             ) %>% 
+  fp_set_style(box = c("grey50","orangered2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
+               default = gpar(vertices = T),
+               line = "grey40",
+               summary = gpar(col = NA), # Set summary color to NA
+               align = "lrrr",
+               hrz_lines = gpar(col = NA), # Set line color to NA
+               txt_gp = fpTxtGp(label = gpar(cex = 0.8),
+                                    ticks = gpar(cex = 0.8),
+                                    xlab = gpar(cex = 0.8)
+                                )
+               ) %>% 
+  fp_decorate_graph(graph.pos = 2
+                    ) %>% 
+  fp_add_header(level = c("", "Risk factor"),
+            #variable = c("", "Variable"),
+            estimate6 = c("Estimate", "unadjusted for MD"),
+            estimate8 = c("Estimate", "adjusted for MD")
+                ) %>% 
+  fp_insert_row(level = "",
+                position = 3,
+                mean = NULL,
+                lower = NULL,
+                upper = NULL,
+                is.summary = TRUE,
+                boxsize = NA)
+```
+
+#### With reference categories
+
+TBC - code kept breaking when adding reference categories but can try to add them when more time
+
+```{r}
+#| echo: false
+#| include: false
+
+#DONT DELETE - NEEDS AMENDING, COMMENTING OUT FOR RENDERING
+
+# # 1. RUN MODELS AND CREATE REGRESSION DATASETS FOR EACH MODEL 
+# 
+# # Model 6 ----------------------------------------------------------------
+#  # include parity and meno trick variable instead of original variables
+# 
+# # only included alcohol status - check if we need to do the trick if including both
+# # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+# 
+# 
+# tidy_model6 <- df %>%
+#    filter(d_md_avail == 1 # include only those with md
+#          ) %>%
+#    drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+#            ) %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+#       + d_R1hrt_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+#       + diagage + d_R1toBC_y,
+#             family = binomial(link = "logit")) %>%
+#   tidy_and_attach(exponentiate = FALSE) %>%
+#    broom.helpers::tidy_add_reference_rows()
+# 
+# 
+# tidy_model6 <- tidy_model6 %>%
+#   select(term, estimate, std.error, statistic, p.value, conf.low, conf.high)
+# 
+# 
+# tidy_model6
+# 
+# 
+# # Model 8 ----------------------------------------------------------------
+#  # include parity and meno trick variable instead of original variables
+# 
+# # only included alcohol status - check if we need to do the trick if including both
+# # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+# 
+# 
+# 
+# tidy_model8 <- df %>%
+#    filter(d_md_avail == 1 # include only those with md
+#          ) %>%
+#   drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+#            ) %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+#       + d_R1hrt_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+#       + diagage + d_R1toBC_y + d_MDtoBC_y
+#       + d_md_qrt,
+#             family = binomial(link = "logit")) %>%
+#   tidy_and_attach(exponentiate = FALSE) %>%
+#    broom.helpers::tidy_add_reference_rows()
+# 
+# tidy_model8 <- tidy_model8 %>%
+#   select(term, estimate, std.error, statistic, p.value, conf.low, conf.high)
+# 
+# 
+# # processing ---------------------------------------------------------------------
+# # 2. PROCESS DATA FOR FORESTPLOT 
+# 
+# # full join data from both models 
+# md_forest_df <- tidy_model6 %>% 
+#   full_join(tidy_model8, by = "term", suffix = c("_mdl6", "_mdl8"))
+# 
+# # reference group - convert NA to 0 (estimate on log odds scale)
+# md_forest_df <- md_forest_df %>% 
+#   mutate(estimate_mdl6 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl6),2),
+#          estimate_mdl8 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl8),2)
+#          )
+# 
+# # reference group - convert NA to 0 for confidence intervals
+# md_forest_df <- md_forest_df %>% 
+#   mutate(conf.low_mdl6 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl6),2),
+#          conf.high_mdl6 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl6),2),
+#          conf.low_mdl8 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl8),2),
+#          conf.high_mdl8 = round(if_else(term %in% c("d_R1menopause_lab3Premenopausal",
+#                                         "d_age_meno_tr_lab<50", 
+#                                         "d_R1hrt_tr_labNever",
+#                                         "d_parity_lab0",
+#                                         "d_agebirth1_tr_lab<20",
+#                                         "d_age_menarche_lab<12",
+#                                         "d_ocstatus_labNever",
+#                                         "d_bbd_labNo",
+#                                         "d_fambrca_labNo",
+#                                         "d_R1alcohol_units_lab0",
+#                                         "d_R1smokingstatus_labNever",
+#                                         "d_bmi_entry_lab18.5-25",
+#                                         "d_R1physmet_leis_who_lab<9"), 0, estimate_mdl8),2)
+#          )
+# 
+# 
+# # create labels and variable names structures
+# md_forest_df <- md_forest_df %>%
+#   mutate(variable = case_when(
+#     grepl("menopause", term) ~ "Menopausal status",
+#     grepl("age_meno", term) ~ "Age at menopause",
+#     grepl("hrt", term) ~ "HRT status",
+#     grepl("parity", term) ~ "N of parous pregnancies",
+#     grepl("agebirth1", term) ~ "Age at first birth",
+#     grepl("age_menarche", term) ~ "Age at menarche",
+#     grepl("ocstatus", term) ~ "Oral contraceptives status",
+#     grepl("bbd", term) ~ "Benign breast disease",
+#     grepl("fambrca", term) ~ "Family history of BC",
+#     grepl("R1alcohol", term) ~ "Alcohol units",
+#     grepl("R1smokingstatus", term) ~ "Smoking status",
+#     grepl("bmi_entry", term) ~ "BMI",
+#     grepl("R1physmet_leis_who", term) ~ "Physical Activity (WHO cat)",
+#     grepl("md_qrt", term) ~ "Mammographic breast density quartile"
+#                               ),
+#     level = case_when(
+#       grepl("d_R1menopause_lab3", term) ~ sub("d_R1menopause_lab3", "", term),
+#       grepl("age_meno", term) ~ sub("d_age_meno_tr_lab", "", term),
+#       grepl("hrt", term) ~ sub("d_R1hrt_tr_lab", "", term),
+#       grepl("parity", term) ~ sub("d_parity_lab", "", term),
+#       grepl("agebirth1", term) ~ sub("d_agebirth1_tr_lab", "", term),
+#       grepl("age_menarche", term) ~ sub("d_age_menarche_lab", "", term),
+#       grepl("ocstatus", term) ~ sub("d_ocstatus_lab", "", term),
+#       grepl("bbd", term) ~ sub("d_bbd_lab", "", term),
+#       grepl("fambrca", term) ~ sub("d_fambrca_lab", "", term),
+#       grepl("R1alcohol", term) ~ sub("d_R1alcohol_units_lab", "", term),
+#       grepl("R1smokingstatus", term) ~ sub("d_R1smokingstatus_lab", "", term),
+#       grepl("bmi_entry", term) ~ sub("d_bmi_entry_lab", "", term),
+#       grepl("R1physmet_leis_who", term) ~ sub("d_R1physmet_leis_who_lab", "", term),
+#       grepl("md_qrt", term) ~ sub("d_md_qrt", "", term)
+#     )
+#     )
+# 
+# # add subheading rows
+# 
+# subheading_data <- md_forest_df %>%
+#   distinct(variable) %>%
+#   mutate(level = variable)
+# 
+# md_forest_df <- bind_rows(subheading_data, md_forest_df) %>%
+#   arrange(variable, factor(level, levels = unique(level)))
+# 
+# 
+# 
+# # create long format 
+# md_forest_long2 <- md_forest_df %>% 
+#   filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y", "d_md_qrt2", "d_md_qrt3", "d_md_qrt4"),
+#          !is.na(level),
+#          level != "Mammographic breast density quartile"
+#          ) %>% 
+#   select(level, term, estimate_mdl6, conf.low_mdl6, conf.high_mdl6, estimate_mdl8, conf.low_mdl8, conf.high_mdl8
+#          ) %>% 
+#   mutate(pct_diff = if_else(is.na(estimate_mdl6), "-", as.character(round((estimate_mdl8 - estimate_mdl6) / estimate_mdl8 * 100, 1))) 
+#          ) %>% 
+#   pivot_longer(
+#     cols = c(estimate_mdl6, conf.low_mdl6, conf.high_mdl6, 
+#              estimate_mdl8, conf.low_mdl8, conf.high_mdl8
+#              ),
+#     names_to = c(".value", "mdl"),
+#     names_sep = "_"
+#   ) 
+# 
+
+
+```
+
+```{r, fig.width=8, fig.height=10}
+#| echo: false
+#| include: false
+
+
+# 3. GENERATE FORESTPLOT
+
+#DONT DELETE - NEEDS AMENDING, COMMENTING OUT FOR RENDERING
+
+
+# is_summary <- is.na(md_forest_long2$estimate)
+# 
+# 
+# # develop forest
+# 
+# md_forest_long2 %>% 
+#   group_by(mdl
+#            ) %>% 
+#   mutate(mean = estimate,
+#          lower = conf.low,
+#          upper = conf.high
+#          ) %>% 
+#   forestplot(labeltext = c(level),
+#              xlog = FALSE,
+#              xlab = "log OR",
+#              boxsize = 0.3,
+#              zero = 0,
+#              line.margin = 0.5,
+#              clip = c(-1, 5),
+#              ticks = c(-1, 0, 1, 2, 3, 4, 5),
+#              ci.vertices = T,
+#              ci.vertices.height = 0.2,
+#              legend = c("Default model", "Adjusted for MD"),
+#              title = paste("Final model adjusted vs unadjusted for continuous mamographic breast density"),
+#              is.summary = is_summary
+#              ) %>% 
+#   fp_set_style(box = c("grey50","orangered2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
+#                default = gpar(vertices = T),
+#                line = "grey40",
+#                summary = gpar(col = NA), # Set summary color to NA
+#                align = "lrrr",
+#                hrz_lines = gpar(col = NA), # Set line color to NA
+#                txt_gp = fpTxtGp(label = gpar(cex = 0.8),
+#                                     ticks = gpar(cex = 0.8),
+#                                     xlab = gpar(cex = 0.8)
 #                                 )
 #                ) %>% 
 #   fp_decorate_graph(graph.pos = 2
@@ -1108,45 +1435,48 @@ md_forest_long <- md_forest_df %>%
 
 ### Continuous MD
 
+decided not to use (code hidden from html file)
+
 ```{r}
 #| echo: false
+#| include: false
 
-# 1. RUN MODEL 8b only AND CREATE REGRESSION DATASET 
-
-# Model 6 ----------------------------------------------------------------
- # include parity and meno trick variable instead of original variables
-
-# only included alcohol status - check if we need to do the trick if including both
-# including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
-
-model <- df %>%
-   filter(d_md_avail == 1 # include only those with md
-         ) %>%
-   drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-           ) %>%
-  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
-      + d_R1hrt_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab
-      + d_bbd_lab + d_fambrca_lab
-      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y,
-            family = binomial(link = "logit"))
-
-#model
-
-# create a dataframe with broom::tidy() for forestplots 
-
-tidy_model6 <- model %>%
-   tidy(exponentiate = FALSE, conf.int = TRUE) %>%
-   mutate(OR = estimate) %>%
-   select(-estimate) %>%
-   select(term, OR, everything())
-
-
-#tidy_model6
-
-
+# # 1. RUN MODEL 8b only AND CREATE REGRESSION DATASET 
+# 
+# # Model 6 ----------------------------------------------------------------
+#  # include parity and meno trick variable instead of original variables
+# 
+# # only included alcohol status - check if we need to do the trick if including both
+# # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+# 
+# model <- df %>%
+#    filter(d_md_avail == 1 # include only those with md
+#          ) %>%
+#    drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+#            ) %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+#       + d_R1hrt_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+#       + diagage + d_R1toBC_y,
+#             family = binomial(link = "logit"))
+# 
+# #model
+# 
+# # create a dataframe with broom::tidy() for forestplots 
+# 
+# tidy_model6 <- model %>%
+#    tidy(exponentiate = FALSE, conf.int = TRUE) %>%
+#    mutate(OR = estimate) %>%
+#    select(-estimate) %>%
+#    select(term, OR, everything())
+# 
+# 
+# #tidy_model6
+# 
+# 
 
 
 
@@ -1157,169 +1487,165 @@ tidy_model6 <- model %>%
 # only included alcohol status - check if we need to do the trick if including both
 # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
 
-model <- df %>%
-   filter(d_md_avail == 1 # include only those with md
-         ) %>%
-  drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, d_md10
-           ) %>% 
-  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
-      + d_bbd_lab + d_fambrca_lab
-      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y + d_MDtoBC_y
-      + d_md10,
-            family = binomial(link = "logit"))
-
-#model
-
-# create a dataframe with broom::tidy() for forestplots 
-
-tidy_model8b <- model %>%
-   tidy(exponentiate = FALSE, conf.int = TRUE) %>%
-   mutate(OR = estimate) %>%
-   select(-estimate) %>%
-   select(term, OR, everything())
-
-#tidy_model8b
+# model <- df %>%
+#    filter(d_md_avail == 1 # include only those with md
+#          ) %>%
+#   drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, d_md10
+#            ) %>% 
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+#       + d_R1hrt_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+#       + diagage + d_R1toBC_y + d_MDtoBC_y
+#       + d_md10,
+#             family = binomial(link = "logit"))
+# 
+# #model
+# 
+# # create a dataframe with broom::tidy() for forestplots 
+# 
+# tidy_model8b <- model %>%
+#    tidy(exponentiate = FALSE, conf.int = TRUE) %>%
+#    mutate(OR = estimate) %>%
+#    select(-estimate) %>%
+#    select(term, OR, everything())
+# 
+# #tidy_model8b
 ```
 
 ```{r}
 #| echo: false
+#| include: false
 
-# 2. PROCESS DATA FOR FORESTPLOT 
-
-# full join data from both models 
-md_forest_df <- tidy_model6 %>% 
-  full_join(tidy_model8b, by = "term", suffix = c("_mdl6", "_mdl8"))
-
-# RESUME HERE
-# create labels and variable names structures 
-md_forest_df <- md_forest_df %>% 
-  mutate(variable = case_when(
-    grepl("menopause", term) ~ "Menopausal status",
-    grepl("age_meno", term) ~ "Age at menopause",
-    grepl("hrt", term) ~ "HRT status",
-    grepl("parity", term) ~ "N of parous pregnancies",
-    grepl("agebirth1", term) ~ "Age at first birth",
-    grepl("age_menarche", term) ~ "Age at menarche", 
-    grepl("ocstatus", term) ~ "Oral contraceptives status",
-    grepl("bbd", term) ~ "Benign breast disease",
-    grepl("fambrca", term) ~ "Family history of BC",
-    grepl("R1alcohol", term) ~ "Alcohol units",
-    grepl("R1smokingstatus", term) ~ "Smoking status",
-    grepl("bmi_entry", term) ~ "BMI",
-    grepl("R1physmet_leis_who", term) ~ "Physical Activity (WHO cat)",
-    grepl("md10", term) ~ "Mammographic breast density"
-                              ),
-    level = case_when(
-      grepl("d_R1menopause_lab3", term) ~ sub("d_R1menopause_lab3", "", term),
-      grepl("age_meno", term) ~ sub("d_age_meno_tr_lab", "", term),
-      grepl("hrt", term) ~ sub("d_R1hrt_tr_lab", "", term),
-      grepl("parity", term) ~ sub("d_parity_lab", "", term),
-      grepl("agebirth1", term) ~ sub("d_agebirth1_tr_lab", "", term),
-      grepl("age_menarche", term) ~ sub("d_age_menarche_lab", "", term), 
-      grepl("ocstatus", term) ~ sub("d_ocstatus_lab", "", term),
-      grepl("bbd", term) ~ sub("d_bbd_lab", "", term),
-      grepl("fambrca", term) ~ sub("d_fambrca_lab", "", term),
-      grepl("R1alcohol", term) ~ sub("d_R1alcohol_units_lab", "", term),
-      grepl("R1smokingstatus", term) ~ sub("d_R1smokingstatus_lab", "", term),
-      grepl("bmi_entry", term) ~ sub("d_bmi_entry_lab", "", term),
-      grepl("R1physmet_leis_who", term) ~ sub("d_R1physmet_leis_who_lab", "", term),
-      grepl("md10", term) ~ sub("d_md10", "", term)
-    )
-    )
-
-# add subheading rows 
-
-subheading_data <- md_forest_df %>%
-  distinct(variable) %>%
-  mutate(level = variable)
-
-md_forest_df <- bind_rows(subheading_data, md_forest_df) %>%
-  arrange(variable, factor(level, levels = unique(level)))
-
-
-
-# create long format 
-md_forest_long <- md_forest_df %>% 
-  filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y", "d_md"),
-         !is.na(level),
-         ) %>% 
-  select(level, OR_mdl6, conf.low_mdl6, conf.high_mdl6, OR_mdl8, conf.low_mdl8, conf.high_mdl8
-         ) %>% 
-  mutate(pct_diff = if_else(is.na(OR_mdl6), "-", as.character(round((OR_mdl8 - OR_mdl6) / OR_mdl8 * 100, 1))) 
-         ) %>% 
-  pivot_longer(
-    cols = c(OR_mdl6, conf.low_mdl6, conf.high_mdl6, 
-             OR_mdl8, conf.low_mdl8, conf.high_mdl8
-             ),
-    names_to = c(".value", "mdl"),
-    names_sep = "_"
-  ) 
+# # 2. PROCESS DATA FOR FORESTPLOT 
+# 
+# # full join data from both models 
+# md_forest_df <- tidy_model6 %>% 
+#   full_join(tidy_model8b, by = "term", suffix = c("_mdl6", "_mdl8"))
+# 
+# # RESUME HERE
+# # create labels and variable names structures 
+# md_forest_df <- md_forest_df %>% 
+#   mutate(variable = case_when(
+#     grepl("menopause", term) ~ "Menopausal status",
+#     grepl("age_meno", term) ~ "Age at menopause",
+#     grepl("hrt", term) ~ "HRT status",
+#     grepl("parity", term) ~ "N of parous pregnancies",
+#     grepl("agebirth1", term) ~ "Age at first birth",
+#     grepl("age_menarche", term) ~ "Age at menarche", 
+#     grepl("ocstatus", term) ~ "Oral contraceptives status",
+#     grepl("bbd", term) ~ "Benign breast disease",
+#     grepl("fambrca", term) ~ "Family history of BC",
+#     grepl("R1alcohol", term) ~ "Alcohol units",
+#     grepl("R1smokingstatus", term) ~ "Smoking status",
+#     grepl("bmi_entry", term) ~ "BMI",
+#     grepl("R1physmet_leis_who", term) ~ "Physical Activity (WHO cat)",
+#     grepl("md10", term) ~ "Mammographic breast density"
+#                               ),
+#     level = case_when(
+#       grepl("d_R1menopause_lab3", term) ~ sub("d_R1menopause_lab3", "", term),
+#       grepl("age_meno", term) ~ sub("d_age_meno_tr_lab", "", term),
+#       grepl("hrt", term) ~ sub("d_R1hrt_tr_lab", "", term),
+#       grepl("parity", term) ~ sub("d_parity_lab", "", term),
+#       grepl("agebirth1", term) ~ sub("d_agebirth1_tr_lab", "", term),
+#       grepl("age_menarche", term) ~ sub("d_age_menarche_lab", "", term), 
+#       grepl("ocstatus", term) ~ sub("d_ocstatus_lab", "", term),
+#       grepl("bbd", term) ~ sub("d_bbd_lab", "", term),
+#       grepl("fambrca", term) ~ sub("d_fambrca_lab", "", term),
+#       grepl("R1alcohol", term) ~ sub("d_R1alcohol_units_lab", "", term),
+#       grepl("R1smokingstatus", term) ~ sub("d_R1smokingstatus_lab", "", term),
+#       grepl("bmi_entry", term) ~ sub("d_bmi_entry_lab", "", term),
+#       grepl("R1physmet_leis_who", term) ~ sub("d_R1physmet_leis_who_lab", "", term),
+#       grepl("md10", term) ~ sub("d_md10", "", term)
+#     )
+#     )
+# 
+# # add subheading rows 
+# 
+# subheading_data <- md_forest_df %>%
+#   distinct(variable) %>%
+#   mutate(level = variable)
+# 
+# md_forest_df <- bind_rows(subheading_data, md_forest_df) %>%
+#   arrange(variable, factor(level, levels = unique(level)))
+# 
+# 
+# 
+# # create long format 
+# md_forest_long <- md_forest_df %>% 
+#   filter(!term %in% c("(Intercept)", "diagage", "d_R1toBC_y", "d_MDtoBC_y", "d_md"),
+#          !is.na(level),
+#          ) %>% 
+#   select(level, OR_mdl6, conf.low_mdl6, conf.high_mdl6, OR_mdl8, conf.low_mdl8, conf.high_mdl8
+#          ) %>% 
+#   mutate(pct_diff = if_else(is.na(OR_mdl6), "-", as.character(round((OR_mdl8 - OR_mdl6) / OR_mdl8 * 100, 1))) 
+#          ) %>% 
+#   pivot_longer(
+#     cols = c(OR_mdl6, conf.low_mdl6, conf.high_mdl6, 
+#              OR_mdl8, conf.low_mdl8, conf.high_mdl8
+#              ),
+#     names_to = c(".value", "mdl"),
+#     names_sep = "_"
+#   ) 
 ```
-
-Also the MD estimate for continuous MD looks very strange and I can't seem to fix it, should we remove it form the plots? discuss
-
-after adapting the code for using log scale the difference seems strange - will need to fix that
-
-categorical MD will be used instead as agreed 15/07/2024 (this version was previously generated but working on some bug with the code after converting to log scale)
 
 ```{r, fig.width=8, fig.height=10}
 #| echo: false
+#| include: false
 
-# 3. GENERATE FORESTPLOT
-
-is_summary <- is.na(md_forest_long$OR)
-
-
-# develop forest
-
-md_forest_long %>% 
-  group_by(mdl
-           ) %>% 
-  mutate(mean = OR,
-         lower = conf.low,
-         upper = conf.high
-         ) %>% 
-  forestplot(labeltext = c(level, pct_diff),
-             xlog = FALSE,
-             xlab = "log OR",
-             boxsize = 0.3,
-             zero = 0,
-             line.margin = 0.5,
-             clip = c(-1, 5),
-             ticks = c(-1, 0, 1, 2, 3, 4, 5),
-             ci.vertices = T,
-             ci.vertices.height = 0.2,
-             legend = c("Default model", "Adjusted for MD"),
-             title = paste("Final model adjusted vs unadjusted for continuous mamographic breast density"),
-             is.summary = is_summary
-             ) %>% 
-  fp_set_style(box = c("grey50","orangered2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
-               default = gpar(vertices = T),
-               line = "grey40",
-               summary = gpar(col = NA), # Set summary color to NA
-               align = "lrrr",
-               hrz_lines = gpar(col = NA), # Set line color to NA
-               txt_gp = fpTxtGp(label = gpar(cex = 0.8),
-                                    ticks = gpar(cex = 0.8),
-                                    xlab = gpar(cex = 0.8)
-                                )
-               ) %>% 
-  fp_decorate_graph(graph.pos = 2
-                    ) %>% 
-  fp_add_header(level = c("", "Risk factor"),
-              pct_diff = c("", "% difference")
-                ) %>% 
-  fp_insert_row(level = "",
-                position = 3,
-                mean = NULL,
-                lower = NULL,
-                upper = NULL,
-                is.summary = TRUE,
-                boxsize = NA)
+# # 3. GENERATE FORESTPLOT
+# 
+# is_summary <- is.na(md_forest_long$OR)
+# 
+# 
+# # develop forest
+# 
+# md_forest_long %>% 
+#   group_by(mdl
+#            ) %>% 
+#   mutate(mean = OR,
+#          lower = conf.low,
+#          upper = conf.high
+#          ) %>% 
+#   forestplot(labeltext = c(level, pct_diff),
+#              xlog = FALSE,
+#              xlab = "log OR",
+#              boxsize = 0.3,
+#              zero = 0,
+#              line.margin = 0.5,
+#              clip = c(-1, 5),
+#              ticks = c(-1, 0, 1, 2, 3, 4, 5),
+#              ci.vertices = T,
+#              ci.vertices.height = 0.2,
+#              legend = c("Default model", "Adjusted for MD"),
+#              title = paste("Final model adjusted vs unadjusted for continuous mamographic breast density"),
+#              is.summary = is_summary
+#              ) %>% 
+#   fp_set_style(box = c("grey50","orangered2") %>%  lapply(function(x) gpar(fill = x, col = "#666666")),
+#                default = gpar(vertices = T),
+#                line = "grey40",
+#                summary = gpar(col = NA), # Set summary color to NA
+#                align = "lrrr",
+#                hrz_lines = gpar(col = NA), # Set line color to NA
+#                txt_gp = fpTxtGp(label = gpar(cex = 0.8),
+#                                     ticks = gpar(cex = 0.8),
+#                                     xlab = gpar(cex = 0.8)
+#                                 )
+#                ) %>% 
+#   fp_decorate_graph(graph.pos = 2
+#                     ) %>% 
+#   fp_add_header(level = c("", "Risk factor"),
+#               pct_diff = c("", "% difference")
+#                 ) %>% 
+#   fp_insert_row(level = "",
+#                 position = 3,
+#                 mean = NULL,
+#                 lower = NULL,
+#                 upper = NULL,
+#                 is.summary = TRUE,
+#                 boxsize = NA)
 ```
 
 # Supplementary material

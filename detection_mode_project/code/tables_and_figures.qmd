@@ -373,7 +373,7 @@ table3
 ::: callout-important
 ## Decision needed
 
-Need to decide whether to use quartiles or continuous MD
+Decided to use quartiles
 :::
 
 ### Categorical MD (quartiles)
@@ -407,9 +407,9 @@ model <- df %>%
 
 tidy_model6 <- model %>%
    tidy(exponentiate = FALSE, conf.int = TRUE) %>%
-   mutate(OR = estimate) %>%
-   select(-estimate) %>%
-   select(term, OR, everything()) %>% 
+   #mutate(OR = estimate) %>%
+   #select(-estimate) %>%
+   #select(term, estimate, everything()) %>% 
   broom.helpers::tidy_add_reference_rows()
 
 
