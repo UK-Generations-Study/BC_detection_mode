@@ -428,6 +428,8 @@ original + transformed
 ### Reproductive, lifestyle and other risk factors
 
 ```{r}
+#| echo: false
+#| include: false
 # code dev for plots with p-values
 
 # ttest - to check is similar to LR
@@ -479,14 +481,16 @@ plot1 <- md_df %>%
   annotate("text",
            x = 2,
            y = 90,
-           label = paste("p-value =", SD_p),
+           label = paste("p", SD_p),
            col = "black",
            size = 3.5)
 
-plot1
+#plot1
 ```
 
 ```{r}
+#| echo: false
+#| include: false
 # age at menopause
 # code dev for plots with p-values
 
@@ -517,7 +521,7 @@ meno_50to54_p <- lr %>%
   filter(term == "d_age_menopause_lab50-54") %>% 
   pull(p_val1)
 
-meno_over55 <- lr %>% 
+meno_over55_p <- lr %>% 
   filter(term == "d_age_menopause_lab55+") %>% 
   pull(p_val1)
 
@@ -544,67 +548,64 @@ plot2 <- md_df %>%
   annotate("text",
            x = 2,
            y = 90,
-           label = paste("p-value =", meno_under50_p),
+           label = paste("p =", meno_under50_p),
            col = "black",
            size = 3.5) +
   annotate("text",
            x = 3,
            y = 90,
-           label = paste("p-value =", meno_50to54_p),
+           label = paste("p =", meno_50to54_p),
            col = "black",
            size = 3.5) +
   annotate("text",
            x = 4,
            y = 90,
-           label = paste("p-value =", meno_over55),
+           label = paste("p", meno_over55_p),
            col = "black",
            size = 3.5) 
 
-plot2
+#plot2
 ```
 
 ```{r}
 #| echo: false
-# create density subset data 
-
-# md_df <- df %>% 
-#   filter(d_md_avail == 1)
-
-# Detection mode
-plot1 <- md_df %>% 
-  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Mode of detection",
-       x = "",
-       y = "Breast density (%)") +
-  scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_base() +
-  theme(legend.position = "none") +
- scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+#| include: false
+# HRT 
+# code dev for plots with p-values
 
 
-plot1
+# linear regression 
+lr <- md_df %>% 
+ filter(!is.na(d_R1hrtstatus_lab)) %>% 
+  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Pre-menopausal", "Never", "Former", "Current")) %>% 
+  lm(d_md_sqrt ~ d_R1hrtstatus_lab, data = .
+     ) %>% tidy() 
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+hrt_never_p <- lr %>% 
+  filter(term == "d_R1hrtstatus_labNever") %>% 
+  pull(p_val1)
+
+print(under50_p)
+
+hrt_former_p <- lr %>% 
+  filter(term == "d_R1hrtstatus_labFormer") %>% 
+  pull(p_val1)
+
+hrt_current_p <- lr %>% 
+  filter(term == "d_R1hrtstatus_labCurrent") %>% 
+  pull(p_val1)
 
 
-# Age at menopause
-plot2 <- md_df %>% 
-  filter(!is.na(d_age_menopause_lab)) %>% 
-  mutate(d_age_menopause_lab = fct_relevel(d_age_menopause_lab, "Pre-menopausal", "<50", "50-54", "55+")) %>% 
-  ggplot(aes(x = d_age_menopause_lab, y = d_md, fill = d_age_menopause_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Age at menopause",
-       x = "",
-       y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+# plot
 
 # HRT 
 plot3 <- md_df %>% 
@@ -617,15 +618,78 @@ plot3 <- md_df %>%
   labs(title = "HRT status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p", hrt_never_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p", hrt_former_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", hrt_current_p),
+           col = "black",
+           size = 3.5) 
+
+#plot3
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # parity 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+ filter(!is.na(d_parity_lab)) %>% 
+  lm(d_md_sqrt ~ d_parity_lab, data = .
+     ) %>% tidy() 
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+parity1_p <- lr %>% 
+  filter(term == "d_parity_lab1") %>% 
+  pull(p_val1)
+
+
+parity2_p <- lr %>% 
+  filter(term == "d_parity_lab2") %>% 
+  pull(p_val1)
+
+parity3_p <- lr %>% 
+  filter(term == "d_parity_lab3+") %>% 
+  pull(p_val1)
+
+
+# plot
 plot4 <- md_df %>% 
-  #filter(!is.na(d_parity_lab)) %>% 
+  filter(!is.na(d_parity_lab)) %>% 
   ggplot(aes(x = d_parity_lab, y = d_md, fill = d_parity_lab)) +
   geom_violin(alpha = 0.4) +
   geom_boxplot(width = 0.1)+
@@ -633,13 +697,81 @@ plot4 <- md_df %>%
   labs(title = "Number of parous pregnancies",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", parity1_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p", parity2_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", parity3_p),
+           col = "black",
+           size = 3.5) 
 
-# age at first birth 
+#plot4
+
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# Age at first birth
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+ filter(!is.na(d_agebirth1_lab) & d_agebirth1_lab != "Non-parous") %>% 
+  lm(d_md_sqrt ~ d_agebirth1_lab, data = .
+     ) %>% tidy() 
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+agebirth1_20to24_p <- lr %>% 
+  filter(term == "d_agebirth1_lab20-24") %>% 
+  pull(p_val1)
+
+
+agebirth1_lab25to29_p <- lr %>% 
+  filter(term == "d_agebirth1_lab25-29") %>% 
+  pull(p_val1)
+
+agebirth1_lab30to34_p <- lr %>% 
+  filter(term == "d_agebirth1_lab30-34") %>% 
+  pull(p_val1)
+
+agebirth1_lab35_p <- lr %>% 
+  filter(term == "d_agebirth1_lab35+") %>% 
+  pull(p_val1)
+
+
+# plot 
 plot5 <- md_df %>% 
   filter(!is.na(d_agebirth1_lab) & d_agebirth1_lab != "Non-parous") %>% 
   ggplot(aes(x = d_agebirth1_lab, y = d_md, fill = d_agebirth1_lab)) +
@@ -649,13 +781,78 @@ plot5 <- md_df %>%
   labs(title = "Age at first birth",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", agebirth1_20to24_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", agebirth1_lab25to29_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", agebirth1_lab30to34_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 5,
+           y = 90,
+           label = paste("p =", agebirth1_lab35_p),
+           col = "black",
+           size = 3.5) 
+
+plot5
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # age at menarche
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+ filter(!is.na(d_age_menarche_lab)) %>% 
+  lm(d_md_sqrt ~ d_age_menarche_lab, data = .
+     ) %>% tidy() 
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+menarche_12to13_p <- lr %>% 
+  filter(term == "d_age_menarche_lab12-13") %>% 
+  pull(p_val1)
+
+
+menarche_14_p <- lr %>% 
+  filter(term == "d_age_menarche_lab14+") %>% 
+  pull(p_val1)
+
+
+# plot
 plot6 <- md_df %>% 
   filter(!is.na(d_age_menarche_lab)) %>% 
   ggplot(aes(x = d_age_menarche_lab, y = d_md, fill = d_age_menarche_lab)) +
@@ -665,13 +862,66 @@ plot6 <- md_df %>%
   labs(title = "Age at menarche",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p", menarche_12to13_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p", menarche_14_p),
+           col = "black",
+           size = 3.5)
+
+#plot6
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # oral contraceptives 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+  filter(!is.na(d_ocstatus_lab)) %>% 
+  lm(d_md_sqrt ~ d_ocstatus_lab, data = .
+     ) %>% tidy() 
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+oc_former_p <- lr %>% 
+  filter(term == "d_ocstatus_labFormer") %>% 
+  pull(p_val1)
+
+
+oc_current_p <- lr %>% 
+  filter(term == "d_ocstatus_labCurrent") %>% 
+  pull(p_val1)
+
+
+# plot
 plot7 <- md_df %>% 
   filter(!is.na(d_ocstatus_lab)) %>% 
   ggplot(aes(x = d_ocstatus_lab, y = d_md, fill = d_ocstatus_lab)) +
@@ -681,13 +931,59 @@ plot7 <- md_df %>%
   labs(title = "Oral contraceptive status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", oc_former_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", oc_current_p),
+           col = "black",
+           size = 3.5)
+
+plot7
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # benign breast disease
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+  filter(!is.na(d_bbd_lab)) %>%
+  lm(d_md_sqrt ~ d_bbd_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+bbd_yes_p <- lr %>% 
+  filter(term == "d_bbd_labYes") %>% 
+  pull(p_val1)
+
+
+# plot
 plot8 <- md_df %>% 
   filter(!is.na(d_bbd_lab)) %>% 
   ggplot(aes(x = d_bbd_lab, y = d_md, fill = d_bbd_lab)) +
@@ -697,13 +993,54 @@ plot8 <- md_df %>%
   labs(title = "Benign Breast Disease",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p", bbd_yes_p),
+           col = "black",
+           size = 3.5)
+
+#plot8
+```
+
+```{r}
+#| echo: false
+#| include: false
+
 
 # family history of breast cancer
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+  filter(!is.na(d_fambrca_lab)) %>% 
+  lm(d_md_sqrt ~ d_fambrca_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+fambrca_yes_p <- lr %>% 
+  filter(term == "d_fambrca_labYes") %>% 
+  pull(p_val1)
+
+
+# plot
 plot9 <- md_df %>% 
   filter(!is.na(d_fambrca_lab)) %>% 
   ggplot(aes(x = d_fambrca_lab, y = d_md, fill = d_fambrca_lab)) +
@@ -713,15 +1050,69 @@ plot9 <- md_df %>%
   labs(title = "Family history of breast cancer",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", fambrca_yes_p),
+           col = "black",
+           size = 3.5)
 
-# Alcohol 
+#plot9
+
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+
+# alcohol 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+  filter(!is.na(d_R1alcohol_units_lab)) %>% 
+  lm(d_md_sqrt ~ d_R1alcohol_units_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+alc_1to9_p <- lr %>% 
+  filter(term == "d_R1alcohol_units_lab1-9") %>% 
+  pull(p_val1)
+
+alc_10to19_p <- lr %>% 
+  filter(term == "d_R1alcohol_units_lab10-19") %>% 
+  pull(p_val1)
+
+alc_20to29_p <- lr %>% 
+  filter(term == "d_R1alcohol_units_lab20-29") %>% 
+  pull(p_val1)
+
+alc_30_p <- lr %>% 
+  filter(term == "d_R1alcohol_units_lab30+") %>% 
+  pull(p_val1)
+
+
+# plot
 plot10 <- md_df %>% 
-  #filter(!is.na(d_R1alcohol_units_lab)) %>% 
+  filter(!is.na(d_R1alcohol_units_lab)) %>% 
   ggplot(aes(x = d_R1alcohol_units_lab, y = d_md, fill = d_R1alcohol_units_lab)) +
   geom_violin(alpha = 0.4) +
   geom_boxplot(width = 0.1)+
@@ -729,13 +1120,76 @@ plot10 <- md_df %>%
   labs(title = "Alcohol units",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", alc_1to9_p ),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", alc_10to19_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", alc_20to29_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 5,
+           y = 90,
+           label = paste("p =", alc_30_p),
+           col = "black",
+           size = 3.5)
 
-# Smoking 
+
+#plot10
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+#smoking
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_R1smokingstatus_lab)) %>% 
+  lm(d_md_sqrt ~ d_R1smokingstatus_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+smok_former_p <- lr %>% 
+  filter(term == "d_R1smokingstatus_labFormer") %>% 
+  pull(p_val1)
+
+smok_current_p <- lr %>% 
+  filter(term == "d_R1smokingstatus_labCurrent") %>% 
+  pull(p_val1)
+
+
+
+# plot
 plot11 <- md_df %>% 
   filter(!is.na(d_R1smokingstatus_lab)) %>% 
   ggplot(aes(x = d_R1smokingstatus_lab, y = d_md, fill = d_R1smokingstatus_lab)) +
@@ -745,13 +1199,68 @@ plot11 <- md_df %>%
   labs(title = "Smoking status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", smok_former_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", smok_current_p),
+           col = "black",
+           size = 3.5)
 
-# BMI 
+plot11
+
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# BMI
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_bmi_entry_lab)) %>% 
+  mutate(d_bmi_entry_lab= fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")) %>% 
+  lm(d_md_sqrt ~ d_bmi_entry_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+bmi_18.5to25 <- lr %>% 
+  filter(term == "d_bmi_entry_lab18.5-25") %>% 
+  pull(p_val1)
+
+bmi_25to30 <- lr %>% 
+  filter(term == "d_bmi_entry_lab25-30") %>% 
+  pull(p_val1)
+
+bmi_30 <- lr %>% 
+  filter(term == "d_bmi_entry_lab30+") %>% 
+  pull(p_val1)
+
+
+# plot
 plot12 <- md_df %>% 
   filter(!is.na(d_bmi_entry_lab)) %>% 
   mutate(d_bmi_entry_lab= fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")) %>%
@@ -762,13 +1271,70 @@ plot12 <- md_df %>%
   labs(title = "Body Mass Index",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", bmi_18.5to25),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", bmi_25to30),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p", bmi_30),
+           col = "black",
+           size = 3.5)
 
-# Physical activity
+plot12
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# Physical activity 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_R1physmet_leis_who_lab)) %>%
+  lm(d_md_sqrt ~ d_R1physmet_leis_who_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+pa_9to18 <- lr %>% 
+  filter(term == "d_R1physmet_leis_who_lab9-18") %>% 
+  pull(p_val1)
+
+pa_18 <- lr %>% 
+  filter(term == "d_R1physmet_leis_who_lab18+") %>% 
+  pull(p_val1)
+
+
+
+# plot
 plot13 <- md_df %>% 
   filter(!is.na(d_R1physmet_leis_who_lab)) %>% 
   ggplot(aes(x = d_R1physmet_leis_who_lab, y = d_md, fill = d_R1physmet_leis_who_lab)) +
@@ -778,12 +1344,30 @@ plot13 <- md_df %>%
   labs(title = "Physical Activity",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", pa_9to18),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", pa_18),
+           col = "black",
+           size = 3.5)
 
+
+plot13
 ```
 
 ```{r, fig.width=15, fig.height=9}
@@ -807,10 +1391,36 @@ lifestyle_plots
 
 ```{r}
 #| echo: false
+#| include: false
 
-# invasive status
+# Invasive status 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_inv_status_lab)) %>% 
+  lm(d_md_sqrt ~ d_inv_status_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+inv_yes <- lr %>% 
+  filter(term == "d_inv_status_labInvasive") %>% 
+  pull(p_val1)
+
+
+
+
+# plot
 tplot1 <- md_df %>% 
-  #filter(!is.na()) %>% 
+  filter(!is.na(d_inv_status_lab)) %>% 
   ggplot(aes(x = d_inv_status_lab, y = d_md, fill = d_inv_status_lab)) +
   geom_violin(alpha = 0.4) +
   geom_boxplot(width = 0.1)+
@@ -818,13 +1428,57 @@ tplot1 <- md_df %>%
   labs(title = "Invasive status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", inv_yes),
+           col = "black",
+           size = 3.5)
 
-# grade 
+tplot1
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# Grade 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_grade_lab)) %>% 
+  lm(d_md_sqrt ~ d_grade_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+grade2_p <- lr %>% 
+  filter(term == "d_grade_lab2") %>% 
+  pull(p_val1)
+
+grade3_p <- lr %>% 
+  filter(term == "d_grade_lab3") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot2 <- md_df %>% 
   filter(!is.na(d_grade_lab)) %>% 
   ggplot(aes(x = d_grade_lab, y = d_md, fill = d_grade_lab)) +
@@ -834,13 +1488,67 @@ tplot2 <- md_df %>%
   labs(title = "Grade",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", grade2_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", grade3_p),
+           col = "black",
+           size = 3.5)
 
-# morphology
+tplot2
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# Morphology
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_morph4_lab)) %>%  
+  lm(d_md_sqrt ~ d_morph4_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+morph_lob_p <- lr %>% 
+  filter(term == "d_morph4_labLobular") %>% 
+  pull(p_val1)
+
+morph_mixed_p <- lr %>% 
+  filter(term == "d_morph4_labMixed: ductal and other") %>% 
+  pull(p_val1)
+
+morph_other_p <- lr %>% 
+  filter(term == "d_morph4_labOther") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot3 <- md_df %>% 
   filter(!is.na(d_morph4_lab)) %>% 
   ggplot(aes(x = d_morph4_lab, y = d_md, fill = d_morph4_lab)) +
@@ -850,13 +1558,65 @@ tplot3 <- md_df %>%
   labs(title = "Morphology",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2")  +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", morph_lob_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", morph_mixed_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", morph_other_p),
+           col = "black",
+           size = 3.5)
+
+tplot3
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # positive nodes 
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_pos_nodes_lab)) %>%   
+  lm(d_md_sqrt ~ d_pos_nodes_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+pos_nodes_p <- lr %>% 
+  filter(term == "d_pos_nodes_labPositive") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot4 <- md_df %>% 
   filter(!is.na(d_pos_nodes_lab)) %>% 
   ggplot(aes(x = d_pos_nodes_lab, y = d_md, fill = d_pos_nodes_lab)) +
@@ -866,14 +1626,57 @@ tplot4 <- md_df %>%
   labs(title = "Positive nodes",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", pos_nodes_p),
+           col = "black",
+           size = 3.5)
+
+tplot4
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # tumour size 
 
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_tumour_size_lab)) %>%    
+  lm(d_md_sqrt ~ d_tumour_size_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+tms_21to50_p <- lr %>% 
+  filter(term == "d_tumour_size_lab21-50") %>% 
+  pull(p_val1)
+
+tms_over50_p <- lr %>% 
+  filter(term == "d_tumour_size_lab50+") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot5 <- md_df %>% 
   filter(!is.na(d_tumour_size_lab)) %>% 
   ggplot(aes(x = d_tumour_size_lab, y = d_md, fill = d_tumour_size_lab)) +
@@ -883,13 +1686,60 @@ tplot5 <- md_df %>%
   labs(title = "Tumour size",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", tms_21to50_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 3,
+           y = 90,
+           label = paste("p =", tms_over50_p),
+           col = "black",
+           size = 3.5)
+
+tplot5
+  
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # er status
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_er_status_lab)) %>%     
+  lm(d_md_sqrt ~ d_er_status_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+er_neg_p <- lr %>% 
+  filter(term == "d_er_status_labNegative") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot6 <- md_df %>% 
   filter(!is.na(d_er_status_lab)) %>% 
   ggplot(aes(x = d_er_status_lab, y = d_md, fill = d_er_status_lab)) +
@@ -899,13 +1749,53 @@ tplot6 <- md_df %>%
   labs(title = "ER status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", er_neg_p),
+           col = "black",
+           size = 3.5)
+
+tplot6
+```
+
+```{r}
+#| echo: false
+#| include: false
 
 # pr status
+
+# code dev for plots with p-values
+
+
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_pr_status_lab)) %>%   
+  lm(d_md_sqrt ~ d_pr_status_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+pr_neg_p <- lr %>% 
+  filter(term == "d_pr_status_labNegative") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot7 <- md_df %>% 
   filter(!is.na(d_pr_status_lab)) %>% 
   ggplot(aes(x = d_pr_status_lab, y = d_md, fill = d_pr_status_lab)) +
@@ -915,14 +1805,54 @@ tplot7 <- md_df %>%
   labs(title = "PR status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", pr_neg_p),
+           col = "black",
+           size = 3.5)
+
+tplot7
+
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+# her2 status
+
+# code dev for plots with p-values
 
 
-# her2 status 
+# linear regression 
+lr <- md_df %>% 
+   filter(!is.na(d_her2_status_lab)) %>%   
+  lm(d_md_sqrt ~ d_her2_status_lab, data = .
+     ) %>% tidy() 
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+lr
+
+# pull p-values
+her2_neg_p <- lr %>% 
+  filter(term == "d_her2_status_labNegative") %>% 
+  pull(p_val1)
+
+
+# plot
 tplot8 <- md_df %>% 
   filter(!is.na(d_her2_status_lab)) %>% 
   ggplot(aes(x = d_her2_status_lab, y = d_md, fill = d_her2_status_lab)) +
@@ -932,15 +1862,26 @@ tplot8 <- md_df %>%
   labs(title = "HER2 status",
        x = "",
        y = "Breast density (%)") +
-  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
   theme_base() +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")
-  #scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+  scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p =", her2_neg_p),
+           col = "black",
+           size = 3.5) 
 
+tplot8
 ```
 
-```{r, fig.width=15, fig.height=13}
+```{r, fig.width=19, fig.height=13}
 #| echo: false
 
 # composite plot
@@ -954,6 +1895,8 @@ tcomposite_plot
 ## Figure 2 - adjusting for MD
 
 ::: callout-important
+Note
+
 ## Decision needed
 
 Decided to use quartiles on 15/07/2024
@@ -1832,9 +2775,43 @@ decided not to use (code hidden from html file)
 
 ## ST1 - MD subset general descriptives
 
-## ST 2 - Risk factor descriptives by density
+```{r}
+#| echo: false
 
-complementing figure 1
+df %>% 
+  filter(d_md_avail == 1) %>% 
+  select(diagage, AgeatEntry, d_R1toBC_lab, d_R1toBC_y, d_inv_status_lab, d_grade_lab, d_stage_cat, d_morph4_lab, d_pos_nodes_lab, d_tumour_size_lab, d_er_status_lab, d_pr_status_lab, d_her2_status_lab
+         ) %>% 
+  tbl_summary(statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p}) "),
+              digits = all_continuous() ~ 2,
+              label = list(diagage ~ "Age at diagnosis",
+                           AgeatEntry ~ "Age at recruitment",
+                           d_R1toBC_y ~ "Time from recruitment to diagnosis",
+                           d_R1toBC_lab ~ "Time from recruitment to diagnosis",
+                          d_inv_status_lab ~ "Invasive status",
+                          d_grade_lab ~ "Grade",
+                          d_stage_cat ~ "Stage",
+                          d_morph4_lab ~ "Morphology type",
+                          d_pos_nodes_lab ~ "Positive nodes",
+                          d_tumour_size_lab ~ "Tumour size",
+                          d_er_status_lab ~ "ER status",
+                          d_pr_status_lab ~ "PR status",
+                          d_her2_status_lab ~ "HER2 status"
+                          )
+  )
+```
+
+## ST 2 - Density by risk factors
+
+complementing figure 1 to 3
+
+::: {.callout-note style="color: orange"}
+## Question
+
+Do we need this table? As mentioned in te comment box under Figure 1-3 section, presenting the linear regression results might be better than replicating the chart data into the table
+:::
 
 ## ST 3 - subset on cases with MD
 
@@ -2568,6 +3545,8 @@ ST3_diff
 ## ST 6 - Differences in characteristics between those with and without mammographic density
 
 this table needs additional formatting changes, labels, add p-value for difference between groups, add time from entry to dg and age at diagnosis
+
+any other variables to add or remove?
 
 ```{r}
 #| echo: false
