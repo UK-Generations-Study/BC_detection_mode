@@ -23,6 +23,8 @@ V2 - missing values treated as error codes 888 - good for exploratory analysis a
 
 V3 - Missing values are treated as NAs in v3 - better for futher analysis
 
+[GitHub pages link](https://expert-dollop-n8m7kve.pages.github.io/) 
+
 ### Breast density selection decision tree
 [diagram](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/density_selection/breast_density_selection.drawio.html)  
 
@@ -40,4 +42,4 @@ with detailed code
 
 ### Publication table and figures
 code hidden, outputs only 
-[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures.html)
+[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v3.html)
