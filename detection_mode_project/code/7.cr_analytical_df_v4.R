@@ -262,18 +262,21 @@ dev_an_df %>% tabyl(stage)
 dev_an_df %>% tabyl(stage, d_inv_status_lab)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_stage = as.factor(case_when(stage == "0" ~ 0, # most dcis
+  mutate(d_stage = as.factor(case_when(d_inv_status == "0" ~ 0,
+                                       #stage == "0" ~ 0, # most dcis
                                        d_inv_status == 1 & startsWith(stage, "1") ~ 1,
                                        d_inv_status == 1 & startsWith(stage, "2") ~ 2, 
                                        d_inv_status == 1 & startsWith(stage, "3") ~ 3,
                                        d_inv_status == 1 & startsWith(stage, "4") ~ 4,
                                        d_inv_status == 1 & stage == "II" ~ 2,
                                        d_inv_status == 1 & stage == "III" ~ 3,
-                                       d_inv_status == 0 & (!is.na(stage) | stage !=0) ~ 999, # dcis
+                                       #d_inv_status == 0 & (!is.na(stage) | stage !=0) ~ 999, # dcis
                                        is.na(stage) ~ NA # missing
                                        )
-                             )#,
-         #d_stage = ordered(x = d_stage, c("0", "1", "2", "3", "4", "888", "999"))
+                             ),
+         d_stage_cat = factor(x = d_stage, 
+                                 levels = 0:4,
+                                 labels = c("0", "1", "2", "3", "4"))
          )
   
 
@@ -281,7 +284,8 @@ dev_an_df %>% tabyl(stage, d_stage)
 dev_an_df %>% tabyl(d_stage)
 dev_an_df %>% tabyl(d_stage, d_inv_status)
 
-
+dev_an_df %>% tabyl(d_stage_cat)
+dev_an_df %>% tabyl(stage, d_stage_cat)
 # stage is not in the model so no trick needed
 
 
@@ -911,6 +915,9 @@ dev_an_df %>% tabyl(AgeatEntry, d_R1menopause_lab3)
 ### Age at menopause -----------------------------------------------
 # categories: <=50, 51-53, >53
 
+#11/07/2024
+# new categories <50, 51-54, 55+
+
 dev_an_df %>% tabyl(meno_age_est)
 str(dev_an_df$meno_age_est)
 
@@ -920,23 +927,44 @@ str(dev_an_df$meno_age_est)
 # will crosscheck against age at last birth variable - has to be older
 # could potentially recalculate meno_age_est using x_age_birth_last as a guide
 # potential issues with assuming 888 for last birth makes age_meno_est valid - could have a later age for birth but due to parity discrepancies not recorded it. Currently treating this as a downside of the method, could remove.
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_age_menopause = case_when(d_R1menopause %in% c(1, 3) & x_age_birth_last < 700 & x_age_birth_last < meno_age_est & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth known and before meno_age_est
+#                                      d_R1menopause %in% c(1, 3) & x_age_birth_last %in% c(777,888) & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth not known/NA so assume age is valid
+#                                      d_R1menopause %in% c(1, 3) ~ 999, # Postmeno, but due to conditions above, not able to calculate the age
+#                                      d_R1menopause %in% c(9, 888) ~ 888, # Menopausal status not known - could use a different error code? Different levels of unknown for this variable 
+#                                      TRUE ~ 777), # Pre menopausal 
+#          d_age_menopause_cat = as.factor(case_when(d_age_menopause <= 50 ~ 1,
+#                                          d_age_menopause > 50 & d_age_menopause <= 53 ~ 2,
+#                                          d_age_menopause > 53 & d_age_menopause < 700 ~ 3,
+#                                          d_age_menopause == 777 ~ 777,
+#                                          d_age_menopause %in% c(888, 999) ~ NA,
+#                                          TRUE ~ NA)),
+#          d_age_menopause_cat = fct_relevel(d_age_menopause_cat, "1", "2", "3", "777"),
+#          d_age_menopause_lab = factor(x = d_age_menopause_cat,
+#                                       levels = c(1, 2, 3, 777),
+#                                       labels = c("<50", "51-53", "53+", "Pre-menopausal"))
+#   )
+
+
+# new coding 
 dev_an_df <- dev_an_df %>% 
   mutate(d_age_menopause = case_when(d_R1menopause %in% c(1, 3) & x_age_birth_last < 700 & x_age_birth_last < meno_age_est & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth known and before meno_age_est
                                      d_R1menopause %in% c(1, 3) & x_age_birth_last %in% c(777,888) & !is.na(meno_age_est) & meno_age_est != 999 ~ meno_age_est, # age last birth not known/NA so assume age is valid
                                      d_R1menopause %in% c(1, 3) ~ 999, # Postmeno, but due to conditions above, not able to calculate the age
                                      d_R1menopause %in% c(9, 888) ~ 888, # Menopausal status not known - could use a different error code? Different levels of unknown for this variable 
                                      TRUE ~ 777), # Pre menopausal 
-         d_age_menopause_cat = as.factor(case_when(d_age_menopause <= 50 ~ 1,
-                                         d_age_menopause > 50 & d_age_menopause <= 53 ~ 2,
-                                         d_age_menopause > 53 & d_age_menopause < 700 ~ 3,
-                                         d_age_menopause == 777 ~ 777,
-                                         d_age_menopause %in% c(888, 999) ~ NA,
-                                         TRUE ~ NA)),
+         d_age_menopause_cat = as.factor(case_when(d_age_menopause < 50 ~ 1,
+                                                   d_age_menopause >= 50 & d_age_menopause < 55 ~ 2,
+                                                   d_age_menopause >= 55 & d_age_menopause < 700 ~ 3,
+                                                   d_age_menopause == 777 ~ 777,
+                                                   d_age_menopause %in% c(888, 999) ~ NA,
+                                                   TRUE ~ NA)),
          d_age_menopause_cat = fct_relevel(d_age_menopause_cat, "1", "2", "3", "777"),
          d_age_menopause_lab = factor(x = d_age_menopause_cat,
                                       levels = c(1, 2, 3, 777),
-                                      labels = c("<50", "51-53", "53+", "Pre-menopausal"))
+                                      labels = c("<50", "50-54", "55+", "Pre-menopausal"))
   )
+
 
 
 dev_an_df %>% tabyl(d_age_menopause)
@@ -954,7 +982,7 @@ dev_an_df <- dev_an_df %>%
                                    TRUE ~ as.character(d_age_menopause_cat)),
          d_age_meno_tr_lab = factor(x = d_age_meno_tr,
                                  levels = c(1, 2, 3),
-                                 labels = c("<50", "51-53", "53+")))
+                                 labels = c("<50", "50-54", "55+")))
 
 dev_an_df %>% tabyl(d_age_meno_tr)
 dev_an_df %>% tabyl(d_age_meno_tr, d_R1menopause_lab3)
@@ -1399,6 +1427,13 @@ summary(dev_an_df$d_md)
 
 check <- dev_an_df %>% tabyl(d_md, d_md_avail)
 str(dev_an_df$d_md)
+
+# scale so 1 unit is 10% - original variable 1% 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_md10 = d_md/10)
+
+View(dev_an_df[,c("d_md10", "d_md")])
+
 
 ### quartiles --------------------------------------------------------------------
 

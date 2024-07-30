@@ -1,0 +1,1073 @@
+---
+title: "Detection mode project: Descriptive tables and figures development"
+author: "Martina Brayley"
+date: last-modified
+date-format: long
+format: 
+  html: 
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: true
+    theme: [flatly, style.css]
+    page-layout: full
+    grid:
+      sidebar-width: 300px
+      body-width: 2000px
+      margin-width: 300px
+      gutter-width: 1.5rem
+editor: visual
+execute:
+  warning: false
+---
+
+```{r}
+#| include: false
+#| echo: false
+
+# SET UP ------------------------------------------------------------------------
+
+
+# execute master file - no need run it as final data now saved
+#source("code/master.R")
+
+print(getwd())
+
+library(pacman)
+p_load(here,
+       paleteer,
+       ggthemes)
+
+# set up
+setup_path <- here("code", "1.setup_import.r")
+source(setup_path)
+
+# import data
+# data_path <- here("data", "an_df.rds")
+# an_df <- readRDS(data_path)
+
+an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
+```
+
+```{r}
+#| include: false
+#| echo: false
+
+# DATA PREP ----------------------------------------------------------------------
+
+
+## Store explanatory variables as an object -------------------------------
+
+# select categorical variables that are labelled
+
+# exploratory vars 
+all_expl_variables <- c(
+                         # parity related risk factors
+                        "d_R1menopause_lab3", 
+                        "d_age_menopause_lab", 
+                        "d_R1hrtstatus_lab", 
+                        "d_parity_lab", 
+                        "d_agebirth1_lab",
+                        "d_age_menarche_lab", 
+                        "d_ocstatus_lab", 
+                        # other biological risk factors
+                        "d_bbd_lab", 
+                        "d_fambrca_lab",
+                        # lifestyle risk factors
+                        "d_R1alcohol_units_lab", 
+                        "d_R1smokingstatus_lab", 
+                        "d_bmi_entry_lab", 
+                        "d_R1physmet_leis_who_lab")
+
+all_expl_variables_tr <- c(
+                            # parity related risk factors
+                           "d_R1menopause_lab3", 
+                           "d_age_meno_tr_lab", 
+                           "d_R1hrt_tr_lab", 
+                           "d_parity_lab",
+                           "d_age_menarche_lab", 
+                           "d_ocstatus_lab",
+                            # other biological risk factors
+                           "d_bbd_lab", 
+                           "d_fambrca_lab",
+                           # lifestyle risk factors
+                           "d_agebirth1_tr_lab",
+                           "d_R1alcohol_units_lab", 
+                           "d_R1smokingstatus_lab", 
+                           "d_bmi_entry_lab", 
+                           "d_R1physmet_leis_who_lab" 
+                           )
+  
+
+lifestyle <- c("d_R1alcohol_units_lab", 
+               "d_R1smokingstatus_lab", 
+               "d_bmi_entry_lab", 
+               "d_R1physmet_leis_who")
+  
+reproductive <- c("d_age_menarche_lab", 
+                  "d_ocstatus_lab", 
+                  "d_R1menopause_lab3", 
+                  "d_age_menopause_lab", 
+                  "d_R1hrtstatus_lab", 
+                  "d_parity_lab", 
+                  "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
+  
+orther_rf <- c("d_bbd", 
+               "d_fambrca")
+
+# mammo density excluded from the lists - special variable for subanalyses
+
+# covariates 
+all_covariates <- c(# time varying variables
+                    "diagage", 
+                    "d_R1toBC_y", 
+                    "d_R1toMD_y", 
+                    "d_MDtoBC_y",
+                    # tumour characteristics
+                    "d_inv_status", 
+                    "d_grade_lab", 
+                    "d_morph4", 
+                    "d_pos_nodes_lab", 
+                    "d_tumour_size", 
+                    "d_er_status", 
+                    "d_pr_status", 
+                    "d_her2_status")  
+  
+tumour_char <- c("d_inv_status", 
+                 "d_grade_lab", 
+                 "d_morph4_lab", 
+                 "d_pos_nodes_lab", 
+                 "d_tumour_size_lab", 
+                 "d_er_status_lab", 
+                 "d_pr_status_lab", 
+                 "d_her2_status_lab")
+
+tumour_char_tr <- c("d_inv_status", 
+                    "d_grade_tr", 
+                    "d_morph4_tr_lab", 
+                    "d_pos_nodes_tr_lab", 
+                    "d_tmsize_tr_lab", 
+                    "d_er_tr_lab", 
+                    "d_pr_tr_lab", 
+                    "d_her2_tr_lab")
+  
+time_vars <- c("diagage", 
+               "d_R1toBC_y", 
+               "d_R1toMD_y", 
+               "d_MDtoBC_y")
+
+# create dataset 
+df <- an_df %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+")
+  )
+
+# set theme for gtsummary tables: 
+
+theme_gtsummary_compact(set_theme = TRUE)
+```
+
+
+# Preliminary descriptive tables
+
+## Tumour characteristics
+
+
+```{r}
+#| echo: false
+# tumour characteristics 
+
+# create a dataset with tumour characteristics
+
+tc_df <- an_df %>% 
+  select(d_dmode, d_inv_status_lab, diagage, d_grade_lab, d_morph7_lab, d_pos_nodes_lab, d_tumour_size_lab, d_er_status_lab, d_pr_status_lab, d_her2_status_lab) %>% 
+  ungroup()
+
+# create tbl summary
+tc_df %>% 
+  tbl_summary(
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_inv_status_lab ~ "Invasive status",
+              diagage ~ "Age at diagnosis",
+              d_grade_lab ~ "Grade",
+              d_morph7_lab ~ "Morphology",
+              d_pos_nodes_lab ~ "Positive nodes",
+              d_tumour_size_lab ~ "Tumour size",
+              d_er_status_lab ~ "ER status",
+              d_pr_status_lab ~ "PR status",
+              d_her2_status_lab ~ "HER2 status")
+        
+  ) 
+```
+
+
+## Risk factors
+
+
+```{r}
+#| echo: false
+
+
+rf_df <- df %>% 
+  select(d_dmode, d_R1toBC_lab, d_R1toBC_y, d_R1toMD_y, d_MDtoBC_lab, d_MDtoBC_y, 
+         d_R1alcohol_status_lab, d_R1alcohol_units_lab, d_R1smokingstatus_lab,
+         d_bmi_entry_lab,d_R1physmet_leis_who_lab,
+         d_bbd_lab, d_fambrcaN_lab,
+         d_age_menarche_lab, d_ocstatus_lab,
+         d_R1menopause_lab3, d_age_menopause_lab, d_R1hrtstatus_lab, 
+         d_parous_lab, d_parity_lab, d_agebirth1_lab) %>% 
+  ungroup()
+
+# create tbl summary
+rf_df %>% 
+  tbl_summary(
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_R1toBC_lab ~ "Time from entry to diagnosis (cat)",
+              d_R1toBC_y ~ "Time from entry to diagnosis (years)",
+              d_R1toMD_y ~ "Time between entry and mammo image (years)",
+              d_MDtoBC_lab ~ "Time between mammo and diagnosis (cat)",
+              d_MDtoBC_y ~ "Time between mammo and diagnosis (years)",
+              d_R1alcohol_status_lab ~ "Alcohol status",
+              d_R1alcohol_units_lab ~ "Alcohol units",
+              d_R1smokingstatus_lab ~ "Smoking status",
+              d_bmi_entry_lab ~ "BMI",
+              d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
+              d_bbd_lab ~ "Benign breast disease",
+              d_fambrcaN_lab ~ "Family history of BC",
+              d_age_menarche_lab ~ "Age at menarche",
+              d_ocstatus_lab ~ "Oral contraceptives status",
+              d_R1menopause_lab3 ~ "Menopause",
+              d_age_menopause_lab ~ "Age at menopause",
+              d_R1hrtstatus_lab ~ "HRT status",
+              d_parous_lab ~ "Parous",
+              d_parity_lab ~ "N of parous pregnancies",
+              d_agebirth1_lab ~ "Age at first birth")
+        
+  ) 
+```
+
+
+## Descriptive tables by mode of detection
+
+## Tumour characteristics
+
+
+```{r}
+#| echo: false
+
+# create a dataset with tumour characteristics
+
+tc_df <- df %>% 
+  select(d_dmode, d_inv_status_lab, diagage, d_grade_lab, d_morph7_lab, d_pos_nodes_lab, d_tumour_size_lab, d_er_status_lab, d_pr_status_lab, d_her2_status_lab) %>% 
+  ungroup()
+
+# create tbl summary
+tc_df %>% 
+  tbl_summary(
+    by = d_dmode, 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_inv_status_lab ~ "Invasive status",
+              diagage ~ "Age at diagnosis",
+              d_grade_lab ~ "Grade",
+              d_morph7_lab ~ "Morphology",
+              d_pos_nodes_lab ~ "Positive nodes",
+              d_tumour_size_lab ~ "Tumour size",
+              d_er_status_lab ~ "ER status",
+              d_pr_status_lab ~ "PR status",
+              d_her2_status_lab ~ "HER2 status")
+        
+  ) 
+
+
+
+```
+
+
+## Risk factors
+
+
+```{r}
+#| echo: false
+
+
+rf_df <- df %>% 
+  select(d_dmode, d_R1toBC_lab, d_R1toBC_y, d_R1toMD_y, d_MDtoBC_lab, d_MDtoBC_y, 
+         d_R1alcohol_status_lab, d_R1alcohol_units_lab, d_R1smokingstatus_lab,
+         d_bmi_entry_lab,d_R1physmet_leis_who_lab,
+         d_bbd_lab, d_fambrcaN_lab,
+         d_age_menarche_lab, d_ocstatus_lab,
+         d_R1menopause_lab3, d_age_menopause_lab, d_R1hrtstatus_lab, 
+         d_parous_lab, d_parity_lab, d_agebirth1_lab) %>% 
+  ungroup()
+
+# create tbl summary
+rf_df %>% 
+  tbl_summary(
+    by = d_dmode, 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_R1toBC_lab ~ "Time from entry to diagnosis (cat)",
+              d_R1toBC_y ~ "Time from entry to diagnosis (years)",
+              d_R1toMD_y ~ "Time between entry and mammo image (years)",
+              d_MDtoBC_lab ~ "Time between mammo and diagnosis (cat)",
+              d_MDtoBC_y ~ "Time between mammo and diagnosis (years)",
+              d_R1alcohol_status_lab ~ "Alcohol status",
+              d_R1alcohol_units_lab ~ "Alcohol units",
+              d_R1smokingstatus_lab ~ "Smoking status",
+              d_bmi_entry_lab ~ "BMI",
+              d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
+              d_bbd_lab ~ "Benign breast disease",
+              d_fambrcaN_lab ~ "Family history of BC",
+              d_age_menarche_lab ~ "Age at menarche",
+              d_ocstatus_lab ~ "Oral contraceptives status",
+              d_R1menopause_lab3 ~ "Menopause",
+              d_age_menopause_lab ~ "Age at menopause",
+              d_R1hrtstatus_lab ~ "HRT status",
+              d_parous_lab ~ "Parous",
+              d_parity_lab ~ "N of parous pregnancies",
+              d_agebirth1_lab ~ "Age at first birth")
+        
+  ) 
+```
+
+
+## Comparison of trick variables with actual variables
+
+### Tumour characteristics
+
+
+```{r}
+# create a dataset with tumour characteristics
+
+tc_trick_df <- an_df %>% 
+  select(d_dmode, d_inv_status_lab, diagage, d_grade_lab, d_grade_tr, d_morph7_lab, d_morph7_tr_lab, d_pos_nodes_lab, d_pos_nodes_tr_lab, d_tumour_size_lab, d_tmsize_tr_lab, d_er_status_lab, d_er_tr_lab, d_pr_status_lab, d_pr_tr_lab, d_her2_status_lab, d_her2_tr_lab) %>% 
+  ungroup()
+
+# create tbl summary
+tc_trick_df %>% 
+  tbl_summary(
+    by = d_dmode, 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(d_inv_status_lab ~ "Invasive status",
+              diagage ~ "Age at diagnosis",
+              d_grade_lab ~ "Grade",
+              d_morph7_lab ~ "Morphology",
+              d_pos_nodes_lab ~ "Positive nodes",
+              d_tumour_size_lab ~ "Tumour size",
+              d_er_status_lab ~ "ER status",
+              d_pr_status_lab ~ "PR status",
+              d_her2_status_lab ~ "HER2 status")
+        
+  ) 
+```
+
+
+### Parity related
+
+
+```{r}
+#| echo: false
+
+
+par_df <- df %>% 
+  select(d_dmode,
+         d_parous_lab, d_parity_lab, d_parity_tr_lab, d_agebirth1_lab, d_agebirth1_tr_lab) %>% 
+  ungroup()
+
+# create tbl summary
+par_df %>% 
+  tbl_summary(
+    by = d_dmode, 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(
+              d_parous_lab ~ "Parous",
+              d_parity_lab ~ "N of parous pregnancies",
+              d_agebirth1_lab ~ "Age at first birth")
+        
+  ) 
+
+
+```
+
+
+### Menopause related
+
+
+```{r}
+#| echo: false
+
+
+meno_df <- an_df %>% 
+  select(d_dmode, d_ocstatus_lab, d_oc_tr_lab,
+         d_R1menopause_lab3, d_age_menopause_lab, d_R1hrtstatus_lab, 
+         ) 
+
+# create tbl summary
+meno_df %>% 
+  tbl_summary(
+    by = d_dmode, 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p})"
+      ),
+    digits = all_continuous() ~ 2,
+    label = c(
+              d_ocstatus_lab ~ "Oral contraceptives status",
+              d_R1menopause_lab3 ~ "Menopause",
+              d_age_menopause_lab ~ "Age at menopause",
+              d_R1hrtstatus_lab ~ "HRT status"
+              )
+        
+  ) 
+```
+
+
+# Tables for publication
+
+## Table 1 - general study population characteristics by detection mode and overall?
+
+Variables to include:
+
+-   Age at cohort entry
+
+-   age at diagnosis
+
+-   invasive status
+
+-   
+
+# Figures for publication
+
+## Breast density by risk factors
+
+box plots with jitter
+
+
+```{r}
+# create density subset data 
+
+md_df <- df %>% 
+  filter(d_md_avail == 1)
+```
+
+
+### Detection mode
+
+
+```{r}
+# box plots with jitter
+# md_df %>% 
+#   ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
+#   geom_jitter(position = position_jitter(width = 0.2), 
+#               alpha = 0.2,
+#               colour = "grey50") +
+#   geom_boxplot(alpha = 0.6) +
+#   geom_hline(yintercept = 0, linetype = "dashed") +
+#   theme_classic()
+
+#palette <- c("#833275", "#FFBC13")
+
+# violin plots 
+plot1 <- md_df %>% 
+  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Mode of detection",
+       x = "",
+       y = "Breast density (%)") +
+  scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+ #scale_fill_brewer(palette="Set2")
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+plot1
+  
+  #"ggthemes::Superfishel_Stone"
+  #summary(md_df$d_md)
+```
+
+
+### Menopausal status
+
+
+```{r}
+
+# box plots with jitter
+# md_df %>% 
+#   ggplot(aes(x = d_R1menopause_lab3, y = d_md, fill = d_R1menopause_lab3)) +
+#   geom_jitter(position = position_jitter(width = 0.2), 
+#               alpha = 0.2,
+#               colour = "grey50") +
+#   geom_boxplot(alpha = 0.6) +
+#   geom_hline(yintercept = 0, linetype = "dashed") +
+#   theme_classic()
+
+
+# violin plots 
+plot2 <- md_df %>% 
+  ggplot(aes(x = d_R1menopause_lab3, y = d_md, fill = d_R1menopause_lab3)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Menopausal status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Age at menopause
+
+
+```{r}
+# box plots with jitter
+# md_df %>% 
+#   ggplot(aes(x = d_age_menopause_lab, y = d_md, fill = d_age_menopause_lab)) +
+#   geom_jitter(position = position_jitter(width = 0.2), 
+#               alpha = 0.2,
+#               colour = "grey50") +
+#   geom_boxplot(alpha = 0.6) +
+#   geom_hline(yintercept = 0, linetype = "dashed") +
+#   theme_classic()
+
+
+# violin plots 
+plot3 <- md_df %>% 
+  filter(!is.na(d_age_menopause_lab)) %>% 
+  mutate(d_age_menopause_lab = fct_relevel(d_age_menopause_lab, "Pre-menopausal", "<50", "50-54", "55+")) %>% 
+  ggplot(aes(x = d_age_menopause_lab, y = d_md, fill = d_age_menopause_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Age at menopause",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+plot3
+```
+
+
+### HRT status
+
+
+```{r}
+
+# box plots with jitter
+# md_df %>% 
+#   ggplot(aes(x = d_R1hrtstatus_lab, y = d_md, fill = d_R1hrtstatus_lab)) +
+#   geom_jitter(position = position_jitter(width = 0.2), 
+#               alpha = 0.2,
+#               colour = "grey50") +
+#   geom_boxplot(alpha = 0.6) +
+#   geom_hline(yintercept = 0, linetype = "dashed") +
+#   theme_classic()
+
+
+# violin plots 
+plot4 <- md_df %>% 
+  filter(!is.na(d_R1hrtstatus_lab)) %>% 
+  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Pre-menopausal", "Never", "Former", "Current")) %>% 
+  ggplot(aes(x = d_R1hrtstatus_lab, y = d_md, fill = d_R1hrtstatus_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "HRT status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Parity
+
+
+```{r}
+# # box plots with jitter
+# md_df %>% 
+#   ggplot(aes(x = d_parity_lab, y = d_md, fill = d_parity_lab)) +
+#   geom_jitter(position = position_jitter(width = 0.2), 
+#               alpha = 0.2,
+#               colour = "grey50") +
+#   geom_boxplot(alpha = 0.6) +
+#   geom_hline(yintercept = 0, linetype = "dashed") +
+#   theme_classic()
+
+
+# violin plots 
+plot5 <- md_df %>% 
+  #filter(!is.na(d_parity_lab)) %>% 
+  ggplot(aes(x = d_parity_lab, y = d_md, fill = d_parity_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Number of parous pregnancies",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Age at first birth
+
+
+```{r}
+# violin plots 
+plot6 <- md_df %>% 
+  filter(!is.na(d_agebirth1_lab) & d_agebirth1_lab != "Non-parous") %>% 
+  ggplot(aes(x = d_agebirth1_lab, y = d_md, fill = d_agebirth1_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Age at first birth",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Age at menarche
+
+
+```{r}
+
+# violin plots 
+plot7 <- md_df %>% 
+  filter(!is.na(d_age_menarche_lab)) %>% 
+  ggplot(aes(x = d_age_menarche_lab, y = d_md, fill = d_age_menarche_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Age at menarche",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Oral contraceptives
+
+
+```{r}
+# violin plots 
+plot8 <- md_df %>% 
+  filter(!is.na(d_ocstatus_lab)) %>% 
+  ggplot(aes(x = d_ocstatus_lab, y = d_md, fill = d_ocstatus_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Oral contraceptive status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Benign breast disease
+
+
+```{r}
+# violin plots 
+plot9 <- md_df %>% 
+  filter(!is.na(d_bbd_lab)) %>% 
+  ggplot(aes(x = d_bbd_lab, y = d_md, fill = d_bbd_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Benign Breast Disease",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Family history of breast cancer
+
+
+```{r}
+# violin plots 
+plot10 <- md_df %>% 
+  filter(!is.na(d_fambrca_lab)) %>% 
+  ggplot(aes(x = d_fambrca_lab, y = d_md, fill = d_fambrca_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Family history of breast cancer",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Alcohol units
+
+
+```{r}
+# violin plots 
+
+plot11 <- md_df %>% 
+  #filter(!is.na(d_R1alcohol_units_lab)) %>% 
+  ggplot(aes(x = d_R1alcohol_units_lab, y = d_md, fill = d_R1alcohol_units_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Alcohol units",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  #scale_fill_brewer(palette="Accent")
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+# "ggthemes::Superfishel_Stone"
+# "ggthemes::excel_Slipstream"
+# plot11
+```
+
+
+### Smoking status
+
+
+```{r}
+# violin plots 
+plot12 <- md_df %>% 
+  filter(!is.na(d_R1smokingstatus_lab)) %>% 
+  ggplot(aes(x = d_R1smokingstatus_lab, y = d_md, fill = d_R1smokingstatus_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Smoking status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### BMI
+
+
+```{r}
+# violin plots 
+plot13 <- md_df %>% 
+  filter(!is.na(d_bmi_entry_lab)) %>% 
+  mutate(d_bmi_entry_lab= fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")) %>%
+  ggplot(aes(x = d_bmi_entry_lab, y = d_md, fill = d_bmi_entry_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Body Mass Index",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Physical activity
+
+
+```{r}
+
+# violin plots 
+plot14 <- md_df %>% 
+  filter(!is.na(d_R1physmet_leis_who_lab)) %>% 
+  ggplot(aes(x = d_R1physmet_leis_who_lab, y = d_md, fill = d_R1physmet_leis_who_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Physical Activity",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+```
+
+
+### Combined
+
+
+```{r, fig.width=12, fig.height=16}
+
+# composite plot
+composite_plot <- plot2 + plot3 + plot4 +plot8 + plot5 + plot6 + plot7 +plot9 + plot10 + plot13 + plot14 + plot12 + plot11 + plot_layout(ncol = 2)
+
+composite_plot
+
+
+
+```
+
+```{r, fig.width=15, fig.height=8}
+
+# lifestyle factors
+lifestyle_plots <- (plot9 + plot10 + plot11) /  (plot12 + plot13 + plot14)
+lifestyle_plots
+```
+
+```{r, fig.width=15, fig.height=9}
+
+# reproductive factors
+reproductive_plots <- (plot2 + plot3 + plot4) / (plot5 + plot6) / (plot7 + plot8)
+reproductive_plots
+
+```
+
+
+## Breast density by tumour characteristics
+
+### Invasive status
+
+
+```{r}
+# violin plots 
+tplot1 <- md_df %>% 
+  #filter(!is.na()) %>% 
+  ggplot(aes(x = d_inv_status_lab, y = d_md, fill = d_inv_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Invasive status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot1
+```
+
+
+### Grade
+
+
+```{r}
+# violin plots 
+tplot2 <- md_df %>% 
+  filter(!is.na(d_grade_lab)) %>% 
+  ggplot(aes(x = d_grade_lab, y = d_md, fill = d_grade_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Grade",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot2
+```
+
+
+### Morphology type
+
+
+```{r}
+# violin plots 
+tplot3 <- md_df %>% 
+  filter(!is.na(d_morph4_lab)) %>% 
+  ggplot(aes(x = d_morph4_lab, y = d_md, fill = d_morph4_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Morphology",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot3
+```
+
+
+### Positive nodes
+
+
+```{r}
+# violin plots 
+tplot4 <- md_df %>% 
+  filter(!is.na(d_pos_nodes_lab)) %>% 
+  ggplot(aes(x = d_pos_nodes_lab, y = d_md, fill = d_pos_nodes_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Positive nodes",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot4
+```
+
+
+### Tumour size
+
+
+```{r}
+# violin plots 
+tplot5 <- md_df %>% 
+  filter(!is.na(d_tumour_size_lab)) %>% 
+  ggplot(aes(x = d_tumour_size_lab, y = d_md, fill = d_tumour_size_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Tumour size",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot5
+```
+
+
+### ER status
+
+
+```{r}
+# violin plots 
+tplot6 <- md_df %>% 
+  filter(!is.na(d_er_status_lab)) %>% 
+  ggplot(aes(x = d_er_status_lab, y = d_md, fill = d_er_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "ER status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot6
+```
+
+
+### PR status
+
+
+```{r}
+# violin plots 
+tplot7 <- md_df %>% 
+  filter(!is.na(d_pr_status_lab)) %>% 
+  ggplot(aes(x = d_pr_status_lab, y = d_md, fill = d_pr_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "PR status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot7
+```
+
+
+### HER2 status
+
+
+```{r}
+# violin plots 
+tplot8 <- md_df %>% 
+  filter(!is.na(d_her2_status_lab)) %>% 
+  ggplot(aes(x = d_her2_status_lab, y = d_md, fill = d_her2_status_lab)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "HER2 status",
+       x = "",
+       y = "Breast density (%)") +
+  #scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+  scale_fill_paletteer_d("ggthemes::Superfishel_Stone")
+
+tplot8
+```
+
+
+### Combined
+
+
+```{r, fig.width=12, fig.height=16}
+
+# composite plot
+tcomposite_plot <- tplot1 + tplot2 + tplot3 + tplot4 + tplot5 + tplot6 + tplot7 + tplot8 + plot1 + plot_layout(ncol = 2)
+
+tcomposite_plot
+
+
+```
+
