@@ -137,4 +137,13 @@ quick_check <- function(variable) {
   
 }
 
-
+## p-value function formatting 
+format_p_values <- function(data, p_value_raw_column) {
+  data %>%
+    mutate(p_val1 = case_when(
+      {{p_value_raw_column}} < 0.001 ~ "<0.001",
+      {{p_value_raw_column}} >= 0.001 & {{p_value_raw_column}} < 0.01 ~ as.character(round({{p_value_raw_column}}, 3)),
+      round({{p_value_raw_column}}, 2) == 1 ~ "0.99",
+      TRUE ~ as.character(format(round({{p_value_raw_column}}, 2), nsmall = 1))
+    ))
+}

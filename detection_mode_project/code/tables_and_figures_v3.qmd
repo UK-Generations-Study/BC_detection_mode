@@ -515,7 +515,6 @@ meno_under50_p <- lr %>%
   filter(term == "d_age_menopause_lab<50") %>% 
   pull(p_val1)
 
-print(under50_p)
 
 meno_50to54_p <- lr %>% 
   filter(term == "d_age_menopause_lab50-54") %>% 
@@ -594,7 +593,6 @@ hrt_never_p <- lr %>%
   filter(term == "d_R1hrtstatus_labNever") %>% 
   pull(p_val1)
 
-print(under50_p)
 
 hrt_former_p <- lr %>% 
   filter(term == "d_R1hrtstatus_labFormer") %>% 
@@ -1892,12 +1890,10 @@ tcomposite_plot
 
 ```
 
-## Figure 2 - adjusting for MD
+## Figure 4 - adjusting for MD
 
 ::: callout-important
 Note
-
-## Decision needed
 
 Decided to use quartiles on 15/07/2024
 :::
@@ -1935,7 +1931,7 @@ tidy_model6 <- model %>%
    tidy(exponentiate = FALSE, conf.int = TRUE) 
 
 
-tidy_model6
+#tidy_model6
 
 
 # Model 8 ----------------------------------------------------------------
@@ -2169,6 +2165,7 @@ md_forest_long <- md_forest_df %>%
 ```
 
 ```{r, fig.width=10, fig.height=12}
+#| echo: false
 # 3. GENERATE FORESTPLOT
 
 md_forest_long <- md_forest_long %>% 
