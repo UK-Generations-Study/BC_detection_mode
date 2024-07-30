@@ -34,7 +34,8 @@ execute:
 print(getwd())
 
 library(pacman)
-p_load(here)
+p_load(here,
+       broom.helpers)
 
 # set up
 setup_path <- here("code", "1.setup_import.r")
@@ -192,9 +193,41 @@ ST 4 - TC descriptives by detection mode with logistic regression results
 
 ST 5 - Risk factor analysis adjusted for tumour characteristics (sensitivity analysis) - on subset of cases with TC
 
-# Main tables 
+# Main tables
 
 ## Table 1 - general participant descriptives
+
+stage coding - DCIS coded as stage 0 - should we keep it that way or code them as unknown? or DCIS?
+
+time from recruitement to diagnosis categorical or continuous?
+
+```{r}
+#| echo: false
+
+df %>% 
+  select(diagage, AgeatEntry, d_R1toBC_lab, d_R1toBC_y, d_inv_status_lab, d_grade_lab, d_stage_cat, d_morph4_lab, d_pos_nodes_lab, d_tumour_size_lab, d_er_status_lab, d_pr_status_lab, d_her2_status_lab
+         ) %>% 
+  tbl_summary(statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p}) "),
+              digits = all_continuous() ~ 2,
+              label = list(diagage ~ "Age at diagnosis",
+                           AgeatEntry ~ "Age at recruitment",
+                           d_R1toBC_y ~ "Time from recruitment to diagnosis",
+                           d_R1toBC_lab ~ "Time from recruitment to diagnosis",
+                          d_inv_status_lab ~ "Invasive status",
+                          d_grade_lab ~ "Grade",
+                          d_stage_cat ~ "Stage",
+                          d_morph4_lab ~ "Morphology type",
+                          d_pos_nodes_lab ~ "Positive nodes",
+                          d_tumour_size_lab ~ "Tumour size",
+                          d_er_status_lab ~ "ER status",
+                          d_pr_status_lab ~ "PR status",
+                          d_her2_status_lab ~ "HER2 status"
+                          )
+  )
+
+```
 
 ## Table 2 - Main analysis
 
@@ -309,8 +342,7 @@ descr_model2 <- descr_model2_df %>%
                 ),
               type = list(d_bbd_lab ~ "categorical",
                           d_fambrca_lab ~ "categorical")
-              ) %>% 
-  add_overall()
+              )
 
 #descr_model2
   
@@ -341,7 +373,7 @@ table3
 ::: callout-important
 ## Decision needed
 
-Need to decide whether to use quartiles or continuous MD
+Decided to use quartiles
 :::
 
 ### Categorical MD (quartiles)
@@ -374,10 +406,13 @@ model <- df %>%
 # create a dataframe with broom::tidy() for forestplots 
 
 tidy_model6 <- model %>%
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-   mutate(OR = estimate) %>%
-   select(-estimate) %>%
-   select(term, OR, everything())
+   tidy(exponentiate = FALSE, conf.int = TRUE) %>%
+   #mutate(OR = estimate) %>%
+   #select(-estimate) %>%
+   #select(term, estimate, everything()) %>% 
+  broom.helpers::tidy_add_reference_rows()
+
+
 #tidy_model6
 
 
@@ -406,7 +441,7 @@ model <- df %>%
 # create a dataframe with broom::tidy() for forestplots 
 
 tidy_model8 <- model %>%
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+   tidy(exponentiate = FALSE, conf.int = TRUE) %>%
    mutate(OR = estimate) %>%
    select(-estimate) %>%
    select(term, OR, everything())
@@ -514,8 +549,8 @@ md_forest_long %>%
              boxsize = 0.3,
              zero = 1,
              line.margin = 0.5,
-             clip = c(0, 3),
-             ticks = c(0, 0.5, 1, 1.5, 2, 2.5, 3),
+             #clip = c(0, 3),
+             #ticks = c(0, 0.5, 1, 1.5, 2, 2.5, 3),
              ci.vertices = T,
              ci.vertices.height = 0.2,
              legend = c("Default model", "Adjusted for MD"),
@@ -563,7 +598,7 @@ md_forest_long %>%
 model <- df %>%
    filter(d_md_avail == 1 # include only those with md
          ) %>%
-  drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+  drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, d_md10
            ) %>% 
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_tr_lab
@@ -572,16 +607,20 @@ model <- df %>%
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y + d_MDtoBC_y
-      + d_md,
+      + d_md10,
             family = binomial(link = "logit"))
+
+model
 
 # create a dataframe with broom::tidy() for forestplots 
 
 tidy_model8b <- model %>%
-   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+   tidy(exponentiate = FALSE, conf.int = TRUE) %>%
    mutate(OR = estimate) %>%
    select(-estimate) %>%
    select(term, OR, everything())
+
+tidy_model8b
 ```
 
 ```{r}
@@ -610,7 +649,7 @@ md_forest_df <- md_forest_df %>%
     grepl("R1smokingstatus", term) ~ "Smoking status",
     grepl("bmi_entry", term) ~ "BMI",
     grepl("R1physmet_leis_who", term) ~ "Physical Activity (WHO cat)",
-    grepl("md", term) ~ "Mammographic breast density"
+    grepl("md10", term) ~ "Mammographic breast density"
                               ),
     level = case_when(
       grepl("d_R1menopause_lab3", term) ~ sub("d_R1menopause_lab3", "", term),
@@ -626,7 +665,7 @@ md_forest_df <- md_forest_df %>%
       grepl("R1smokingstatus", term) ~ sub("d_R1smokingstatus_lab", "", term),
       grepl("bmi_entry", term) ~ sub("d_bmi_entry_lab", "", term),
       grepl("R1physmet_leis_who", term) ~ sub("d_R1physmet_leis_who_lab", "", term),
-      grepl("md", term) ~ sub("d_md", "", term)
+      grepl("md10", term) ~ sub("d_md10", "", term)
     )
     )
 
@@ -659,6 +698,10 @@ md_forest_long <- md_forest_df %>%
   ) 
 ```
 
+this plot is log transformed, it seems that the estimates are further from each other than in the OR scale - should it be this way?
+
+Also the MD estimate for continuous MD looks very strange and I can't seem to fix it, should we remove it form the plots? discuss
+
 ```{r, fig.width=8, fig.height=10}
 #| echo: false
 
@@ -678,12 +721,12 @@ md_forest_long %>%
          ) %>% 
   forestplot(labeltext = c(level, pct_diff),
              xlog = FALSE,
-             xlab = "OR",
+             xlab = "log OR",
              boxsize = 0.3,
              zero = 1,
              line.margin = 0.5,
-             clip = c(0, 3),
-             ticks = c(0, 0.5, 1, 1.5, 2, 2.5, 3),
+             clip = c(-1, 5),
+             ticks = c(-1, 0, 1, 2, 3, 4, 5),
              ci.vertices = T,
              ci.vertices.height = 0.2,
              legend = c("Default model", "Adjusted for MD"),
@@ -719,11 +762,11 @@ md_forest_long %>%
 
 ## ST1 - MD subset general descriptives
 
-## ST 2 - Risk factor descriptives by density 
+## ST 2 - Risk factor descriptives by density
 
 complementing figure 1
 
-## ST 3 - subset on cases with MD 
+## ST 3 - subset on cases with MD
 
 Subanalyses comparing default model with model adjusted for MD
 
@@ -778,7 +821,7 @@ model6 <- tbl_regression(model,
   remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
                   type = "all")
 
-#model6
+model6
 
 
 # Model 8 ----------------------------------------------------------------
@@ -932,7 +975,11 @@ table4_diff <- table4 %>%
 table4_diff
 ```
 
-### Continuous MD
+### Continuous MD - scaled to 10% = 1 unit
+
+originally 1% = 1 unit in Logistic regression
+
+Should the descriptives also be md/10 scale? or normal?
 
 ```{r}
 #| echo: false
@@ -955,7 +1002,7 @@ model <- df %>%
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y + d_MDtoBC_y
-      + d_md,
+      + d_md10,
             family = binomial(link = "logit"))
 
 model8b <- tbl_regression(model, 
@@ -974,7 +1021,7 @@ model8b <- tbl_regression(model,
                           d_R1hrt_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth",
-                          d_md ~ "Mammographic breast density"
+                          d_md10 ~ "Mammographic breast density (per 10%)"
                          )
                          ) %>% 
   add_global_p() %>% 
@@ -991,7 +1038,8 @@ descr_MDsubset_df <- df %>%
          ) %>% 
   tidyr::drop_na(d_md # filter out all missing to have the same n as in the model
   ) %>% 
-  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+"),
+         d_md10 = d_md # use normal units but logistic regression is per 10 units
               ) %>% 
   mutate(d_age_meno_tr_lab = d_age_menopause_lab,
          d_R1hrt_tr_lab = d_R1hrtstatus_lab,
@@ -1023,7 +1071,8 @@ descr_MDsubset <- descr_MDsubset_df %>%
                         d_R1smokingstatus_lab, 
                         d_bmi_entry_lab, 
                         d_R1physmet_leis_who_lab,
-    d_md) %>% 
+                        d_md10
+    ) %>% 
   tbl_summary(by = d_dmode,
               statistic = list(
                 all_continuous() ~ "{mean} ({sd})",
@@ -1044,7 +1093,7 @@ descr_MDsubset <- descr_MDsubset_df %>%
                           d_R1hrt_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth",
-                          d_md ~ "Mammographic breast density"
+                          d_md10 ~ "Mammographic breast density (per 10%)"
                 ),
               type = list(d_bbd_lab ~ "categorical",
                           d_fambrca_lab ~ "categorical")
@@ -1180,8 +1229,8 @@ descr_model10 <- descr_model10_df %>%
                           d_pr_tr_lab ~ "PR status",
                           d_her2_tr_lab ~ "HER2 status"
                          )
-              ) %>% 
-  add_overall()
+              ) #%>% 
+  #add_overall()
 
 #descr_model10
   
@@ -1199,7 +1248,7 @@ ST2 <- tbl_merge(
 ST2
 ```
 
-## ST 5 - Risk factor analysis adjusted for TC 
+## ST 5 - Risk factor analysis adjusted for TC
 
 Sensitivity analysis - default model with model adjusted for TC
 
