@@ -209,7 +209,7 @@ On 13/06/2024 discussed with Amy that it is probably better to use alchol units 
 ```{r}
 
 df <- an_df %>% 
-  select(d_dmode_n, d_dmode, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), any_of(tumour_char_tr), any_of(time_vars), AgeatEntry
+  select(d_dmode_n, d_dmode, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, yeardiag
          )
 #names(df)
 #str(df)
@@ -1474,6 +1474,100 @@ model9and10
 
 Grade 3 of BC, positive nodes, tumour size of 21-50mm associated with being an interval case. Adjusting for age at diagnosis and time from entry to diagnosis did not change the estimates.
 :::
+
+# Part 4: Image type and date vs detection mode
+
+19/08/2024 Agreed with Amy and Montse to explore Image type and date with detection mode. This is to explore whether cases with new methods of screening (digitised images) are more likely to be interval or SD cases.
+
+year of diagnosis can be used as an indicator for image type as digitised images started to be used more widely around 2010.
+
+1.  Explore how detection mode changes
+    1.  by year of diagnosis
+        1.  all cases
+        2.  cases with MD only
+    2.  By image type (digitised analogue or digital image)
+2.  Explore image type with
+    1.  date of diagnosis
+    2.  Tumour characteristics
+3.  Explore tumour characteristics by year of diagnosis (2 cat before /after 2010 or 4 categories if data available)
+
+## Distribution of image type by year of diagnosis
+
+```{r}
+
+df %>% tabyl(ImageType)
+
+df %>% tabyl(yeardiag)
+
+df %>% tabyl(yeardiag, d_dmode) %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+df %>% 
+  filter(d_md_avail == 1) %>% 
+tabyl(yeardiag, d_dmode) %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+df %>% 
+  filter(d_md_avail_lab == "yes") %>% 
+  tabyl(yeardiag, ImageType) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+df %>% 
+  ggplot(aes(x = yeardiag, fill = d_md_avail_lab)) +
+  geom_histogram(binwidth = 1, color = "black") +
+  labs(x = "Date", y = "Frequency", title = "Distribution of date of diagnosis by MD availability")
+
+
+
+# summarise data frame by years - count of observations in each year 
+
+dates <- df %>% 
+  select(yeardiag, d_md_avail_lab, ImageType) %>% 
+  group_by(yeardiag) %>% 
+  summarise(d_md_avail_lab = )
+
+
+dates <- df %>% 
+  filter(d_md_avail == 1) %>% 
+  tabyl(yeardiag, ImageType)
+
+
+dates %>% 
+  ggplot(aes(x = yeardiag, )) +
+  geom_line(aes(y = Analogue_Digitised, color = "Analogue_Digitised")) +
+  geom_line(aes(y = Digital_Processed, color = "Digital_Processed")) +
+  theme_minimal()
+```
+
+## Detection mode by image type
+
+```{r}
+df %>% tabyl(ImageType, d_dmode) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+df %>% tabyl(d_dmode, ImageType) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+
+df %>% 
+  ggplot(aes(d_dmode)) +
+  geom_bar(stat = "count")
+```
 
 # Draft analysis tables for publication
 
