@@ -25,7 +25,7 @@
 ## select variables from detection mode -----------------------
 
 dm_vars <- dm_df %>% 
-  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen)
+  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, reg_sd)
 
 ## select variables from cancer df ---------------------------
 
@@ -1508,7 +1508,7 @@ dev_an_df <- dev_an_df %>%
 # 4. Comprise analytical dataset ------------------------------------------------------------
 an_df <- dev_an_df %>% 
   select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, AgeatEntry, incident, side, 
-         source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, 
+         source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, reg_sd,
          MammoDat_f, ImageType, mean_density, sd_density, 
          starts_with("d_")) 
   
