@@ -250,7 +250,9 @@ MD will also be added to the main model.
 #### Recode all missing values in analytical variables
 
 ```{r}
-
+#| include: false
+#| echo: false
+#| 
 vis_dat(df)
 
 #vis_miss(df)
@@ -307,6 +309,8 @@ Also, relevel variables where "Missing" level is not last (levels jumped when co
 (smoking, hrt, hrt - trick, oc, pre-menopausal status)
 
 ```{r}
+#| include: false
+#| echo: false
 
 df <- df %>% 
   mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
@@ -457,7 +461,7 @@ also to look at the registry flag in detection mode
 
 **Questions to answer:**
 
-1\. Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
+1.Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
 
 ```{r}
 
@@ -493,26 +497,44 @@ dates %>%
 ```
 
 ::: callout-note
-Digital_processed images started to become more prevalent around 2011, with the prevalenece of analogue decreasing from that point. The absolute number of digital images is much smaller than analouge probably due to the fact that most images were selected in years before digital images started to get more prevalent.
+Digital_processed images started to become more prevalent around 2011, with the prevalence of analogue decreasing from that point. The absolute number of digital images is much smaller than analogue probably due to the fact that most images were selected in years before digital images started to get more prevalent.
 :::
 
-2.  Is detection mode distributed differently for each image type?
+2.Is detection mode distributed differently for each image type?
 
 ```{r}
+# df %>% tabyl(d_dmode, ImageType) %>% 
+#   adorn_totals() %>% 
+#   adorn_percentages(denominator = "col") %>% 
+#   adorn_pct_formatting() %>% 
+#   adorn_ns()
+
 df %>% tabyl(d_dmode, ImageType) %>% 
-  adorn_totals() %>% 
-  adorn_percentages(denominator = "col") %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages(denominator = "row") %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
 
 
-
+# is mammo density different by detection mode?
+df %>%
+  group_by(d_dmode) %>% 
+  mean_table(d_md)
 ```
 
-2.  Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
+::: callout-note
+both interval and SD cases had 12% of images digitally processed but SD had higher proportion of Analgue images (54.7%) compared to Intervals (41.1%). Larger proportion of interval cases did not have mammo image (46.9%) compared to SD cases (33.3%). Which suggests that the images are not missing at random in relation to detection mode. If interval cancer is considered a proxy for more aggressive cancer type, that could mean that we have more images and hence breast density data for screen detected cases (i.e less agressive cancers). We would need about 10% more interval cases with images for equal distribution of number of images by detection mode. Mean density is different for SD cases.
+
+How would this affect our analysis and results? differential bias of MD as different for those with and without outcome (being Interval case)?
+:::
+
+3.Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
 
 ```{r}
+
+# all cases
 df %>% tabyl(yeardiag, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
@@ -521,9 +543,45 @@ df %>% tabyl(yeardiag, d_dmode) %>%
 df %>% 
   filter(d_md_avail == 1) %>% 
 tabyl(yeardiag, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
+
+
+# create a new indicator variable for before and after 2010
+
+df <- df %>% 
+  mutate(d_year_bin = if_else(yeardiag < 2012, "before 2012", "2012 onwards"))
+
+# df %>% tabyl(yeardiag, d_year_bin) %>% 
+#   adorn_totals()
+
+
+# distribution with binary year of diagnosis
+df %>% tabyl(d_year_bin, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# subset on those with density 
+df %>% filter(d_md_avail == 1) %>% 
+  tabyl(d_year_bin, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+# # subset on those without density 
+# df %>% filter(d_md_avail == 0) %>% 
+#   tabyl(d_dmode, d_year_bin) %>% 
+#   adorn_totals(where = "col") %>% 
+#   adorn_percentages() %>% 
+#   adorn_pct_formatting() %>% 
+#   adorn_ns()
+
 ```
 
 2.  Did tumour characteristics change by date? (e.g. due to changes in reporting)
@@ -568,6 +626,10 @@ Using only the reg_sd detection mode, 33% cases were classified as intervals com
 95% of SDs from algorithm matched with reg_sd, the remainder was missing.
 
 85.2% of Intervals from algorithm matched with reg_sd, about 10% algorithm Intervals were missing or uknown in reg_sd and 4.4 % were classified as SD by reg_sd.
+
+Looking at the distribution by source and year of diagnosis
+
+note: (dmode_v1 - Louise's manual classification for complex cases - not relevant; dmode_v2 - core algorithm classification; reg_sd - dg after linkage)
 :::
 
 ```{r}
