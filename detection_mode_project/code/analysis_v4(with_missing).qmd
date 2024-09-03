@@ -446,15 +446,19 @@ also to look at the registry flag in detection mode
 
 df %>% tabyl(ImageType)
 
-df %>% tabyl(yeardiag)
+# create factor for yeardiag for tabulating
+df <- df %>% 
+  mutate(yeardiag_f = as.factor(yeardiag))
+
+df %>% tabyl(yeardiag_f)
 
 
 # summarise data frame by years - count of observations in each year 
 
-dates <- df %>% 
-  select(yeardiag, d_md_avail_lab, ImageType) %>% 
-  group_by(yeardiag) %>% 
-  summarise(d_md_avail_lab )
+# dates <- df %>% 
+#   select(yeardiag, d_md_avail_lab, ImageType) %>% 
+#   group_by(yeardiag) %>% 
+#   summarise(d_md_avail_lab )
 
 
 dates <- df %>% 
@@ -512,7 +516,7 @@ How would this affect our analysis and results? differential bias of MD as diffe
 ```{r}
 
 # all cases
-df %>% tabyl(yeardiag, d_dmode) %>% 
+df %>% tabyl(yeardiag_f, d_dmode) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
@@ -521,7 +525,7 @@ df %>% tabyl(yeardiag, d_dmode) %>%
 # in subset of people with density
 df %>% 
   filter(d_md_avail == 1) %>% 
-tabyl(yeardiag, d_dmode) %>% 
+tabyl(yeardiag_f, d_dmode) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
@@ -672,7 +676,7 @@ df %>% tabyl(d_dmode)
 
 # by year of diagnosis 
 
-df %>% tabyl(yeardiag, d_dmode, source_dm2) %>% 
+df %>% tabyl(yeardiag_f, d_dmode, source_dm2) %>% 
   adorn_totals() %>% 
   adorn_percentages(denominator = "row") %>% 
   adorn_pct_formatting() %>% 
