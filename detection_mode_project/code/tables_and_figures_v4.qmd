@@ -21,6 +21,8 @@ execute:
   warning: false
 ---
 
+Using data with TC missing as a separate category
+
 ```{r}
 #| include: false
 #| echo: false
@@ -53,6 +55,7 @@ source(setup_path)
 
 # dataset processed in analysis script v3 - adjusting missing levels for TC
 an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+
 ```
 
 ```{r}
@@ -170,6 +173,8 @@ df <- an_df %>%
 # set theme for gtsummary tables: 
 
 theme_gtsummary_compact(set_theme = TRUE)
+
+
 ```
 
 # Table and figure structure:

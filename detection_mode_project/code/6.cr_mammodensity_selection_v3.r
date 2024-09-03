@@ -29,7 +29,7 @@ dm_vars <- dm_df %>%
 ## select variables from cancer df ---------------------------
 
 ca_vars <- cancer_df %>% 
-  select(tcode, diagdate, diagage, side)
+  select(tcode, diagdate, yeardiag, diagage, side)
 
 ## join with mammo dataset -----------------------------------
 
@@ -852,7 +852,7 @@ mean_density_df <- dev_density_df %>%
          sd_density = round(SD(Density_Reading),1),
          MD_avail = "Y"
          ) %>% 
-  select(tcode, MammoDat_f, MD_avail, mean_density, sd_density, ancat_dmode_v2) %>% 
+  select(tcode, MammoDat_f, ImageType, MD_avail, mean_density, sd_density, ancat_dmode_v2) %>% 
   distinct() %>% 
   ungroup()
 
