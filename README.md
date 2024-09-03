@@ -38,7 +38,7 @@ work in progress
 
 ### Analysis 
 with detailed code
-[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis.html) 
+[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis_v4(with_missing).html) 
 
 ### Publication table and figures
 code hidden, outputs only 
