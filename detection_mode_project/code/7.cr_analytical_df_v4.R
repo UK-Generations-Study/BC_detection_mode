@@ -25,12 +25,12 @@
 ## select variables from detection mode -----------------------
 
 dm_vars <- dm_df %>% 
-  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen)
+  select(tcode, ancat_dmode_v2, source_dm2, dm2_screen_date_f, dm1_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, reg_sd)
 
 ## select variables from cancer df ---------------------------
 
 ca_vars <- cancer_df %>% 
-  select(tcode, date_birth, date_entry, diagdate, diagage, 
+  select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, 
          incident, side, ICDt, ICDm, breast_cancer, breast_cancer_invasive, breast_cancer_dcis, 
          stage, grade, er_Status, pr_Status, her2_Status, Tsize, nodes_tot, nodes_pos, N, AgeatEntry)
 
@@ -38,7 +38,7 @@ ca_vars <- cancer_df %>%
 
 # selecting all as for now as compiled in script 6
 density_vars <- mean_density_df %>% 
-  select(tcode, MammoDat_f, MD_avail, mean_density, sd_density)
+  select(tcode, MammoDat_f, ImageType, MD_avail, mean_density, sd_density)
   
 ## select variables from risk factor -------------------------------
 
@@ -1507,9 +1507,9 @@ dev_an_df <- dev_an_df %>%
 
 # 4. Comprise analytical dataset ------------------------------------------------------------
 an_df <- dev_an_df %>% 
-  select(tcode, date_birth, date_entry, diagdate, diagage, AgeatEntry, incident, side, 
-         source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, 
-         MammoDat_f, mean_density, sd_density, 
+  select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, AgeatEntry, incident, side, 
+         source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, reg_sd,
+         MammoDat_f, ImageType, mean_density, sd_density, 
          starts_with("d_")) 
   
 

@@ -21,6 +21,8 @@ execute:
   warning: false
 ---
 
+version 5 - Using data missing as a separate category in analysis
+
 ```{r}
 #| include: false
 #| echo: false
@@ -53,6 +55,7 @@ source(setup_path)
 
 # dataset processed in analysis script v3 - adjusting missing levels for TC
 an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+
 ```
 
 ```{r}
@@ -170,6 +173,8 @@ df <- an_df %>%
 # set theme for gtsummary tables: 
 
 theme_gtsummary_compact(set_theme = TRUE)
+
+
 ```
 
 # Table and figure structure:
@@ -178,27 +183,23 @@ theme_gtsummary_compact(set_theme = TRUE)
 
 Table 1 - general descriptives (population characteristics)
 
-Table 2 - Risk factor descriptives by detection mode with logistic regression results (unadjusted for TC) - all cases
+Table 2 - Risk factor descriptives by detection mode with logistic regression results from default model ( adjusted for multiple exposures and selected covariates)  + model additionally adjusted for mammo density (add mediation measure?)
 
 **Main figures**
 
 Figure 1 - comprised figure of plots describing mamographic density in relation to risk factors (detail in ST 2)
 
-Figure 2 - Forest plot of analysis adjusted vs unadjusted for mammographic density (full table in supplementary material - ST 2)
-
 **Supplementary material**
 
 (ST = Supplementary Table)
 
-ST 1 - Descriptives for MD cases (same as table 1 but subset)
+exclude? ST 1 - Descriptives for MD cases (same as table 1 but subset)
 
 ST 2 - risk factor descriptives by density (complementing figure 1)
 
-ST 3 - subset on cases with MD. Same model as table 3 + adjusted for MD. Include mediation measures (% change)
+ST 3 - TC descriptives by detection mode with logistic regression results for TC only + full model adjusting for TC
 
-ST 4 - TC descriptives by detection mode with logistic regression results
-
-ST 5 - Risk factor analysis adjusted for tumour characteristics (sensitivity analysis) - on subset of cases with TC
+Suplemntar Figure 1 - Forest plot of analysis adjusted vs unadjusted for mammographic density (full table in supplementary material - ST 2)
 
 # Main tables
 
