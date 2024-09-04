@@ -124,6 +124,7 @@ dev_an_df <- dev_an_df %>%
     )
     )
 
+
 dev_an_df %>% tabyl(d_MDtoBC_y, d_MDtoBC_cat)
 dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_lab)
 dev_an_df %>% tabyl(d_MDtoBC_lab)

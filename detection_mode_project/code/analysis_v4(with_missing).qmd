@@ -178,7 +178,8 @@ tumour_char_tr <- c("d_inv_status",
 time_vars <- c("diagage", 
                "d_R1toBC_y", 
                "d_R1toMD_y", 
-               "d_MDtoBC_y")
+               "d_MDtoBC_y",
+               "d_MDtoBC_lab")
 ```
 
 ::: callout-note
@@ -190,8 +191,7 @@ On 13/06/2024 discussed with Amy that it is probably better to use alcohol units
 ```{r}
 
 df <- an_df %>% 
-  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, yeardiag, reg_sd
-         )
+  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, yeardiag, reg_sd)
 #names(df)
 #str(df)
 ```
@@ -261,7 +261,7 @@ df <- df %>%
   mutate(across(where(is.character), as.factor) 
          )
 
-#freq(df)
+freq(df)
 
 vis_dat(df)
 gg_miss_var(df)
@@ -974,7 +974,9 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 
 **Model 3:** Model 2 + "d_md_qrt"
 
-**Model 4**: Model 3 + "d_MDtoBC_y" (time from mammo to diagnosis)
+**Model 4a**: Model 3 + "d_MDtoBC_y" (time from mammo to diagnosis)
+
+Model 4b: Model 3 + d_MDtoBC_lab (categorical)
 
 ### Code
 
@@ -1086,6 +1088,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 # Model 4 ---------------------------------------------------------------------
 
+
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_tr_lab
@@ -1094,9 +1097,8 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y
-      + d_md_qrt + d_MDtoBC_y,
+      + d_md_qrt + d_MDtoBC_lab,
             family = binomial(link = "logit"))
-
 
 # summary(model)
 # logistic.display(model)
@@ -1117,7 +1119,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
   add_n(location = "level")  %>% 
   add_nevent(location = "level") %>% 
-  add_global_p() %>% 
+  #add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
