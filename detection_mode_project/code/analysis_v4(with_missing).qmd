@@ -1086,8 +1086,9 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 #model3
 
-# Model 4 ---------------------------------------------------------------------
+# Model 4b ---------------------------------------------------------------------
 
+# changed to categorical MDtoBC
 
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
@@ -1250,7 +1251,7 @@ model <- df %>%
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
       + diagage + d_R1toBC_y
-      + d_md_qrt
+      + d_md_qrt + d_MDtoBC_lab
       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
             family = binomial(link = "logit"))
@@ -1258,7 +1259,7 @@ model <- df %>%
 model7 <- tbl_regression(model, exponentiate = TRUE) %>% 
   add_n(location = "level")  %>% 
   add_nevent(location = "level") %>% 
-  add_global_p() %>% 
+  #add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
