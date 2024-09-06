@@ -183,7 +183,7 @@ theme_gtsummary_compact(set_theme = TRUE)
 
 Table 1 - general descriptives (population characteristics)
 
-Table 2 - Risk factor descriptives by detection mode with logistic regression results from default model ( adjusted for multiple exposures and selected covariates)  + model additionally adjusted for mammo density (add mediation measure?)
+Table 2 - Risk factor descriptives by detection mode with logistic regression results from default model ( adjusted for multiple exposures and selected covariates) + model additionally adjusted for mammo density (add mediation measure)
 
 **Main figures**
 
@@ -193,11 +193,9 @@ Figure 1 - comprised figure of plots describing mamographic density in relation 
 
 (ST = Supplementary Table)
 
-exclude? ST 1 - Descriptives for MD cases (same as table 1 but subset)
-
 ST 2 - risk factor descriptives by density (complementing figure 1)
 
-ST 3 - TC descriptives by detection mode with logistic regression results for TC only + full model adjusting for TC
+ST 3 - TC descriptives by detection mode with logistic regression results for TC only + full model adjusting for TC + adjusting for density
 
 Suplemntar Figure 1 - Forest plot of analysis adjusted vs unadjusted for mammographic density (full table in supplementary material - ST 2)
 
