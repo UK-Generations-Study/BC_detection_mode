@@ -21,6 +21,7 @@ execute:
   warning: false
 ---
 
+
 **Version 4** - including missing as a category in regression models for all variables inlcuding MD
 
 -includes exploratory analysis by image type and date of diagnosis
@@ -32,6 +33,7 @@ Agreed on 29/07/2024 to include missing in the model as a separate category
 # Set up
 
 The Master script links all parts of data preparation in 7 processing scripts. The code below excecutes the master file, running all 7 scripts within. The final product is the analytical dataset called an_df which combined all required variables from casummary, risk factors, mode of detection and mammographic density.
+
 
 ```{r}
 #| include: false
@@ -57,7 +59,9 @@ source(setup_path)
 an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
 ```
 
+
 Data summary - commented out as output too large
+
 
 ```{r}
 #skim(an_df)
@@ -67,6 +71,7 @@ Data summary - commented out as output too large
 #dfSummary(an_df)
 ```
 
+
 # Preparation
 
 Create lists of model variables as objects in the environment for easier manipulation.
@@ -74,6 +79,7 @@ Create lists of model variables as objects in the environment for easier manipul
 Relevel reference groups within some exploratory variables.
 
 Mammographic density is a special variable that will be used for subanalyses on cases with mammographic density only (to adjust for in the model)
+
 
 ```{r}
 #| include: false
@@ -183,11 +189,13 @@ time_vars <- c("diagage",
                "yeardiag")
 ```
 
+
 ::: callout-note
 On 13/06/2024 discussed with Amy that it is probably better to use alcohol units in the analyses instead of alcohol status or both. Looking back at L's tables that seems to be the same as what was done originally.
 :::
 
 ### Create a dataset with only the required variables
+
 
 ```{r}
 
@@ -199,6 +207,7 @@ df <- an_df %>%
 # create dataset for complete case analysis with NA as missing (this will be used for a comparison of old and new method)
 df_cc <- df
 ```
+
 
 ### Notes on missing values
 
@@ -231,6 +240,7 @@ All missing will be treated as a separate levels. NA's in risk factors have only
 MD will also be added to the main model.
 
 #### Recode all missing values in analytical variables
+
 
 ```{r}
 #| include: false
@@ -277,6 +287,7 @@ gg_miss_var(df)
 df %>% tabyl(d_dmode_n)
 ```
 
+
 ### Relevel required categorical variables
 
 Change the reference groups in the following categorical variables:
@@ -290,6 +301,7 @@ Change the reference groups in the following categorical variables:
 Also, relevel variables where "Missing" level is not last (levels jumped when converteting NA to "Missing"
 
 (smoking, hrt, hrt - trick, oc, pre-menopausal status)
+
 
 ```{r}
 #| include: false
@@ -337,6 +349,7 @@ df_cc <- df_cc %>%
   mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"))
 ```
 
+
 # Univariate analysis
 
 Repeat these steps for each exposure:
@@ -351,6 +364,7 @@ Code under the empty heading has been excluded from the html file as not relevan
 
 ## Univariate analysis tables
 
+
 ```{r}
 #| echo: false
 #| include: false
@@ -360,9 +374,11 @@ Code under the empty heading has been excluded from the html file as not relevan
 theme_gtsummary_compact(set_theme = TRUE)
 ```
 
+
 ::: callout-note
 Comparing all cases vs cases with MD only
 :::
+
 
 ```{r}
 
@@ -430,6 +446,7 @@ univariate
 
 ```
 
+
 # Image type and date vs detection mode
 
 19/08/2024 Agreed with Amy and Montse to explore Image type and date with detection mode. This is to explore whether cases with new methods of screening (digitised images) are more likely to be interval or SD cases.
@@ -453,6 +470,7 @@ also to look at the registry flag in detection mode
 **Questions to answer:**
 
 1.Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
+
 
 ```{r}
 
@@ -491,11 +509,13 @@ dates %>%
   theme_minimal()
 ```
 
+
 ::: callout-note
 Digital_processed images started to become more prevalent around 2011, with the prevalence of analogue decreasing from that point. The absolute number of digital images is much smaller than analogue probably due to the fact that most images were selected in years before digital images started to get more prevalent.
 :::
 
 2.Is detection mode distributed differently for each image type?
+
 
 ```{r}
 # df %>% tabyl(d_dmode, ImageType) %>% 
@@ -517,6 +537,7 @@ df %>%
   mean_table(d_md)
 ```
 
+
 ::: callout-note
 both interval and SD cases had 12% of images digitally processed but SD had higher proportion of Analgue images (54.7%) compared to Intervals (41.1%). Larger proportion of interval cases did not have mammo image (46.9%) compared to SD cases (33.3%). Which suggests that the images are not missing at random in relation to detection mode. If interval cancer is considered a proxy for more aggressive cancer type, that could mean that we have more images and hence breast density data for screen detected cases (i.e less agressive cancers). We would need about 10% more interval cases with images for equal distribution of number of images by detection mode. Mean density is different for SD cases.
 
@@ -524,6 +545,7 @@ How would this affect our analysis and results? differential bias of MD as diffe
 :::
 
 3.Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
+
 
 ```{r}
 
@@ -580,7 +602,9 @@ df %>% filter(d_md_avail == 1) %>%
 
 ```
 
+
 2.  Did tumour characteristics change by date? (e.g. due to changes in reporting) and image type?
+
 
 ```{r}
 
@@ -663,7 +687,9 @@ df %>% tabyl(ImageType, d_her2_status_lab) %>%
 
 ```
 
+
 Is detection mode distributed similarly in dmode derived from screening data and from registry flag?
+
 
 ```{r}
 
@@ -695,6 +721,7 @@ df %>% tabyl(yeardiag_f, d_dmode, source_dm2) %>%
   adorn_ns()
 ```
 
+
 ::: callout-note
 detection mode from algorithm classified more intervals than dmode from registration flag by 6%. However, the reg_sd was only used for those who had diagnoses after linkage, for only 419 participants (3x less than algorithm)
 
@@ -716,6 +743,7 @@ for SD, a case had a screening episode in late 2015, had positive endpoints at t
 
 The above examples explain the changes in distribution of dmode_v2 from 2016 onwards and why by default most of them are intervals apart from 7.7% of SDs in 2016.
 :::
+
 
 ```{r}
 
@@ -740,6 +768,7 @@ df %>%
 
 ```
 
+
 # Test trick models
 
 There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter intuitive, when the equation is written down including the indicator variables, the maths works.
@@ -756,6 +785,7 @@ The estimates will be exactly the same. This needs to be tested for all 3 groups
 Agreed with Amy and Montse to remove the binary parity variable from the model and only use n of pregnancied. The reference group will be 0 children.
 
 ## Parity related variables
+
 
 ```{r}
 
@@ -812,7 +842,9 @@ tbl_regression(model, exponentiate = TRUE) %>%
 
 ```
 
+
 ## Menopause related variables
+
 
 ```{r}
 
@@ -855,6 +887,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
                 stat_n = "**Total N**")
 ```
 
+
 ::: {.callout-note style="color: green"}
 Trick on menopausae variables **SUCCESSFULL**
 :::
@@ -862,6 +895,7 @@ Trick on menopausae variables **SUCCESSFULL**
 ## Tumour characteristics variables
 
 All DCIS, including those with missing values in the variables below were coded as the reference group. This approach was done also by Louise. Assuming most DCIS would be missing so this seems correct.
+
 
 ```{r}
 # tabulate trick vars by parity to see if recoded properly 
@@ -949,6 +983,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
                 stat_n = "**Total N**")
 ```
 
+
 ::: {.callout-note style="color: green"}
 Trick on Tumour characteristics variables **SUCCESSFULL**
 :::
@@ -991,6 +1026,7 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 Model 4b: Model 3 + d_MDtoBC_lab (categorical)
 
 ### Code
+
 
 ```{r}
 #| warning: false
@@ -1149,6 +1185,7 @@ allcases_table <- tbl_merge(
 allcases_table
 ```
 
+
 ::: callout-note
 ## Note
 
@@ -1171,76 +1208,9 @@ especially MD to DG variable is a limiting factor because it drops everyone who 
 
 Comparing the older version models where missing were dropped (complete case analysis)
 
-```{r}
-# process data for comparison
-
-df1 <- df %>% 
-  select(all_of(all_expl_variables_tr), all_of(all_expl_variables), diagage, d_R1toBC_y, yeardiag, d_dmode
-         ) %>% 
-  # Identify factor columns
-  mutate(across(where(is.factor), as.character)
-         ) %>%
-  # Filter out rows containing "Missing"
-  filter(!if_any(where(is.character), ~ . == "Missing")
-         ) %>%
-  # convert back to factors
-  mutate(across(where(is.character), as.factor)
-         )
-
-df1 <- df1 %>% 
-  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
-         d_R1menopause_lab3 = fct_relevel(
-           d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
-         d_age_menopause_lab = case_when(
-           d_age_menopause_lab == "Pre-menopausal" ~ NA,
-                                         TRUE ~ d_age_menopause_lab),
-         
-         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ NA,
-                                       TRUE ~ d_R1hrtstatus_lab),
-         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
-         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
-         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
-                                     TRUE ~ d_agebirth1_lab),
-         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
-         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
-         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing")
-  )
-
-freq(df1)
-
-df2 <- df %>% 
-  select(all_of(all_expl_variables_tr), all_of(all_expl_variables), diagage, d_R1toBC_y, yeardiag, d_dmode, d_MDtoBC_lab, d_md_qrt
-         ) %>% 
-  # Identify factor columns
-  mutate(across(where(is.factor), as.character)
-         ) %>%
-  # Filter out rows containing "Missing"
-  filter(!if_any(where(is.character), ~ . == "Missing")
-         ) %>%
-  # convert back to factors
-  mutate(across(where(is.character), as.factor)
-         )
-
-
-df2 <- df2 %>% 
-  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
-         d_R1menopause_lab3 = fct_relevel(d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
-         d_age_menopause_lab = case_when(d_age_menopause_lab == "Pre-menopausal" ~ "Missing",
-                                         TRUE ~ d_age_menopause_lab),
-         
-         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ "Missing",
-                                       TRUE ~ d_R1hrtstatus_lab),
-         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
-         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
-         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
-                                     TRUE ~ d_agebirth1_lab),
-         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
-         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
-         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing"),
-         
-         d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
-  )  
+```{}
 ```
+
 
 ```{r}
 
@@ -1336,6 +1306,33 @@ comp_table
 
 ```
 
+
+::: {.callout-note style="color: orange"}
+## Note on comparison with all-case analysis
+
+Model 2 (with missing) vs Model 2 (complete case)
+
+-   in general, effects in new Model 2 slightly weaker compared to complete case Model 2
+
+-   BMI for \<18.5 became significant with stronger effect
+
+Model 4 (with missing) vs Model 4 (complete case) - adjusted for MD
+
+-   after adjusting for MD (comparing with models 2), effect for age at menopause 55+ years has become statistically significant (although for model 4 witth missing lower CI = 1.00). The effect and strength of evidence was stronger in model 4 complete case analysis.
+
+-   similar findings for current HRT users
+
+-   compared to models 2, association with BBD became weaker after adjusting for MD in model 4 (with missing), although still significant. Complete case model 4 became non-significant for bbd.
+
+-   associations with family history became non-significant
+
+-   BMI for \<18.5 became stronger and was also statistically significant after adjusting for MD in Model 4 with missing. Effect was non-significant in complete case analysis model 4.
+
+-   Association with MD quartiles 3 and 4 became stronger in Model 4 with missing comapred to complete case
+
+-   
+:::
+
 ## Part 2: Tumour characteristics only
 
 For internal purpose or supplemental materials.
@@ -1348,7 +1345,9 @@ For internal purpose or supplemental materials.
 
 ### Code
 
+
 ```{r}
+#| warning: false
 
 # Model 5 ------------------------------------------------------------------------
 
@@ -1393,7 +1392,7 @@ model <- df %>%
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y
+      + diagage + d_R1toBC_y + yeardiag
       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
             family = binomial(link = "logit"))
@@ -1431,7 +1430,7 @@ model <- df %>%
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y
+      + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab
       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
@@ -1447,11 +1446,14 @@ model7 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 ```
 
+
 ### Table
 
 This table is for internal purpose only.
 
+
 ```{r}
+
 # combine results 
 
 
@@ -1460,5 +1462,7 @@ tc_table <- tbl_merge(
   tab_spanner = c("**Model 5**", "**Model 6**", "**Model 7**")
    ) 
 
+
 tc_table
 ```
+
