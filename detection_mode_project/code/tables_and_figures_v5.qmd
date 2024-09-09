@@ -247,6 +247,7 @@ Because model 2 was selected as the default model, it is also used on the subana
 
 ```{r}
 #| echo: false
+#| warning: false
 
 # summary Logistic Regression of Model 2  -----------------------------------------
 
@@ -258,16 +259,27 @@ Because model 2 was selected as the default model, it is also used on the subana
 
 # Create clean version of logistic output, without Ns
 model <- df %>%
-   drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-           ) %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_tr_lab
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y,
+      + diagage + d_R1toBC_y + yeardiag,
             family = binomial(link = "logit"))
+
+
+# model <- df %>%
+#    drop_na(all_of(all_expl_variables_tr), diagage, d_R1toBC_y
+#            ) %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+#       + d_R1hrt_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+#       + diagage + d_R1toBC_y,
+#             family = binomial(link = "logit"))
 
 # tidy up output
 model2 <- tbl_regression(model, 
@@ -288,13 +300,15 @@ model2 <- tbl_regression(model,
                           d_agebirth1_tr_lab ~ "Age at first birth"
                          )
                          ) %>% 
-  add_global_p() %>% 
-  remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
                   type = "all")
   
 
 #model2
 
+
+# RESUME HERE - ADD MODEL 4
 
 
 
