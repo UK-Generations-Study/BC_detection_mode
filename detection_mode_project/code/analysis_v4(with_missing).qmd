@@ -179,7 +179,8 @@ time_vars <- c("diagage",
                "d_R1toBC_y", 
                "d_R1toMD_y", 
                "d_MDtoBC_y",
-               "d_MDtoBC_lab")
+               "d_MDtoBC_lab",
+               "yeardiag")
 ```
 
 ::: callout-note
@@ -191,9 +192,12 @@ On 13/06/2024 discussed with Amy that it is probably better to use alcohol units
 ```{r}
 
 df <- an_df %>% 
-  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, yeardiag, reg_sd)
+  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
 #names(df)
 #str(df)
+
+# create dataset for complete case analysis with NA as missing (this will be used for a comparison of old and new method)
+df_cc <- df
 ```
 
 ### Notes on missing values
@@ -261,7 +265,7 @@ df <- df %>%
   mutate(across(where(is.character), as.factor) 
          )
 
-freq(df)
+#freq(df)
 
 vis_dat(df)
 gg_miss_var(df)
@@ -303,6 +307,7 @@ df <- df %>%
          d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
          d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
                                      TRUE ~ d_agebirth1_lab),
+         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
          d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
          d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing"),
          d_pos_nodes_lab = fct_relevel(d_pos_nodes_lab, "Negative", "Positive", "Missing"),
@@ -314,15 +319,22 @@ df <- df %>%
          d_pr_tr_lab = fct_relevel(d_pr_tr_lab, "Positive", "Negative", "Missing"),
          d_her2_tr_lab = fct_relevel(d_her2_tr_lab, "Positive", "Negative", "Missing"),
          d_morph4_lab = fct_relevel(d_morph4_lab, "Ductal", "Lobular", "Mixed: ductal and other", "Other", "Missing"),
-         reg_sd = as.factor(reg_sd)
+         reg_sd = as.factor(reg_sd),
+         d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
   )
 
-#freq(df1)
+#freq(df)
 
 #str(df)
 
 
-saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+#saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+
+
+# relevel complete case data (only bmi)
+
+df_cc <- df_cc %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"))
 ```
 
 # Univariate analysis
@@ -970,7 +982,7 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 
 **Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
 
-**Model 2**: Model 1 + "diagage", "d_R1toBC_y" (add year of diagnosis to the model?)
+**Model 2**: Model 1 + "diagage", "d_R1toBC_y", "yeardiag"
 
 **Model 3:** Model 2 + "d_md_qrt"
 
@@ -1010,7 +1022,7 @@ model <- df %>%
 model1 <- tbl_regression(model, exponentiate = TRUE) %>% 
   add_n(location = "level")  %>% 
   add_nevent(location = "level") %>% 
-  add_global_p() %>% 
+  #add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
  
@@ -1026,7 +1038,7 @@ model <- df %>%
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y,
+      + diagage + d_R1toBC_y + yeardiag,
             family = binomial(link = "logit"))
 
 # summary(model)
@@ -1043,7 +1055,7 @@ model <- df %>%
 model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
   add_n(location = "level")  %>% 
   add_nevent(location = "level") %>% 
-  add_global_p() %>% 
+  #add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -1062,7 +1074,7 @@ model2 <- tbl_regression(model, exponentiate = TRUE) %>%
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y
+      + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt,
             family = binomial(link = "logit"))
 
@@ -1080,7 +1092,7 @@ model2 <- tbl_regression(model, exponentiate = TRUE) %>%
 model3 <- tbl_regression(model, exponentiate = TRUE) %>% 
   add_n(location = "level")  %>% 
   add_nevent(location = "level") %>% 
-  add_global_p() %>% 
+  #add_global_p() %>% 
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
@@ -1097,7 +1109,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-      + diagage + d_R1toBC_y
+      + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab,
             family = binomial(link = "logit"))
 
@@ -1154,6 +1166,175 @@ The other time related variables (diagnosis age, time from entry to diagnosis an
 
 especially MD to DG variable is a limiting factor because it drops everyone who does not have MD from the model when it is continuous.
 :::
+
+### Comparison with models from previous analysis
+
+Comparing the older version models where missing were dropped (complete case analysis)
+
+```{r}
+# process data for comparison
+
+df1 <- df %>% 
+  select(all_of(all_expl_variables_tr), all_of(all_expl_variables), diagage, d_R1toBC_y, yeardiag, d_dmode
+         ) %>% 
+  # Identify factor columns
+  mutate(across(where(is.factor), as.character)
+         ) %>%
+  # Filter out rows containing "Missing"
+  filter(!if_any(where(is.character), ~ . == "Missing")
+         ) %>%
+  # convert back to factors
+  mutate(across(where(is.character), as.factor)
+         )
+
+df1 <- df1 %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
+         d_R1menopause_lab3 = fct_relevel(
+           d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
+         d_age_menopause_lab = case_when(
+           d_age_menopause_lab == "Pre-menopausal" ~ NA,
+                                         TRUE ~ d_age_menopause_lab),
+         
+         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ NA,
+                                       TRUE ~ d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
+         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
+         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
+                                     TRUE ~ d_agebirth1_lab),
+         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
+         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
+         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing")
+  )
+
+freq(df1)
+
+df2 <- df %>% 
+  select(all_of(all_expl_variables_tr), all_of(all_expl_variables), diagage, d_R1toBC_y, yeardiag, d_dmode, d_MDtoBC_lab, d_md_qrt
+         ) %>% 
+  # Identify factor columns
+  mutate(across(where(is.factor), as.character)
+         ) %>%
+  # Filter out rows containing "Missing"
+  filter(!if_any(where(is.character), ~ . == "Missing")
+         ) %>%
+  # convert back to factors
+  mutate(across(where(is.character), as.factor)
+         )
+
+
+df2 <- df2 %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
+         d_R1menopause_lab3 = fct_relevel(d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
+         d_age_menopause_lab = case_when(d_age_menopause_lab == "Pre-menopausal" ~ "Missing",
+                                         TRUE ~ d_age_menopause_lab),
+         
+         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ "Missing",
+                                       TRUE ~ d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
+         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
+         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
+                                     TRUE ~ d_agebirth1_lab),
+         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
+         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
+         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing"),
+         
+         d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
+  )  
+```
+
+```{r}
+
+# Model 2 - complete case ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+model <- df_cc %>%
+  select(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, yeardiag, d_dmode_n
+         )  %>% 
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR  
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = estimate) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model2_cc <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model2
+
+# Model 4 - complete case ---------------------------------------------------------------------
+
+# changed to categorical MDtoBC
+
+ model <- df_cc %>%
+  select(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, yeardiag, d_dmode_n, d_md_qrt, d_MDtoBC_lab, d_md_avail
+         ) %>% 
+  filter(d_md_avail == 1
+         ) %>% 
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+
+#display result as a tidy model table with OR
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = round(estimate, 2),
+#          std.error = round(std.error, 2),
+#          p.value = round(p.value, 4),
+#          conf.low = round(conf.low)
+#          ) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+
+model4_cc <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model4
+
+```
+
+```{r}
+# comparison table 
+comp_table <- tbl_merge(
+  tbls = list(model2, model2_cc, model4, model4_cc),
+  tab_spanner = c("**Model 2**", "**Model 2 - complete case**", "**Model 4**", "**Model 4 - complete case**")
+   ) 
+
+comp_table
+
+```
 
 ## Part 2: Tumour characteristics only
 
