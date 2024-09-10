@@ -235,7 +235,7 @@ MD will also be added to the main model.
 ```{r}
 #| include: false
 #| echo: false
-#| 
+ 
 vis_dat(df)
 
 #vis_miss(df)
@@ -298,6 +298,7 @@ Also, relevel variables where "Missing" level is not last (levels jumped when co
 df <- df %>% 
   mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
          d_R1menopause_lab3 = fct_relevel(d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
+         d_age_menopause_lab2 = d_age_menopause_lab,
          d_age_menopause_lab = case_when(d_age_menopause_lab == "Pre-menopausal" ~ "Missing",
                                          TRUE ~ d_age_menopause_lab),
          
