@@ -21,7 +21,7 @@ execute:
   warning: false
 ---
 
-**Version 4** - including missing as a category in regression models for all variables inlcuding MD
+**Version 5** - including missing as a category in regression models for all variables inlcuding MD
 
 -includes exploratory analysis by image type and date of diagnosis
 
@@ -1155,12 +1155,11 @@ allcases_table
 it is expected that Model 2 and Model 4 will be presented as Model 2 is fully adjusted for risk factors and variables that could affect the risk factors and Model 4 is adjusted for MD + time from md to diagnosis
 :::
 
-
 ### Comparison with models from previous analysis
 
 Comparing the older version models where missing were dropped (complete case analysis)
 
-```{}
+```         
 ```
 
 ```{r}
