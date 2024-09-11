@@ -433,7 +433,7 @@ table2
 
 # Main figures
 
-## Figures 1 to 3 - descriptives of risk factors with MD
+## Figures 1 to 2 - descriptives of risk factors with MD
 
 #### Data transformation - formal statistical test of differences between categories
 
@@ -556,7 +556,6 @@ plot1 <- md_df %>%
 #plot1
 ```
 
-
 ```{r}
 #| echo: false
 #| include: false
@@ -614,7 +613,6 @@ plot2 <- md_df %>%
 
 #plot2
 ```
-
 
 ```{r}
 #| echo: false
@@ -1496,24 +1494,7 @@ plot14 <- md_df %>%
 #plot14
 ```
 
-plot list: 
-plot 1 - detection mode
-plot 2 - Meno status
-plot 3 - age meno
-plot 4 - HRT
-plot 5 - n of parous preg
-plot 6 - age at first birth
-plot 7 - Age at menarche
-plot 8 - Oral contraceptives
-plot 9 - BBD
-plot 10 - Family history of BC
-plot 11 - Alcohol
-plot 12 - Smoking status
-plot 13 - BMI
-plot 14 - physical activity
-
-
-
+plot list: plot 1 - detection mode plot 2 - Meno status plot 3 - age meno plot 4 - HRT plot 5 - n of parous preg plot 6 - age at first birth plot 7 - Age at menarche plot 8 - Oral contraceptives plot 9 - BBD plot 10 - Family history of BC plot 11 - Alcohol plot 12 - Smoking status plot 13 - BMI plot 14 - physical activity
 
 ```{r, fig.width=15, fig.height=9}
 #| echo: false
@@ -2039,19 +2020,12 @@ tcomposite_plot
 
 # Supplementary material
 
-
 ## ST 1 - TC descriptives and association with detection mode
 
 TC descriptives by detection mode, logistic regression of TC with detection mode (same principal as risk factor analysis but multiple exposures are TC)
 
 ::: {.callout-note style="color: orange"}
-## Question
-
-Probably better to split the descriptives of TC and the logistic regression outputs from the 3 models
-
-headers TBC
-
-previously we had table with TC descriptives + TC in the model only and a second table adjusting for risk factors
+this will be in excel format in supplement
 :::
 
 ```{r}
@@ -2229,7 +2203,30 @@ descr_tc_df <- df %>%
 
 # create gs summary table
 descr_tc <- descr_tc_df %>% 
-  select(d_inv_status, d_grade_tr, d_morph4_tr_lab) %>% 
+  # reselect to ensure the correct order
+  select(d_dmode,
+         d_inv_status, 
+         d_grade_tr, 
+         d_morph4_tr_lab, 
+         d_pos_nodes_tr_lab, 
+         d_tmsize_tr_lab, 
+         d_er_tr_lab, 
+         d_pr_tr_lab, 
+         d_her2_tr_lab, 
+         d_age_menarche_lab,
+         d_R1menopause_lab3,
+         d_age_meno_tr_lab,
+         d_R1hrt_tr_lab,
+         d_ocstatus_lab,
+         d_parity_lab,
+         d_agebirth1_tr_lab,
+         d_bbd_lab,
+         d_fambrca_lab,
+         d_bmi_entry_lab,
+         d_R1physmet_leis_who_lab,
+         d_R1alcohol_units_lab, 
+         d_R1smokingstatus_lab,
+         d_md_qrt) %>% 
   tbl_summary(by = d_dmode,
               statistic = list(
                 all_continuous() ~ "{mean} ({sd})",
@@ -2265,7 +2262,7 @@ descr_tc <- descr_tc_df %>%
               ) 
 
 
-descr_tc
+#descr_tc
 
   
 # merge with analysis output -------------------------------------------------
@@ -2273,7 +2270,7 @@ descr_tc
 
 ST1 <- tbl_merge(
   tbls = list(descr_tc, model5, model6, model7),
-  tab_spanner = c("**Distribution by detection mode**", "**Model with TC only**", "**Model with risk factors**", "**Model with risk factors and MD**")
+  tab_spanner = c("**Distribution by detection mode**", "**Model: TC only**", "**Model: TC + RF + time variables**", "**Model: TC + RF + MD + time variables**")
    ) 
    
   
@@ -2282,254 +2279,7 @@ ST1 <- tbl_merge(
 ST1
 ```
 
-```{r}
-#| echo: false
-#| include: false
 
-
-#ST 5 - Risk factor analysis adjusted for TC
-
-#Sensitivity analysis - default model with model adjusted for TC
-
-# Model 3 - subset on those with TC----------------------------------------------------------------
- # include parity and meno trick variable instead of original variables
-
-# only included alcohol status - check if we need to do the trick if including both
-# including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
-
-#  model <- df %>%
-#    tidyr::drop_na(all_of(tumour_char_tr), all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-#            ) %>% 
-#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-#       + d_R1hrt_tr_lab
-#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
-#       + d_bbd_lab + d_fambrca_lab
-#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-#       + diagage + d_R1toBC_y,
-#             family = binomial(link = "logit"))
-# 
-# # tidy up output
-# model3 <- tbl_regression(model, 
-#                          exponentiate = TRUE,
-#                          label = list(
-#                           d_R1alcohol_units_lab ~ "Alcohol units",
-#                           d_R1smokingstatus_lab ~ "Smoking status",
-#                           d_bmi_entry_lab ~ "BMI",
-#                           d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
-#                           d_bbd_lab ~ "Benign breast disease",
-#                           d_fambrca_lab ~ "Family history of BC",
-#                           d_age_menarche_lab ~ "Age at menarche",
-#                           d_ocstatus_lab ~ "Oral contraceptives status",
-#                           d_R1menopause_lab3 ~ "Menopause",
-#                           d_age_meno_tr_lab ~ "Age at menopause",
-#                           d_R1hrt_tr_lab ~ "HRT status",
-#                           d_parity_lab ~ "N of parous pregnancies",
-#                           d_agebirth1_tr_lab ~ "Age at first birth"
-#                          )
-#                          ) %>% 
-#   add_global_p() %>% 
-#   remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
-#                   type = "all")
-# 
-# 
-# model3a <- tbl_regression(model, exponentiate = TRUE) %>%
-#   add_n(location = "level")  %>%
-#   add_nevent(location = "level") %>%
-#   add_global_p() %>%
-#   modify_header(stat_nevent = "**Interval N**",
-#                 stat_n = "**Total N**")
-# 
-# 
-# 
-# #model3
-# #model3a
-# 
-# # create a dataframe with broom::tidy() for forestplots 
-# 
-# tidy_model3 <- model %>%
-#    tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-#    mutate(OR = estimate) %>%
-#    select(-estimate) %>%
-#    select(term, OR, everything())
-# #tidy_model3
-# 
-# 
-# # Model 4 ----------------------------------------------------------------
-#  # include parity and meno trick variable instead of original variables
-# 
-# # only included alcohol status - check if we need to do the trick if including both
-# # including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
-# 
-# model <- df %>%
-#    tidyr::drop_na(all_of(tumour_char_tr), all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-#            ) %>% 
-#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-#       + d_R1hrt_tr_lab
-#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
-#       + d_bbd_lab + d_fambrca_lab
-#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
-#       + diagage + d_R1toBC_y
-#       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
-#       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
-#             family = binomial(link = "logit"))
-# 
-# model4 <- tbl_regression(model, 
-#                          exponentiate = TRUE,
-#                          label = list(
-#                           d_R1alcohol_units_lab ~ "Alcohol units",
-#                           d_R1smokingstatus_lab ~ "Smoking status",
-#                           d_bmi_entry_lab ~ "BMI",
-#                           d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
-#                           d_bbd_lab ~ "Benign breast disease",
-#                           d_fambrca_lab ~ "Family history of BC",
-#                           d_age_menarche_lab ~ "Age at menarche",
-#                           d_ocstatus_lab ~ "Oral contraceptives status",
-#                           d_R1menopause_lab3 ~ "Menopause",
-#                           d_age_meno_tr_lab ~ "Age at menopause",
-#                           d_R1hrt_tr_lab ~ "HRT status",
-#                           d_parity_lab ~ "N of parous pregnancies",
-#                           d_agebirth1_tr_lab ~ "Age at first birth",
-#                           d_inv_status ~ "Invasive status",
-#                           d_grade_tr ~ "Grade",
-#                           d_morph4_tr_lab ~ "Morphology type",
-#                           d_pos_nodes_tr_lab ~ "Positive nodes",
-#                           d_tmsize_tr_lab ~ "Tumour size",
-#                           d_er_tr_lab ~ "ER status",
-#                           d_pr_tr_lab ~ "PR status",
-#                           d_her2_tr_lab ~ "HER2 status"
-#                          )
-#                          ) %>% 
-#   add_global_p() %>% 
-#   remove_row_type(variables = c(diagage, d_R1toBC_y), # remove covariates
-#                   type = "all")
-# 
-# # model4
-# # 
-#  model4a <- tbl_regression(model, exponentiate = TRUE) %>%
-#   add_n(location = "level")  %>%
-#    add_nevent(location = "level") %>%
-#    add_global_p() %>%
-#    modify_header(stat_nevent = "**Interval N**",
-#                  stat_n = "**Total N**")
-# 
-# # model4a
-# # model3a
-# 
-# 
-# # create a dataframe with broom::tidy() for forestplots 
-# 
-# tidy_model4 <- model %>%
-#    tidy(exponentiate = TRUE, conf.int = TRUE) %>%
-#    mutate(OR = estimate) %>%
-#    select(-estimate) %>%
-#    select(term, OR, everything())
-# 
-# 
-#  # Descriptives for model 4 -------------------------------------------------
-# # subset on those with mammo density 
-# 
-# 
-# descr_TCsubset_df <- df %>% 
-#   select(d_dmode,  all_of(all_expl_variables_tr), all_of(all_expl_variables), all_of(tumour_char_tr), all_of(tumour_char), diagage, d_R1toBC_y) %>% 
-#   tidyr::drop_na(all_of(tumour_char_tr), all_of(all_expl_variables_tr), diagage, d_R1toBC_y
-#   ) %>% 
-#   mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")
-#               ) %>%
-#   # recode the names of normal variables to trick to allow merge between regression tables and this descriptive table
-#   mutate(d_age_meno_tr_lab = d_age_menopause_lab,
-#          d_R1hrt_tr_lab = d_R1hrtstatus_lab,
-#          d_agebirth1_tr_lab = d_agebirth1_lab,
-#          d_grade_tr = d_grade_lab,
-#          d_morph4_tr_lab = d_morph4_lab,
-#          d_pos_nodes_tr_lab = d_pos_nodes_lab,
-#          d_tmsize_tr_lab = d_tumour_size_lab,
-#          d_er_tr_lab = d_er_status_lab,
-#          d_pr_tr_lab = d_pr_status_lab,
-#          d_her2_tr_lab = d_her2_status_lab
-#          ) %>%
-#   select(-d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -diagage, -d_R1toBC_y, -d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab)
-#   
-#   
-# 
-# # glimpse(descr_MDsubset_df)
-# # str(descr_MDsubset_df)
-# 
-# # create gs summary table
-# descr_TCsubset <- descr_TCsubset_df %>% 
-#   tbl_summary(by = d_dmode,
-#               statistic = list(
-#                 all_continuous() ~ "{mean} ({sd})",
-#                 all_categorical() ~ "{n} ({p})"
-#                 ),
-#               digits = all_continuous() ~ 2,
-#               label = list(
-#                           d_R1alcohol_units_lab ~ "Alcohol units",
-#                           d_R1smokingstatus_lab ~ "Smoking status",
-#                           d_bmi_entry_lab ~ "BMI",
-#                           d_R1physmet_leis_who_lab ~ "Physical Activity (WHO cat)",
-#                           d_bbd_lab ~ "Benign breast disease",
-#                           d_fambrca_lab ~ "Family history of BC",
-#                           d_age_menarche_lab ~ "Age at menarche",
-#                           d_ocstatus_lab ~ "Oral contraceptives status",
-#                           d_R1menopause_lab3 ~ "Menopause",
-#                           d_age_meno_tr_lab ~ "Age at menopause",
-#                           d_R1hrt_tr_lab ~ "HRT status",
-#                           d_parity_lab ~ "N of parous pregnancies",
-#                           d_agebirth1_tr_lab ~ "Age at first birth",
-#                           d_inv_status ~ "Invasive status",
-#                           d_grade_tr ~ "Grade",
-#                           d_morph4_tr_lab ~ "Morphology type",
-#                           d_pos_nodes_tr_lab ~ "Positive nodes",
-#                           d_tmsize_tr_lab ~ "Tumour size",
-#                           d_er_tr_lab ~ "ER status",
-#                           d_pr_tr_lab ~ "PR status",
-#                           d_her2_tr_lab ~ "HER2 status"
-#                 ),
-#               type = list(d_bbd_lab ~ "categorical",
-#                           d_fambrca_lab ~ "categorical")
-#               ) #%>% 
-#   #add_overall()
-# 
-# 
-# #descr_TCsubset
-# # check numbers against
-# # model4a
-# # model3a
-#  
-# 
-# 
-# # merge tables -------------------------------------------------
-# 
-# 
-# ST3 <- tbl_merge(
-#   tbls = list(descr_TCsubset, model3, model4),
-#   tab_spanner = c("Subset with TC" ,"Unadjusted for TC", "Adjusted for TC")
-#    ) 
-#    
-# 
-# #ST3
-# 
-# 
-# # adding pct difference -------------------------------------------
-# 
-# #  using gtsummary 
-# ST3_diff <- ST3 %>% 
-#   modify_table_body(
-#     ~ .x %>% 
-#       mutate(pct_diff = if_else(
-#           is.na(estimate_2) | is.na(estimate_3),
-#           "",
-#           sprintf("%.1f", (estimate_3 - estimate_2) / estimate_3 * 100))
-#     )
-#     ) %>% 
-#   modify_header(
-#     pct_diff = "**Difference (%)**"
-#   )
-# 
-# ST3_diff
-```
 
 ## ST 2 - Differences in characteristics between those with and without mammographic density
 
