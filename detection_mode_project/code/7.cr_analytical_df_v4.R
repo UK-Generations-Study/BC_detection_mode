@@ -89,7 +89,7 @@ dev_an_df <- dev_an_df %>%
     d_R1toBC_cat = fct_relevel(d_R1toBC_cat, "1", "2", "3", "4", "5"),
     d_R1toBC_lab = factor(x = d_R1toBC_cat,
                           levels = 1:5,
-                          labels = c("<3 years", "3 to 5 years", "6 to 8 years", "9 to 11 years", ">12 years" ))
+                          labels = c("<3 years", "3-5 years", "6-8 years", "9-11 years", "12+ years" ))
     )
 
 
@@ -120,9 +120,10 @@ dev_an_df <- dev_an_df %>%
     d_MDtoBC_lab = factor(
       x = d_MDtoBC_cat, 
       levels = c(1, 2, 3),
-      labels = c("<3 years", "3-5 years", ">=6 years")
+      labels = c("<3 years", "3-5 years", "6+ years")
     )
     )
+
 
 dev_an_df %>% tabyl(d_MDtoBC_y, d_MDtoBC_cat)
 dev_an_df %>% tabyl(d_MDtoBC_cat, d_MDtoBC_lab)
@@ -1203,7 +1204,7 @@ dev_an_df <- dev_an_df %>%
          d_R1physmet_leis_who = fct_relevel(d_R1physmet_leis_who, "0", "1", "2"),
          d_R1physmet_leis_who_lab = factor(x = d_R1physmet_leis_who,
                                       levels = c(0, 1, 2),
-                                      labels = c("<9", "9-18", "18+"))
+                                      labels = c("<9", "9-17", "18+"))
   )
 
 dev_an_df %>% tabyl(d_R1physmet_leis_who_lab)
