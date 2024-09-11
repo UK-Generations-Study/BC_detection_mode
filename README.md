@@ -33,13 +33,13 @@ preliminary - for checks against Louise's density
 [density descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/density_descriptives.html)
 
 ### Mode of detection - analytical dataset descriptives 
-work in progress
+code development for for descriptive figures
 [dataset descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/screening_descriptives.html) 
 
 ### Analysis 
 with detailed code
-[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis.html) 
+[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis_v5_with_missing.html) 
 
 ### Publication table and figures
 code hidden, outputs only 
-[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v3.html)
+[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v5.html)
