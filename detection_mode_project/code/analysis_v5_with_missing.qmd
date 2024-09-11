@@ -451,9 +451,9 @@ also to look at the registry flag in detection mode
 
 ## Distribution of image type by year of diagnosis
 
-**Questions to answer:**
+### **Questions to answer:**
 
-1.Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
+#### Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
 
 ```{r}
 
@@ -496,7 +496,7 @@ dates %>%
 Digital_processed images started to become more prevalent around 2011, with the prevalence of analogue decreasing from that point. The absolute number of digital images is much smaller than analogue probably due to the fact that most images were selected in years before digital images started to get more prevalent.
 :::
 
-2.Is detection mode distributed differently for each image type?
+#### Is detection mode distributed differently for each image type?
 
 ```{r}
 # df %>% tabyl(d_dmode, ImageType) %>% 
@@ -524,7 +524,7 @@ both interval and SD cases had 12% of images digitally processed but SD had high
 How would this affect our analysis and results? differential bias of MD as different for those with and without outcome (being Interval case)?
 :::
 
-3.Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
+#### Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
 
 ```{r}
 
@@ -571,33 +571,22 @@ df %>% filter(d_md_avail == 1) %>%
   adorn_pct_formatting() %>% 
   adorn_ns()
 
-# # subset on those without density 
-# df %>% filter(d_md_avail == 0) %>% 
-#   tabyl(d_dmode, d_year_bin) %>% 
-#   adorn_totals(where = "col") %>% 
-#   adorn_percentages() %>% 
-#   adorn_pct_formatting() %>% 
-#   adorn_ns()
-
 ```
 
-2.  Did tumour characteristics change by date? (e.g. due to changes in reporting) and image type?
+#### Did tumour characteristics change by date? (e.g. due to changes in reporting) and by image type?
 
 ```{r}
 
-# grade
-# df %>% tabyl(yeardiag, d_grade_lab) %>% 
-#   adorn_totals(where = "col") %>% 
-#   adorn_percentages() %>% 
-#   adorn_pct_formatting() %>% 
-#   adorn_ns()
+# Grade
+## year of diagnosis
 
 df %>% tabyl(d_year_bin, d_grade_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
+# Grade
+## image type
 df %>% tabyl(ImageType, d_grade_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
@@ -605,12 +594,14 @@ df %>% tabyl(ImageType, d_grade_lab) %>%
   adorn_ns()
 
 # stage
+## year of diagnosis
 df %>% tabyl(d_year_bin, d_stage_cat) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
+# stage
+## image type
 df %>% tabyl(ImageType, d_stage_cat) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
@@ -619,12 +610,14 @@ df %>% tabyl(ImageType, d_stage_cat) %>%
 
 
 # ER status
+## year of diagnosis
 df %>% tabyl(d_year_bin, d_er_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
+# ER status
+## image type
 df %>% tabyl(ImageType, d_er_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
@@ -633,12 +626,14 @@ df %>% tabyl(ImageType, d_er_status_lab) %>%
 
 
 # PR status
+## year of diagnosis
 df %>% tabyl(d_year_bin, d_pr_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
+# PR status
+## Image type
 df %>% tabyl(ImageType, d_pr_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
@@ -647,12 +642,14 @@ df %>% tabyl(ImageType, d_pr_status_lab) %>%
 
 
 # HER2 status
+## year of diagnosis
 df %>% tabyl(d_year_bin, d_her2_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
+# HER2 status
+## Image type
 df %>% tabyl(ImageType, d_her2_status_lab) %>% 
   adorn_totals(where = "col") %>% 
   adorn_percentages() %>% 
@@ -664,7 +661,15 @@ df %>% tabyl(ImageType, d_her2_status_lab) %>%
 
 ```
 
-Is detection mode distributed similarly in dmode derived from screening data and from registry flag?
+#### Is detection mode distributed similarly in dmode derived from screening data and from registry flag?
+
+Detection mode algorithm has 3 sources of data, depending on what data was used to derive dmode:
+
+1.  dmode_v2 - using screening and automating Louise's process
+2.  dmode_v1 - Louise's original classification for those that could not be automated as the scenario was complex
+3.  reg_sd - registry data screening flag that is part of the generations casummary dataset - used for those who did not have diagnostic screening data as diagnosis was after linkage (but had other screening data)
+
+The variable source_dm2 shows what source dmode was for each participant
 
 ```{r}
 
@@ -675,8 +680,28 @@ df %>% tabyl(d_dmode, source_dm2) %>%
   adorn_pct_formatting() %>% 
   adorn_ns()
 
-# tabulate detection mode from algorithm against reg_sd detection mode
-# louise has previously done checks of her dmode v1 agaist reg_sd (gs_sd actually, reg_sd is subset excluding histo reports) with good agreement. Dmode v2 was also checked against Louise's dmode v1 with a good agreement
+
+```
+
+#### Tabulate detection mode from algorithm against reg_sd detection mode
+
+Reg_sd is the registration screening flag that is part of the casummary in GS data.
+
+Louise has previously done checks of her dmode v1 agaist reg_sd (gs_sd actually, reg_sd is subset excluding histo reports) with good agreement. Dmode v2 was also checked against Louise's dmode v1 with a good agreement.
+
+Below is the tabulation of detection mode as reported by reg_sd data and as derived by the algorithm.
+
+in reg_sd the categories are as follows:
+
+N = interval
+
+Y = Screen detected
+
+U = Unknown
+
+```{r}
+
+
 
 df %>% tabyl(reg_sd, d_dmode) %>% 
   adorn_totals() %>% 
@@ -687,6 +712,14 @@ df %>% tabyl(reg_sd, d_dmode) %>%
 df %>% tabyl(reg_sd)
 df %>% tabyl(d_dmode)
 
+
+```
+
+#### Tabulation of detection mode by year of diagnosis and by source category.
+
+Below are 3 sets of tabulations to illustrate the distribution of interval and SD cases across years for each source type. The main interest is dmode_v2 and reg_sd.
+
+```{r}
 # by year of diagnosis 
 
 df %>% tabyl(yeardiag_f, d_dmode, source_dm2) %>% 
@@ -717,6 +750,8 @@ for SD, a case had a screening episode in late 2015, had positive endpoints at t
 
 The above examples explain the changes in distribution of dmode_v2 from 2016 onwards and why by default most of them are intervals apart from 7.7% of SDs in 2016.
 :::
+
+#### Image type by year of diagnosis for those with MD
 
 ```{r}
 
