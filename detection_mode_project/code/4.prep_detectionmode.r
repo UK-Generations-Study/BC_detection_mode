@@ -67,6 +67,35 @@ dm_df <- cases %>%
 
 dm_df %>% tabyl(ancat_dmode_v2) %>% adorn_totals()
 
+########################################################################################
+# 13/09/2024 - investigating if we can include cases without screening data
+
+# detection_mode_im %>% tabyl(ancat_dmode_v2) # 331 NAs
+# 
+# dm_df2 <- dm_df %>% 
+#   left_join(cancer_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster")
+#             ) %>% 
+#   filter(is.na(ancat_dmode_v2)) 
+# 
+# dm_df2 %>% tabyl(diagage) %>% 
+#   adorn_totals()
+# 
+# dm_df2 %>% tabyl(screen_Detected)
+# 
+# dm_df2 %>% tabyl(diagage, screen_Detected)
+# 
+# dm_df3 <- dm_df2 %>% 
+#   filter(diagage < 50)
+# 
+# dm_df3 %>% tabyl(screen_Detected)
+
+
+#####################################################################################
+
+
+
+
+
 # select only interval and SD dmode categories from ancat_dmode_v2 
 dm_df <- dm_df %>% 
   filter(ancat_dmode_v2 %in% c("I", "SD"))
