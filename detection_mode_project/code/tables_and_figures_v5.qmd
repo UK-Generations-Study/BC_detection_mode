@@ -2279,8 +2279,6 @@ ST1 <- tbl_merge(
 ST1
 ```
 
-
-
 ## ST 2 - Differences in characteristics between those with and without mammographic density
 
 this table needs additional formatting changes, labels, add p-value for difference between groups, add time from entry to dg and age at diagnosis

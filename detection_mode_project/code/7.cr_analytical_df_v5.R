@@ -20,7 +20,7 @@
 
 
 
-# update 16/09/2024 - added hrt type (hrtprep) variable
+#                   5 - update 16/09/2024 - added hrt type (hrtprep) variable
 #_____________________________________________________________________________
 
 
@@ -1023,7 +1023,7 @@ dev_an_df %>% tabyl(d_R1menopause_lab3, d_R1hrtstatus_lab)
 # recode pre-menopausal as never 
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 0 & !is.na(d_R1hrtstatus)  ~ 0,
+  mutate(d_R1hrt_tr = case_when(d_R1menopause_cat3 == 0 & !is.na(d_R1hrtstatus)  ~ 0, # premenopausal and hrt not missing 
                                    TRUE ~ d_R1hrtstatus),
          d_R1hrt_tr_lab = factor(x = d_R1hrt_tr,
                                     levels = c(0, 1, 2),
@@ -1046,41 +1046,58 @@ dev_an_df %>% tabyl(d_R1hrtstatus_lab, hrtprep)
 dev_an_df %>% tabyl(hrtprep)
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_R1hrt_type = case_when(hrtprep == 1 ~ "Estrogen only",
-                                  hrtprep == 2 ~ "Estrogen and progestogen",
-                                  hrtprep == 3 ~ "Other types of HRT",
-                                  hrtprep == 9 ~ "Not applicable"))
+  mutate(d_R1hrt_type = factor(x = hrtprep,
+                               levels = c(1:3, 9)),
+         d_R1hrt_type_lab = factor(x = hrtprep,
+                               levels = c(1:3, 9),
+                          labels = c("Estrogen only", "Estrogen and progestogen", "Other types of HRT", "Not applicable")))
 
+dev_an_df %>% tabyl(d_R1hrt_type)
+dev_an_df %>% tabyl(d_R1hrt_type_lab)
 
 ### HRT status with subtype ---------------------------------------------------------------
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_hrt_sttyp = case_when(d_R1hrtstatus_cat == 0 ~ "Never",
-                                 d_R1hrtstatus_cat == 1 ~ "Former",
-                                 d_R1hrtstatus_cat == 2 & hrtprep == 1 ~ "Current: Estrogen only",
-                                 d_R1hrtstatus_cat == 2 & hrtprep == 2 ~ "Current: Estrogen and progestogen",
-                                 d_R1hrtstatus_cat == 2 & hrtprep == 3 ~ "Current: Other HRT",
-                                 d_R1hrtstatus_cat == 777 ~ "Pre-menopausal",
-                                 T ~ NA))
+  mutate(d_R1hrt_sttyp = case_when(d_R1hrtstatus_cat == 0 ~ 1, #"Never",
+                                 d_R1hrtstatus_cat == 1 ~ 2, #"Former",
+                                 d_R1hrtstatus_cat == 2 & d_R1hrt_type == 1 ~ 3, # "Current: Estrogen only",
+                                 d_R1hrtstatus_cat == 2 & d_R1hrt_type == 2 ~ 4, # "Current: Estrogen and progestogen",
+                                 d_R1hrtstatus_cat == 2 & d_R1hrt_type == 3 ~ 5, #"Current: Other HRT",
+                                 d_R1hrtstatus_cat == 777 ~ 6, #"Pre-menopausal",
+                                 T ~ NA),
+         d_R1hrt_sttyp_lab = factor(x = d_R1hrt_sttyp,
+                                  levels = 1:6,
+                                  labels = c("Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT", "Pre-menopausal"))
+         )
 
-dev_an_df %>% tabyl(d_hrt_sttyp)
+dev_an_df %>% tabyl(d_R1hrt_sttyp_lab)
 
-dev_an_df %>% tabyl(d_hrt_sttyp, d_R1hrtstatus_lab)
+dev_an_df %>% tabyl(d_R1hrt_sttyp_lab, d_R1hrtstatus_lab)
 
 
 ### HRT status with subtype - trick ------------------------------------------------------
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_R1hrt_sttyp_tr = case_when(d_R1menopause_cat3 == 0 & !is.na(d_R1hrt_sttyp) ~ 1, # covnert premeno when hrt not missing to never
+                                TRUE ~ d_R1hrt_sttyp),
+         d_R1hrt_sttyp_tr_lab = factor(x = d_R1hrt_sttyp_tr,
+                                 levels = 1:5,
+                                 labels = c("Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT")
+                                 )
+         )
+
+dev_an_df %>% tabyl(d_R1hrt_sttyp_tr)
+
+dev_an_df %>% tabyl(d_R1hrt_sttyp_tr_lab)
+
+dev_an_df %>% tabyl(d_R1hrt_sttyp_tr_lab, d_R1hrt_sttyp_lab)
+
+dev_an_df %>% tabyl(d_R1menopause_cat3, d_R1hrtstatus_lab)
 
 
 
 
 #########################################################################################
-
-
-
-
-
-
 
 
 
