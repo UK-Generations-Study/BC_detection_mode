@@ -334,7 +334,7 @@ df <- df %>%
          d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
   )
 
-#freq(df)
+freq(df)
 
 #str(df)
 
@@ -488,12 +488,18 @@ dates <- df %>%
   filter(d_md_avail == 1) %>% 
   tabyl(yeardiag, ImageType)
 
+# row %
+dates %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "row") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# col %
 dates %>% 
   adorn_totals() %>% 
   adorn_percentages(denominator = "col") %>% 
   adorn_pct_formatting() %>% 
   adorn_ns()
-
 
 dates %>% 
   ggplot(aes(x = yeardiag, )) +
@@ -862,7 +868,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
 
 ```{r}
 
-# tabulate trick vars by parity to see if recoded properly 
+# tabulate trick vars by hrt to see if recoded properly 
 
 ## age at menopause
 df %>% tabyl(d_age_meno_tr_lab, d_R1menopause_lab3) %>% 
@@ -886,7 +892,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
   modify_header(stat_nevent = "**Interval N**",
                 stat_n = "**Total N**")
 
-# MODEL B - binary parity status in the model -------------------------------------
+# MODEL B - binary hrt status status in the model -------------------------------------
 
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab,
@@ -904,6 +910,48 @@ tbl_regression(model, exponentiate = TRUE) %>%
 ::: {.callout-note style="color: green"}
 Trick on menopausae variables **SUCCESSFULL**
 :::
+
+## Trick on HRT status with categorical variables
+
+```{r}
+# tabulate trick vars by hrt to see if recoded properly 
+
+## age at menopause
+df %>% tabyl(d_age_meno_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+## HRT use 
+df %>% tabyl(d_R1hrt_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+model <- df %>% 
+  filter(d_R1menopause_lab3 == "Postmenopausal") %>%
+  glm(formula = d_dmode_n ~ d_age_meno_tr_lab + d_R1hrt_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# MODEL B - binary hrt status status in the model -------------------------------------
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+```
 
 ## Tumour characteristics variables
 
