@@ -13,6 +13,8 @@
 # Martina Brayley (Martina.Brayley@icr.ac.uk)
 
 # version control: 1 
+
+#update 16/09/2024 - added HRT type variable (hrtprep)
 #                  
 #                 
 #_____________________________________________________________________________

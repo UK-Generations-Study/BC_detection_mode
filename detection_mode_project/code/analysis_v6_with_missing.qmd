@@ -1,0 +1,1507 @@
+---
+title: "Detection mode project - Analysis"
+author: "Martina Brayley"
+date: last-modified
+date-format: long
+format: 
+  html: 
+    embed-resources: true
+    toc: true
+    toc-location: left
+    number-sections: true
+    theme: [flatly, style.css]
+    page-layout: full
+    grid:
+      sidebar-width: 300px
+      body-width: 2000px
+      margin-width: 300px
+      gutter-width: 1.5rem
+editor: visual
+execute:
+  warning: false
+---
+
+**Version 5** - including missing as a category in regression models for all variables inlcuding MD
+
+-includes exploratory analysis by image type and date of diagnosis
+
+**version 6** - including hrt status with subtype of HRT
+
+::: callout-note
+Agreed on 29/07/2024 to include missing in the model as a separate category
+:::
+
+# Set up
+
+The Master script links all parts of data preparation in 7 processing scripts. The code below excecutes the master file, running all 7 scripts within. The final product is the analytical dataset called an_df which combined all required variables from casummary, risk factors, mode of detection and mammographic density.
+
+```{r}
+#| include: false
+#| echo: false
+
+# execute master file - no need run it as final data now saved
+#source("code/master.R")
+
+print(getwd())
+
+library(pacman)
+p_load(here,
+       visdat)
+
+# set up
+setup_path <- here("code", "1.setup_import.r")
+source(setup_path)
+
+# import data
+# data_path <- here("data", "an_df.rds")
+# an_df <- readRDS(data_path)
+
+an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
+```
+
+Data summary - commented out as output too large
+
+```{r}
+#skim(an_df)
+```
+
+```{r}
+#dfSummary(an_df)
+```
+
+# Preparation
+
+Create lists of model variables as objects in the environment for easier manipulation.
+
+Relevel reference groups within some exploratory variables.
+
+Mammographic density is a special variable that will be used for subanalyses on cases with mammographic density only (to adjust for in the model)
+
+```{r}
+#| include: false
+#| echo: false
+
+## Store explanatory variables as an object -------------------------------
+
+# with labels instead of categories --------------------------------------
+# select categorical variables that are labelled
+
+# exploratory vars 
+all_expl_variables <- c(
+                         # parity related risk factors
+                        "d_R1menopause_lab3", 
+                        "d_age_menopause_lab", 
+                        "d_R1hrtstatus_lab",
+                        "d_R1hrt_sttyp_lab",
+                        "d_parity_lab", 
+                        "d_agebirth1_lab",
+                        "d_age_menarche_lab", 
+                        "d_ocstatus_lab", 
+                        # other biological risk factors
+                        "d_bbd_lab", 
+                        "d_fambrca_lab",
+                        # lifestyle risk factors
+                        "d_R1alcohol_units_lab", 
+                        "d_R1smokingstatus_lab", 
+                        "d_bmi_entry_lab", 
+                        "d_R1physmet_leis_who_lab")
+
+all_expl_variables_tr <- c(
+                            # parity related risk factors
+                           "d_R1menopause_lab3", 
+                           "d_age_meno_tr_lab", 
+                           "d_R1hrt_tr_lab",
+                           "d_R1hrt_sttyp_tr_lab",
+                           "d_parity_lab",
+                           "d_age_menarche_lab", 
+                           "d_ocstatus_lab",
+                            # other biological risk factors
+                           "d_bbd_lab", 
+                           "d_fambrca_lab",
+                           # lifestyle risk factors
+                           "d_agebirth1_tr_lab",
+                           "d_R1alcohol_units_lab", 
+                           "d_R1smokingstatus_lab", 
+                           "d_bmi_entry_lab", 
+                           "d_R1physmet_leis_who_lab" 
+                           )
+  
+
+lifestyle <- c("d_R1alcohol_units_lab", 
+               "d_R1smokingstatus_lab", 
+               "d_bmi_entry_lab", 
+               "d_R1physmet_leis_who")
+  
+reproductive <- c("d_age_menarche_lab", 
+                  "d_ocstatus_lab", 
+                  "d_R1menopause_lab3", 
+                  "d_age_menopause_lab", 
+                  "d_R1hrtstatus_lab", 
+                  "d_parity_lab", 
+                  "d_agebirth1_lab") # do we want to add breastfeeding? If so, it would also have be in the trick model
+  
+orther_rf <- c("d_bbd", 
+               "d_fambrca")
+
+# mammo density excluded from the lists - special variable for subanalyses
+
+# covariates 
+all_covariates <- c(# time varying variables
+                    "diagage", 
+                    "d_R1toBC_y", 
+                    "d_R1toMD_y", 
+                    "d_MDtoBC_y",
+                    # tumour characteristics
+                    "d_inv_status", 
+                    "d_grade_lab", 
+                    "d_morph4", 
+                    "d_pos_nodes_lab", 
+                    "d_tumour_size", 
+                    "d_er_status", 
+                    "d_pr_status", 
+                    "d_her2_status")  
+  
+tumour_char <- c("d_inv_status", 
+                 "d_grade_lab", 
+                 "d_morph4_lab", 
+                 "d_pos_nodes_lab", 
+                 "d_tumour_size_lab", 
+                 "d_er_status_lab", 
+                 "d_pr_status_lab", 
+                 "d_her2_status_lab")
+
+tumour_char_tr <- c("d_inv_status", 
+                    "d_grade_tr", 
+                    "d_morph4_tr_lab", 
+                    "d_pos_nodes_tr_lab", 
+                    "d_tmsize_tr_lab", 
+                    "d_er_tr_lab", 
+                    "d_pr_tr_lab", 
+                    "d_her2_tr_lab")
+  
+time_vars <- c("diagage", 
+               "d_R1toBC_y", 
+               "d_R1toMD_y", 
+               "d_MDtoBC_y",
+               "d_MDtoBC_lab",
+               "yeardiag")
+```
+
+::: callout-note
+On 13/06/2024 discussed with Amy that it is probably better to use alcohol units in the analyses instead of alcohol status or both. Looking back at L's tables that seems to be the same as what was done originally.
+:::
+
+### Create a dataset with only the required variables
+
+```{r}
+
+df <- an_df %>% 
+  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
+#names(df)
+#str(df)
+
+# create dataset for complete case analysis with NA as missing (this will be used for a comparison of old and new method)
+df_cc <- df
+```
+
+### Notes on missing values
+
+1.  Original approach (available in analysis.qmd)
+
+There are no missing values in outcome as the analytical dataset was prepared by selecting cases with mode of detection which had to be either SD or I.
+
+In v3 of script 7 error codes were recoded to NA as it is automatically handled in analysis. This dataset should be used. If error codes are of interest, rerun v2 of script 7 in master file, which will produce a dataset with error codes. The following code was written for data processed by v3 of script 7 where missing values are NA.
+
+Even though NAs are automatically handled in glm(), to have better control over which rows are dropped and for consistency, they will be handled manually by the following steps for each model:
+
+-   select only the required variables for the specific model
+
+-   drop NAs using drop_na() function for all exposures and covariates in the model
+
+The same steps will be then used to produce descriptive table (for publication Table 3) which will be merged with logistic regression results. Therefore, it is important that the number of observations are the same in the descriptive and analytical part of the table.
+
+2.  Updated approach (this script - analysis_v2(with_missing).qmd)
+
+This approach has been agreed with Montse on 29/07/2024
+
+There are no missing values in outcome as the analytical dataset was prepared by selecting cases with mode of detection which had to be either SD or I.
+
+In v3 of script 7 error codes were recoded to NA not differentiating between different reasons of missing data (e.g. question not answered, questionnaire not returned, error in value etc). This dataset is used for the updated analysis. If error codes are of interest, rerun v2 of script 7 in master file, which will produce a dataset with error codes. The following code was written for data processed by v4 of script 7 where missing values are NA.
+
+3.  analysis_v4
+
+All missing will be treated as a separate levels. NA's in risk factors have only a small number of observations in the missing category which causes errors in regression models. These errors are warnings but the model still runs, it was agreed to ignore these errors.
+
+MD will also be added to the main model.
+
+#### Recode all missing values in analytical variables
+
+```{r}
+#| include: false
+#| echo: false
+ 
+vis_dat(df)
+
+#vis_miss(df)
+
+gg_miss_var(df)
+
+# an_df %>% 
+#   map(pct_miss)
+
+
+
+# convert all factor variables to character 
+df <- df %>% 
+  mutate(across(where(is.factor), as.character))
+
+
+# convert all character variables NAs to "Missing" 
+df <- df %>%
+  mutate(across(where(is.character), ~ replace_na(., "Missing")))
+
+str(df)
+
+vis_dat(df) # only missing are those associated with MD which is a subset of the data
+
+# convert all character variables back to factor
+df <- df %>%
+  mutate(across(where(is.character), as.factor) 
+         )
+
+#freq(df)
+
+vis_dat(df)
+gg_miss_var(df)
+
+```
+
+```{r}
+
+df %>% tabyl(d_dmode_n)
+```
+
+### Relevel required categorical variables
+
+Change the reference groups in the following categorical variables:
+
+-   BMI: reference = normal weight
+
+-   hormone receptor status (ER, PR) and HER2: reference = positive
+
+*BMI amended in this script directly before analysis as for descriptives the original level ordering will be needed*
+
+Also, relevel variables where "Missing" level is not last (levels jumped when converteting NA to "Missing"
+
+(smoking, hrt, hrt - trick, oc, pre-menopausal status)
+
+```{r}
+#| include: false
+#| echo: false
+
+df <- df %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
+         d_R1menopause_lab3 = fct_relevel(d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
+         d_age_menopause_lab2 = d_age_menopause_lab,
+         d_age_menopause_lab = case_when(d_age_menopause_lab == "Pre-menopausal" ~ "Missing",
+                                         TRUE ~ d_age_menopause_lab),
+         
+         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ "Missing",
+                                       TRUE ~ d_R1hrtstatus_lab),
+         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
+         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
+         
+         d_R1hrt_sttyp_lab = case_when(d_R1hrt_sttyp_lab == "Pre-menopausal" ~ "Missing",
+                                       TRUE ~ d_R1hrt_sttyp_lab),
+         d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT", "Missing"),
+         d_R1hrt_sttyp_tr_lab = fct_relevel(d_R1hrt_sttyp_tr_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT", "Missing"),
+         
+         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
+                                     TRUE ~ d_agebirth1_lab),
+         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
+         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
+         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing"),
+         d_pos_nodes_lab = fct_relevel(d_pos_nodes_lab, "Negative", "Positive", "Missing"),
+         d_er_status_lab = fct_relevel(d_er_status_lab, "Positive", "Negative", "Missing"),
+         d_pr_status_lab = fct_relevel(d_pr_status_lab, "Positive", "Negative", "Missing"),
+         d_her2_status_lab = fct_relevel(d_her2_status_lab, "Positive", "Negative", "Missing"),
+         d_pos_nodes_tr_lab = fct_relevel(d_pos_nodes_tr_lab, "Negative", "Positive", "Missing"),
+         d_er_tr_lab = fct_relevel(d_er_tr_lab, "Positive", "Negative", "Missing"),
+         d_pr_tr_lab = fct_relevel(d_pr_tr_lab, "Positive", "Negative", "Missing"),
+         d_her2_tr_lab = fct_relevel(d_her2_tr_lab, "Positive", "Negative", "Missing"),
+         d_morph4_lab = fct_relevel(d_morph4_lab, "Ductal", "Lobular", "Mixed: ductal and other", "Other", "Missing"),
+         reg_sd = as.factor(reg_sd),
+         d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
+  )
+
+#freq(df)
+
+#str(df)
+
+
+#saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+
+
+# relevel complete case data (only bmi)
+
+df_cc <- df_cc %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"))
+```
+
+# Univariate analysis
+
+Repeat these steps for each exposure:
+
+1.  Tabulation including missing
+2.  Compute basic OR and chisqr test
+3.  Univariate logistic regression
+
+::: callout-important
+Code under the empty heading has been excluded from the html file as not relevant
+:::
+
+## Univariate analysis tables
+
+```{r}
+#| echo: false
+#| include: false
+
+# set theme for gtsummary tables: 
+
+theme_gtsummary_compact(set_theme = TRUE)
+```
+
+::: callout-note
+Comparing all cases vs cases with MD only
+:::
+
+```{r}
+
+# Univariate analysis with gtsummary
+
+# all cases:
+univ1 <- df %>%
+  select(d_dmode_n, any_of(all_expl_variables), any_of(tumour_char), d_md_qrt, yeardiag, ImageType, source_dm2
+         ) %>%
+  tbl_uvregression(
+    method = glm,
+    y = d_dmode_n,
+    method.args = list(family = binomial),
+    exponentiate = TRUE,
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+   ) %>%
+  add_global_p() %>% # add global p-value
+  add_nevent() %>% # add number of events of the outcome
+  bold_labels() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#univ1
+
+ 
+# show_header_names(t1) # show header names to rename event N to Interval N
+
+
+# MD cases only:
+univ2 <- df %>%
+  filter(d_md_avail == 1
+  ) %>%
+  select(d_dmode_n, any_of(all_expl_variables), any_of(tumour_char), d_md_qrt, yeardiag, ImageType
+         ) %>%
+  tbl_uvregression(
+    method = glm,
+    y = d_dmode_n,
+    method.args = list(family = binomial),
+    exponentiate = TRUE,
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+   ) %>%
+  add_global_p() %>% # add global p-value
+  add_nevent() %>% # add number of events of the outcome
+  bold_labels() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+# merge tables --------------------------------------------------------------- 
+
+
+#univariate <- tbl_merge(tbls = list(t1, t2))
+
+
+univariate <- tbl_merge(
+  tbls = list(univ1, univ2),
+  tab_spanner = c("**All cases**", "**Cases with MD**")
+   ) 
+
+univariate
+
+  
+
+
+
+```
+
+# Image type and date vs detection mode
+
+19/08/2024 Agreed with Amy and Montse to explore Image type and date with detection mode. This is to explore whether cases with new methods of screening (digitised images) are more likely to be interval or SD cases.
+
+year of diagnosis can be used as an indicator for image type as digitised images started to be used more widely around 2010.
+
+1.  Explore how detection mode changes
+    1.  by year of diagnosis
+        1.  all cases
+        2.  cases with MD only
+    2.  By image type (digitised analogue or digital image)
+2.  Explore image type with
+    1.  date of diagnosis
+    2.  Tumour characteristics
+3.  Explore tumour characteristics by year of diagnosis (2 cat before /after 2010 or 4 categories if data available)
+
+also to look at the registry flag in detection mode
+
+## Distribution of image type by year of diagnosis
+
+### **Questions to answer:**
+
+#### Did the type of image change over time as expected? (expected to change around 2010 from analougue to digital)
+
+```{r}
+
+df %>% tabyl(ImageType)
+
+# create factor for yeardiag for tabulating
+df <- df %>% 
+  mutate(yeardiag_f = as.factor(yeardiag))
+
+df %>% tabyl(yeardiag_f)
+
+
+# summarise data frame by years - count of observations in each year 
+
+# dates <- df %>% 
+#   select(yeardiag, d_md_avail_lab, ImageType) %>% 
+#   group_by(yeardiag) %>% 
+#   summarise(d_md_avail_lab )
+
+
+dates <- df %>% 
+  filter(d_md_avail == 1) %>% 
+  tabyl(yeardiag, ImageType)
+
+# row %
+dates %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "row") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# col %
+dates %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+dates %>% 
+  ggplot(aes(x = yeardiag, )) +
+  geom_line(aes(y = Analogue_Digitised, color = "Analogue_Digitised")) +
+  geom_line(aes(y = Digital_Processed, color = "Digital_Processed")) +
+  theme_minimal()
+```
+
+::: callout-note
+Digital_processed images started to become more prevalent around 2011, with the prevalence of analogue decreasing from that point. The absolute number of digital images is much smaller than analogue probably due to the fact that most images were selected in years before digital images started to get more prevalent.
+:::
+
+#### Is detection mode distributed differently for each image type?
+
+```{r}
+# df %>% tabyl(d_dmode, ImageType) %>% 
+#   adorn_totals() %>% 
+#   adorn_percentages(denominator = "col") %>% 
+#   adorn_pct_formatting() %>% 
+#   adorn_ns()
+
+df %>% tabyl(d_dmode, ImageType) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages(denominator = "row") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# is mammo density different by detection mode?
+df %>%
+  group_by(d_dmode) %>% 
+  mean_table(d_md)
+```
+
+::: callout-note
+both interval and SD cases had 12% of images digitally processed but SD had higher proportion of Analgue images (54.7%) compared to Intervals (41.1%). Larger proportion of interval cases did not have mammo image (46.9%) compared to SD cases (33.3%). Which suggests that the images are not missing at random in relation to detection mode. If interval cancer is considered a proxy for more aggressive cancer type, that could mean that we have more images and hence breast density data for screen detected cases (i.e less agressive cancers). We would need about 10% more interval cases with images for equal distribution of number of images by detection mode. Mean density is different for SD cases.
+
+How would this affect our analysis and results? differential bias of MD as different for those with and without outcome (being Interval case)?
+:::
+
+#### Is detection mode distributed differently by period? (before 2010 and after 2010 as a proxy for all participants for image type)
+
+```{r}
+
+# all cases
+df %>% tabyl(yeardiag_f, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+# in subset of people with density
+df %>% 
+  filter(d_md_avail == 1) %>% 
+tabyl(yeardiag_f, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# create a new indicator variable for before and after 2010
+
+df <- df %>% 
+  mutate(d_year_bin = as.factor(if_else(yeardiag < 2012, "before 2012", "2012 onwards"))) %>% 
+  mutate(d_year_bin = fct_relevel(d_year_bin, "before 2012", "2012 onwards"))
+
+# df %>% tabyl(yeardiag, d_year_bin) %>% 
+#   adorn_totals()
+
+
+# distribution with binary year of diagnosis
+df %>% tabyl(d_year_bin, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# subset on those with density 
+df %>% filter(d_md_avail == 1) %>% 
+  tabyl(d_year_bin, d_dmode) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+```
+
+#### Did tumour characteristics change by date? (e.g. due to changes in reporting) and by image type?
+
+```{r}
+
+# Grade
+## year of diagnosis
+
+df %>% tabyl(d_year_bin, d_grade_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# Grade
+## image type
+df %>% tabyl(ImageType, d_grade_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+# stage
+## year of diagnosis
+df %>% tabyl(d_year_bin, d_stage_cat) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# stage
+## image type
+df %>% tabyl(ImageType, d_stage_cat) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# ER status
+## year of diagnosis
+df %>% tabyl(d_year_bin, d_er_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# ER status
+## image type
+df %>% tabyl(ImageType, d_er_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# PR status
+## year of diagnosis
+df %>% tabyl(d_year_bin, d_pr_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# PR status
+## Image type
+df %>% tabyl(ImageType, d_pr_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+# HER2 status
+## year of diagnosis
+df %>% tabyl(d_year_bin, d_her2_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+# HER2 status
+## Image type
+df %>% tabyl(ImageType, d_her2_status_lab) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+
+
+```
+
+#### Is detection mode distributed similarly in dmode derived from screening data and from registry flag?
+
+Detection mode algorithm has 3 sources of data, depending on what data was used to derive dmode:
+
+1.  dmode_v2 - using screening and automating Louise's process
+2.  dmode_v1 - Louise's original classification for those that could not be automated as the scenario was complex
+3.  reg_sd - registry data screening flag that is part of the generations casummary dataset - used for those who did not have diagnostic screening data as diagnosis was after linkage (but had other screening data)
+
+The variable source_dm2 shows what source dmode was for each participant
+
+```{r}
+
+# tabulate detection mode by source
+df %>% tabyl(d_dmode, source_dm2) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+```
+
+#### Tabulate detection mode from algorithm against reg_sd detection mode
+
+Reg_sd is the registration screening flag that is part of the casummary in GS data.
+
+Louise has previously done checks of her dmode v1 agaist reg_sd (gs_sd actually, reg_sd is subset excluding histo reports) with good agreement. Dmode v2 was also checked against Louise's dmode v1 with a good agreement.
+
+Below is the tabulation of detection mode as reported by reg_sd data and as derived by the algorithm.
+
+in reg_sd the categories are as follows:
+
+N = interval
+
+Y = Screen detected
+
+U = Unknown
+
+```{r}
+
+
+
+df %>% tabyl(reg_sd, d_dmode) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+df %>% tabyl(reg_sd)
+df %>% tabyl(d_dmode)
+
+
+```
+
+#### Tabulation of detection mode by year of diagnosis and by source category.
+
+Below are 3 sets of tabulations to illustrate the distribution of interval and SD cases across years for each source type. The main interest is dmode_v2 and reg_sd.
+
+```{r}
+# by year of diagnosis 
+
+df %>% tabyl(yeardiag_f, d_dmode, source_dm2) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "row") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+```
+
+::: callout-note
+detection mode from algorithm classified more intervals than dmode from registration flag by 6%. However, the reg_sd was only used for those who had diagnoses after linkage, for only 419 participants (3x less than algorithm)
+
+Using only the reg_sd detection mode, 33% cases were classified as intervals compared to 38.9 % with algorithm. However, the reg_sd had about 112 missing and 23 uknown cases. Which were mostly classified as an interval by the algorithm. SD categories were very similar 61% for algorithm and 59.9% for reg_sd, difference of about 20 cases.
+
+95% of SDs from algorithm matched with reg_sd, the remainder was missing.
+
+85.2% of Intervals from algorithm matched with reg_sd, about 10% algorithm Intervals were missing or uknown in reg_sd and 4.4 % were classified as SD by reg_sd.
+
+Looking at the distribution by source and year of diagnosis
+
+note: (dmode_v1 - Louise's manual classification for complex cases - not relevant; dmode_v2 - core algorithm classification; reg_sd - dg after linkage)
+
+in dmode_v2 we can see that most cases from 2016 onwards are intervals. This is because by default cases from around 2016 onwards won't have screening data but the last screening date before linkage and date of diagnosis within the agreed period (for interval up 36months and SD 3 months) was used to derive detection mode. Each screening centre had specific linkage end period.
+
+So, for example, one case had last recording screening episode in late 2015 with no abnormalities detected and 24 months later they had diagnosis of cancer - this was considered to be interval case.
+
+for SD, a case had a screening episode in late 2015, had positive endpoints at the screening episode and diagnosis in early 2016 - this was considered screen detected case.
+
+The above examples explain the changes in distribution of dmode_v2 from 2016 onwards and why by default most of them are intervals apart from 7.7% of SDs in 2016.
+:::
+
+#### Image type by year of diagnosis for those with MD
+
+```{r}
+
+
+
+df %>% 
+  filter(d_md_avail == 1) %>% 
+  tabyl(yeardiag, ImageType) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+
+df %>% 
+  ggplot(aes(x = yeardiag, fill = d_md_avail_lab)) +
+  geom_histogram(binwidth = 1, color = "black") +
+  labs(x = "Date", y = "Frequency", title = "Distribution of date of diagnosis by MD availability")
+
+
+
+
+```
+
+# Test trick models
+
+There are 3 groups of variables that require trick recoding (Tumour characteristics, parity related and menopause related). These variables are closely related and have 1 group within them that is the same in all of the variables. For example, if we look at the parity variables (binary parous, n of parous pregnancies, age at first birth), all 3 variables have a level of "non-parous" women, which all cannot be in the model. Therefore, to trick the model we recode the non-parous women in n of parous preg and age at first birth variables to the reference group. Although, it may seem counter intuitive, when the equation is written down including the indicator variables, the maths works.
+
+When we run 2 models:
+
+1.  a model on a subset of parous women only and with the remaining 2 parity related variables
+2.  a model with all cases, the parous binary variable and the 2 recoded parity related variables (non parous women part of the reference group)
+
+The estimates will be exactly the same. This needs to be tested for all 3 groups of these variables.
+
+17/06/2024
+
+Agreed with Amy and Montse to remove the binary parity variable from the model and only use n of pregnancied. The reference group will be 0 children.
+
+## Parity related variables
+
+```{r}
+
+# tabulate trick vars by parity to see if recoded properly -----------------------
+
+## age at birth
+df %>% tabyl(d_agebirth1_tr_lab, d_parity_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_agebirth1_lab, d_parity_lab) %>% 
+  adorn_title()
+
+df %>%  tabyl(d_parous_lab, d_parity_lab)
+
+## number of parous pregnancies
+# df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
+#   adorn_title()
+# df %>% tabyl(d_parity_lab, d_parous_lab) %>% 
+#   adorn_title()
+
+# MODEL A - subset on parous women ------------------------------------------------
+
+model <- df %>% 
+ filter(d_parity_lab != "0") %>%
+  glm(formula = d_dmode_n ~ d_agebirth1_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**") 
+
+
+
+# MODEL B - binary parity status in the model -------------------------------------
+
+model <- df %>%
+  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+
+
+```
+
+## Menopause related variables
+
+```{r}
+
+# tabulate trick vars by hrt to see if recoded properly 
+
+## age at menopause
+df %>% tabyl(d_age_meno_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+## HRT use 
+df %>% tabyl(d_R1hrt_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+model <- df %>% 
+  filter(d_R1menopause_lab3 == "Postmenopausal") %>%
+  glm(formula = d_dmode_n ~ d_age_meno_tr_lab + d_R1hrt_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# MODEL B - binary hrt status status in the model -------------------------------------
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_sttyp_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+```
+
+::: {.callout-note style="color: green"}
+Trick on menopausae variables **SUCCESSFULL**
+:::
+
+## Trick on HRT status with categorical variables
+
+```{r}
+# tabulate trick vars by hrt to see if recoded properly 
+
+## age at menopause
+df %>% tabyl(d_age_meno_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+## HRT use 
+df %>% tabyl(d_R1hrt_sttyp_tr_lab, d_R1menopause_lab3) %>% 
+  adorn_title()
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+model <- df %>% 
+  filter(d_R1menopause_lab3 == "Postmenopausal") %>%
+  glm(formula = d_dmode_n ~ d_age_meno_tr_lab + d_R1hrt_sttyp_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# MODEL B - binary hrt status status in the model -------------------------------------
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab + d_R1hrt_sttyp_tr_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "label") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+```
+
+## Tumour characteristics variables
+
+All DCIS, including those with missing values in the variables below were coded as the reference group. This approach was done also by Louise. Assuming most DCIS would be missing so this seems correct.
+
+```{r}
+# tabulate trick vars by parity to see if recoded properly 
+
+## grade
+df %>% tabyl(d_grade_tr, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_grade_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## morphology 
+df %>% tabyl(d_morph4_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_morph4_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## positive nodes
+df %>% tabyl(d_pos_nodes_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_pos_nodes_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## tumour size
+df %>% tabyl(d_tmsize_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_tumour_size_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## er status - reference positive
+df %>% tabyl(d_er_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_er_status_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## pr status - reference positive
+df %>% tabyl(d_pr_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_pr_status_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+## her2 status - reference positive
+df %>% tabyl(d_her2_tr_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+df %>% tabyl(d_her2_status_lab, d_inv_status_lab) %>% 
+  adorn_title()
+
+
+# MODEL A - subset on postmenopausal  women ---------------------------------
+
+# note: keeping morhology as categorical without labels as it affects the outpu
+
+model <- df %>% 
+  filter(d_inv_status == 1) %>%
+  glm(formula = d_dmode_n ~ d_grade_lab + d_morph4_lab + d_pos_nodes_lab + d_tumour_size_lab + d_er_status_lab + d_pr_status_lab + d_her2_status_lab,
+            family = binomial(link = "logit"))
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# MODEL B - binary parity status in the model -------------------------------------
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+#summary(model)
+#logistic.display(model)
+
+tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level") %>% 
+  add_nevent() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+```
+
+::: {.callout-note style="color: green"}
+Trick on Tumour characteristics variables **SUCCESSFULL**
+:::
+
+## Conclusion of trick test
+
+Trick test on all 3 sets of variables was successful. This means that we can use the trick variables in the multivariate analysis.
+
+# Multivariate analysis
+
+August 2024 changes:
+
+Agreed to treat missing as a separate cateogry, which now allows us to fit these into the same model (won't present the OR for missing but will be part of the model).
+
+The main analysis now will include adjusting for risk factors and time variables + same model wit MD
+
+The main analysis is comprised of 2 parts: - now presented in the same table
+
+1.  Examining the relationship between risk factors and mode of detection
+2.  Adjusting for mammographic density in a subset of cases with density available
+
+## Part 1: Relationship between risk factors and mode of detection
+
+An analysis with all selected exposures in the model (adjusted for each other). Also, will need to adjust for time and age variables. Then, adjust for tumour characteristics and explore the difference. If there is no or minimal difference the model adjusted for tumour characteristics will be presented in the supplement.
+
+Therefore, part 1 of the multivariate analysis will include 3 models:
+
+1.  Minimally adjusted - including all risk factor exposures
+2.  +Adjusted for time variables
+3.  Fully adjusted - adding MD
+
+**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+
+**Model 2**: Model 1 + "diagage", "d_R1toBC_y", "yeardiag"
+
+**Model 3:** Model 2 + "d_md_qrt"
+
+**Model 4a**: Model 3 + "d_MDtoBC_y" (time from mammo to diagnosis)
+
+Model 4b: Model 3 + d_MDtoBC_lab (categorical)
+
+### Code
+
+```{r}
+#| warning: false
+
+
+# Model 1 -----------------------------------------------------------
+# include parity and meno trick variable instead of original variables
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab,
+            family = binomial(link = "logit"))
+
+# summary(model)
+#logistic.display(model)
+
+# # display result as a tidy model table with OR  
+#  tidy_model <- model %>% 
+#    tidy(exponentiate = TRUE, conf.int = TRUE) %>% 
+#    mutate(OR = estimate) %>% 
+#    select(-estimate) %>% 
+#    select(term, OR, everything())
+#  tidy_model 
+
+model1 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+ 
+ # model1
+ 
+ # Model 2 ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR  
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = estimate) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model2
+
+# Model 3  ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+# including "diagage", "d_R1toBC_y" - MD variables will be included in sub analysis
+
+ 
+ model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = estimate) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+ 
+model3 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model3
+
+# Model 4b ---------------------------------------------------------------------
+
+# changed to categorical MDtoBC
+
+ model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+
+#display result as a tidy model table with OR
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = round(estimate, 2),
+#          std.error = round(std.error, 2),
+#          p.value = round(p.value, 4),
+#          conf.low = round(conf.low)
+#          ) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+
+model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model4
+
+```
+
+```{r}
+allcases_table <- tbl_merge(
+  tbls = list(model1, model2, model3, model4),
+  tab_spanner = c("**Model 1**", "**Model 2**", "**Model 3**", "**Model 4**")
+   ) 
+
+allcases_table
+```
+
+::: callout-note
+## Note
+
+it is expected that Model 2 and Model 4 will be presented as Model 2 is fully adjusted for risk factors and variables that could affect the risk factors and Model 4 is adjusted for MD + time from md to diagnosis
+:::
+
+### Comparison with models from previous analysis
+
+Comparing the older version models where missing were dropped (complete case analysis)
+
+```         
+```
+
+```{r}
+
+# Model 2 - complete case ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+model <- df_cc %>%
+  select(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, yeardiag, d_dmode_n
+         )  %>% 
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR  
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = estimate) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model2_cc <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model2
+
+# Model 4 - complete case ---------------------------------------------------------------------
+
+# changed to categorical MDtoBC
+
+ model <- df_cc %>%
+  select(all_of(all_expl_variables_tr), diagage, d_R1toBC_y, yeardiag, d_dmode_n, d_md_qrt, d_MDtoBC_lab, d_md_avail
+         ) %>% 
+  filter(d_md_avail == 1
+         ) %>% 
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+
+#display result as a tidy model table with OR
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = round(estimate, 2),
+#          std.error = round(std.error, 2),
+#          p.value = round(p.value, 4),
+#          conf.low = round(conf.low)
+#          ) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+
+model4_cc <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model4
+
+```
+
+```{r}
+# comparison table 
+comp_table <- tbl_merge(
+  tbls = list(model2, model2_cc, model4, model4_cc),
+  tab_spanner = c("**Model 2**", "**Model 2 - complete case**", "**Model 4**", "**Model 4 - complete case**")
+   ) 
+
+comp_table
+
+```
+
+::: {.callout-note style="color: orange"}
+## Note on comparison with all-case analysis
+
+Model 2 (with missing) vs Model 2 (complete case)
+
+-   in general, effects in new Model 2 slightly weaker compared to complete case Model 2
+
+-   BMI for \<18.5 became significant with stronger effect
+
+Model 4 (with missing) vs Model 4 (complete case) - adjusted for MD
+
+-   after adjusting for MD (comparing with models 2), effect for age at menopause 55+ years has become statistically significant (although for model 4 witth missing lower CI = 1.00). The effect and strength of evidence was stronger in model 4 complete case analysis.
+
+-   similar findings for current HRT users
+
+-   compared to models 2, association with BBD became weaker after adjusting for MD in model 4 (with missing), although still significant. Complete case model 4 became non-significant for bbd.
+
+-   associations with family history became non-significant
+
+-   BMI for \<18.5 became stronger and was also statistically significant after adjusting for MD in Model 4 with missing. Effect was non-significant in complete case analysis model 4.
+
+-   Association with MD quartiles 3 and 4 became stronger in Model 4 with missing comapred to complete case
+
+-   
+:::
+
+## Part 2: Tumour characteristics only
+
+For internal purpose or supplemental materials.
+
+**Model 5**: TC only "d_inv_status", "d_grade_cat", "d_morph4", "d_pos_nodes_cat", "d_tumour_size", "d_er_status", "d_pr_status", "d_her2_status"
+
+**Model 6**: Model 2 + model 5
+
+**Model 7:** Model 3 + model 5
+
+### Code
+
+```{r}
+#| warning: false
+
+# Model 5 ------------------------------------------------------------------------
+
+# Adding TC trick variables
+ 
+model <- df %>%
+  glm(formula = d_dmode_n ~ 
+      d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+ 
+
+# display result as a tidy model table with OR
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = round(estimate, 2),
+ #          std.error = round(std.error, 2),
+ #          p.value = round(p.value, 4),
+ #          conf.low = round(conf.low)
+ #          ) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model5 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# Model 6 ------------------------------------------------------------------------
+ 
+model <- df %>%
+  glm(formula = d_dmode_n ~ 
+      d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+ 
+
+# display result as a tidy model table with OR
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = round(estimate, 2),
+ #          std.error = round(std.error, 2),
+ #          p.value = round(p.value, 4),
+ #          conf.low = round(conf.low)
+ #          ) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model6 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+# Model 7 -----------------------------------------------------------------------
+# excluding time from md to diagnosis
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+model7 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+
+```
+
+### Table
+
+This table is for internal purpose only.
+
+```{r}
+
+# combine results 
+
+
+tc_table <- tbl_merge(
+  tbls = list(model5, model6, model7),
+  tab_spanner = c("**Model 5**", "**Model 6**", "**Model 7**")
+   ) 
+
+
+tc_table
+```

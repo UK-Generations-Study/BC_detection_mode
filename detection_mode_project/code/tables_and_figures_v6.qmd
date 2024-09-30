@@ -23,6 +23,8 @@ execute:
 
 version 5 - Using data missing as a separate category in analysis
 
+version 6 - swapping HRT variable for HRT subtypes variable
+
 ```{r}
 #| include: false
 #| echo: false
@@ -74,7 +76,8 @@ all_expl_variables <- c(
                          # parity related risk factors
                         "d_R1menopause_lab3", 
                         "d_age_menopause_lab", 
-                        "d_R1hrtstatus_lab", 
+                        #"d_R1hrtstatus_lab", 
+                        "d_R1hrt_sttyp_lab",
                         "d_parity_lab", 
                         "d_agebirth1_lab",
                         "d_age_menarche_lab", 
@@ -92,7 +95,8 @@ all_expl_variables_tr <- c(
                             # parity related risk factors
                            "d_R1menopause_lab3", 
                            "d_age_meno_tr_lab", 
-                           "d_R1hrt_tr_lab", 
+                           #"d_R1hrt_tr_lab", 
+                           "d_R1hrt_sttyp_tr_lab",
                            "d_parity_lab",
                            "d_age_menarche_lab", 
                            "d_ocstatus_lab",
@@ -193,11 +197,9 @@ Figures 1 to 3 - comprised figure of plots describing mamographic density in rel
 
 (ST = Supplementary Table)
 
-ST 2 - risk factor descriptives by density (complementing figures 1 to 3)
+ST 1 - TC descriptives by detection mode with logistic regression results for TC only + full model RF adjusting for TC + fulll RFmodel adjusting for TC and density
 
-ST 3 - TC descriptives by detection mode with logistic regression results for TC only + full model adjusting for TC + adjusting for density
-
-Suplemntar Figure 1 - Forest plot of analysis adjusted vs unadjusted for mammographic density (full table in supplementary material - ST 2)
+ST 2 - difference in characteristics between those with and without mammographic density
 
 # Main tables
 
@@ -209,6 +211,7 @@ time from recruitement to diagnosis categorical or continuous?
 
 ```{r}
 #| echo: false
+#| include: false
 
 # create categorical for year of diagnosis
 #df %>% tabyl(yeardiag)
@@ -250,6 +253,144 @@ df %>%
 
 ```
 
+## Updated table 1
+
+by detection mode and with p-value from logistic regression model with tumour characteristics in the model (from supplementary table 1) + adjusted for time variables
+
+```{r}
+#| echo: false
+
+# compute regression model -----------------------------------
+# Adding TC trick variables
+ 
+model <- df %>%
+  glm(formula = d_dmode_n ~ 
+       diagage + AgeatEntry +  d_R1toBC_y + yeardiag_cat +
+      d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
+            family = binomial(link = "logit"))
+
+
+# tidy up output
+model_t1 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Positive nodes",
+                          d_tmsize_tr_lab ~ "Tumour size",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status",
+                          diagage ~ "Age at diagnosis",
+                           AgeatEntry ~ "Age at recruitment",
+                           d_R1toBC_y ~ "Time from recruitment to diagnosis",
+                          yeardiag_cat ~ "Year of diagnosis"
+                         )
+                         ) 
+
+#model_t1 
+# descriptives ------------------------------------
+
+# note: need to rename the non-trick variables according to their trick name to align with the model, which can then allow table merge. 
+
+# include missing 
+# create df
+  
+descr_t1_df <- df %>% 
+  select(d_dmode, all_of(tumour_char), diagage, d_R1toBC_y, AgeatEntry, yeardiag_cat
+         ) %>% 
+  mutate(d_grade_tr = d_grade_lab,
+         d_morph4_tr_lab = d_morph4_lab,
+         d_pos_nodes_tr_lab = d_pos_nodes_lab,
+         d_tmsize_tr_lab = d_tumour_size_lab,
+         d_er_tr_lab = d_er_status_lab,
+         d_pr_tr_lab = d_pr_status_lab,
+         d_her2_tr_lab = d_her2_status_lab
+         ) %>% 
+  select(-d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab)  
+  
+#str(descr_t1_df)
+
+
+# create gs summary table
+descr_t1 <- descr_t1_df %>% 
+  # reselect to ensure the correct order
+  select(d_dmode,
+         diagage,
+         AgeatEntry,
+         d_R1toBC_y,
+         yeardiag_cat,
+         d_inv_status, 
+         d_grade_tr, 
+         d_morph4_tr_lab, 
+         d_pos_nodes_tr_lab, 
+         d_tmsize_tr_lab, 
+         d_er_tr_lab, 
+         d_pr_tr_lab, 
+         d_her2_tr_lab, 
+) %>% 
+  tbl_summary(by = d_dmode,
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
+                ),
+              digits = all_continuous() ~ 2,
+              label = list(
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Positive nodes",
+                          d_tmsize_tr_lab ~ "Tumour size",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status",
+                          diagage ~ "Age at diagnosis",
+                           AgeatEntry ~ "Age at recruitment",
+                           d_R1toBC_y ~ "Time from recruitment to diagnosis",
+                          yeardiag_cat ~ "Year of diagnosis"
+                          
+                         )
+              ) 
+
+
+#descr_t1
+
+
+
+# join tables 
+
+# merge with analysis output -------------------------------------------------
+
+
+table1 <- tbl_merge(
+  tbls = list(descr_t1, model_t1),
+  tab_spanner = FALSE
+  )
+  
+#table1
+   
+# remove unwanted columns (effect and CI) ----------------------
+
+#show_header_names(table1) 
+
+
+table1 <- table1 %>% 
+  modify_column_hide(columns = c(estimate_2, ci_2)
+                     ) 
+#show_header_names(table1)
+
+
+table1 <- table1 %>%
+  modify_footnote(
+    p.value_2 ~ "p-value from logistic regression multivariate model of all listed variables"
+  )
+
+table1
+
+```
+
 ## Table 2 - Main analysis
 
 The main analysis is a logistic regression with multiple exposures (risk factors).
@@ -283,7 +424,7 @@ Because model 2 was selected as the default model, it is also used on the subana
 # Create clean version of logistic output, without Ns
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_tr_lab
+      + d_R1hrt_sttyp_tr_lab
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
@@ -308,7 +449,7 @@ model2 <- tbl_regression(model,
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth"
                          )
@@ -324,7 +465,7 @@ model2 <- tbl_regression(model,
 
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_tr_lab
+      + d_R1hrt_sttyp_tr_lab
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
@@ -348,9 +489,10 @@ model4 <- tbl_regression(model,
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
-                          d_agebirth1_tr_lab ~ "Age at first birth"
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_md_qrt ~ "Mammographic density (quartiles)"
                          )
                          ) %>% 
   #add_global_p() %>% 
@@ -360,7 +502,7 @@ model4 <- tbl_regression(model,
 
 
 # Create descriptives by mode of detection ------------------------------------
-# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
+# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_sttyp_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
 
 # note: need to rename the non-trick variables according to their trick name to align with the model, which can then allow table merge. 
 
@@ -368,16 +510,16 @@ model4 <- tbl_regression(model,
 # create df
   
 descr_tab2_df <- df %>% 
-  select(d_dmode, all_of(all_expl_variables), diagage, d_R1toBC_y 
+  select(d_dmode, all_of(all_expl_variables), diagage, d_R1toBC_y, d_md_qrt
          ) %>% 
   #tidyr::drop_na(all_of(all_expl_variables), diagage, d_R1toBC_y # filter out all missing to have the same n as in the model
   mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+")
               ) %>% 
   mutate(d_age_meno_tr_lab = d_age_menopause_lab,
-         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
+         d_R1hrt_sttyp_tr_lab = d_R1hrt_sttyp_lab,
          d_agebirth1_tr_lab = d_agebirth1_lab
          ) %>% 
-  select(-d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -diagage, -d_R1toBC_y)  
+  select(-d_age_menopause_lab, -d_R1hrt_sttyp_lab, -d_agebirth1_lab, -diagage, -d_R1toBC_y)  
   
   
 
@@ -386,6 +528,21 @@ descr_tab2_df <- df %>%
 
 # create gs summary table
 descr_tab2 <- descr_tab2_df %>% 
+  select(d_dmode,
+         d_age_menarche_lab,
+         d_R1menopause_lab3,
+         d_age_meno_tr_lab,
+         d_R1hrt_sttyp_tr_lab,
+         d_ocstatus_lab,
+         d_parity_lab,
+         d_agebirth1_tr_lab,
+         d_bbd_lab,
+         d_fambrca_lab,
+         d_bmi_entry_lab,
+         d_R1physmet_leis_who_lab,
+         d_R1alcohol_units_lab, 
+         d_R1smokingstatus_lab,
+         d_md_qrt) %>% 
   tbl_summary(by = d_dmode,
               statistic = list(
                 all_continuous() ~ "{mean} ({sd})",
@@ -403,9 +560,10 @@ descr_tab2 <- descr_tab2_df %>%
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
-                          d_agebirth1_tr_lab ~ "Age at first birth"
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_md_qrt ~ "Mammographic density (quartiles)"
                 ),
               type = list(d_bbd_lab ~ "categorical",
                           d_fambrca_lab ~ "categorical")
@@ -420,15 +578,17 @@ table2 <- tbl_merge(
   tbls = list(descr_tab2, model2, model4),
   tab_spanner = c("**Distribution by detection mode**", "**Model 2**", "**Model 4**")
    ) 
-   
-  
-   
+
+show_header_names(table2)
+
+table2 <- table2 %>% 
+  modify_footnote(
+    estimate_2 ~ "Model 2: Age at menarche, Menopause, Age at menopause, HRT status, Oral contraceptives status, N of parous pregnancies, Age at first birth, Benign breast disease, Family history of BC, BMI at entry, Leisure Physical Activity (MET-h/w), Alcohol units per week, Smoking status, Age at Diagnosis, Time from Recruitment to BC diagnosis, Year of diagnosis",
+    estimate_3 ~ "Model 4: Age at menarche, Menopause, Age at menopause, HRT status, Oral contraceptives status, N of parous pregnancies, Age at first birth, Benign breast disease, Family history of BC, BMI at entry, Leisure Physical Activity (MET-h/w), Alcohol units per week, Smoking status, Age at Diagnosis, Time from Recruitment to BC diagnosis, Year of diagnosis Percent Mammographic density (quartiles), Time from Mammographic density measurement to BRCA diagnosis."
+  )
 
 table2
 
-
-# this ID is extra in the LR output from model 2 - T276E210
-# this is because HRT status was missing as under 50 but it is present in trick hrt as recoded to never. - check what to do with this 
 ```
 
 # Main figures
@@ -707,9 +867,9 @@ plot3 <- md_df %>%
 
 # linear regression 
 lr <- md_df %>% 
- filter(d_R1hrtstatus_lab != "Missing") %>% 
-  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current")) %>% 
-  lm(d_md_sqrt ~ d_R1hrtstatus_lab, data = .
+ filter(d_R1hrt_sttyp_lab != "Missing") %>% 
+  mutate(d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT")) %>% 
+  lm(d_md_sqrt ~ d_R1hrt_sttyp_lab, data = .
      ) %>% tidy() 
 
 str(lr)
@@ -722,16 +882,25 @@ lr
 
 # pull p-values
 hrt_never_p <- lr %>% 
-  filter(term == "d_R1hrtstatus_labNever") %>% 
+  filter(term == "d_R1hrt_sttyp_labNever") %>% 
   pull(p_val1)
 
 
 hrt_former_p <- lr %>% 
-  filter(term == "d_R1hrtstatus_labFormer") %>% 
+  filter(term == "d_R1hrt_sttyp_labFormer") %>% 
   pull(p_val1)
 
-hrt_current_p <- lr %>% 
-  filter(term == "d_R1hrtstatus_labCurrent") %>% 
+
+hrt_current_e_p <- lr %>% 
+  filter(term == "d_R1hrt_sttyp_labCurrent: Estrogen only") %>% 
+  pull(p_val1)
+
+hrt_current_ep_p <- lr %>% 
+  filter(term == "d_R1hrt_sttyp_labCurrent: Estrogen and progestogen") %>% 
+  pull(p_val1)
+
+hrt_current_o_p <- lr %>% 
+  filter(term == "d_R1hrt_sttyp_labCurrent: Other HRT") %>% 
   pull(p_val1)
 
 
@@ -739,9 +908,9 @@ hrt_current_p <- lr %>%
 
 # HRT 
 plot4 <- md_df %>% 
-  filter(d_R1hrtstatus_lab != "Missing") %>% 
-  mutate(d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current")) %>% 
-  ggplot(aes(x = d_R1hrtstatus_lab, y = d_md, fill = d_R1hrtstatus_lab)) +
+  filter(d_R1hrt_sttyp_lab != "Missing") %>% 
+  mutate(d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT")) %>% 
+  ggplot(aes(x = d_R1hrt_sttyp_lab, y = d_md, fill = d_R1hrt_sttyp_lab)) +
   geom_violin(alpha = 0.4) +
   geom_boxplot(width = 0.1)+
   ylim(0, 100) +
@@ -766,11 +935,25 @@ plot4 <- md_df %>%
   annotate("text",
            x = 3,
            y = 90,
-           label = paste("p =", hrt_current_p),
+           label = paste("p =", hrt_current_e_p),
            col = "black",
-           size = 3.5) 
+           size = 3.5) +
+  annotate("text",
+           x = 4,
+           y = 90,
+           label = paste("p =", hrt_current_ep_p),
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 5,
+           y = 90,
+           label = paste("p =", hrt_current_o_p),
+           col = "black",
+           size = 3.5) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+  
 
-#plot4
+plot4
 ```
 
 ```{r}
@@ -1500,7 +1683,7 @@ plot list: plot 1 - detection mode plot 2 - Meno status plot 3 - age meno plot 4
 #| echo: false
 
 # reproductive factors
-reproductive_plots <- (plot3 + plot4 + plot8) / (plot5 + plot6 + plot7) 
+reproductive_plots <- (plot5 + plot6 + plot7) / (plot3 + plot4 + plot8)
 reproductive_plots
 
 ```
@@ -1710,7 +1893,8 @@ tplot3 <- md_df %>%
            y = 90,
            label = paste("p =", morph_other_p),
            col = "black",
-           size = 3.5)
+           size = 3.5) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
 
 #tplot3
 ```
@@ -2011,7 +2195,7 @@ tplot8 <- md_df %>%
 #| echo: false
 
 # composite plot
-tcomposite_plot <- tplot1 + tplot2 + tplot3 + tplot4 + tplot5 + tplot6 + tplot7 + tplot8 + plot1 + plot_layout(ncol = 3)
+tcomposite_plot <-plot1 + tplot1 + tplot2 + tplot4 + tplot5 + tplot6 + tplot7 + tplot8 + tplot3 + plot_layout(ncol = 3)
 
 tcomposite_plot
 
@@ -2072,7 +2256,7 @@ model5 <- tbl_regression(model,
 model <- df %>%
   glm(formula = d_dmode_n ~ 
       d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_tr_lab
+      + d_R1hrt_sttyp_tr_lab
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
@@ -2104,7 +2288,7 @@ model6 <- tbl_regression(model,
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth"
                          )
@@ -2124,7 +2308,7 @@ model6 <- tbl_regression(model,
 
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_tr_lab
+      + d_R1hrt_sttyp_tr_lab
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
@@ -2157,7 +2341,7 @@ model7 <- tbl_regression(model,
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth",
                           d_md_qrt ~ "Mammographic density"
@@ -2187,10 +2371,10 @@ descr_tc_df <- df %>%
          d_pr_tr_lab = d_pr_status_lab,
          d_her2_tr_lab = d_her2_status_lab,
          d_age_meno_tr_lab = d_age_menopause_lab,
-         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
+         d_R1hrt_sttyp_tr_lab = d_R1hrt_sttyp_lab,
          d_agebirth1_tr_lab = d_agebirth1_lab
          ) %>% 
-  select(-d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab, -diagage, -d_R1toBC_y, -d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab)  
+  select(-d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab, -diagage, -d_R1toBC_y, -d_age_menopause_lab, -d_R1hrt_sttyp_lab, -d_agebirth1_lab)  
   
 
 
@@ -2198,8 +2382,6 @@ descr_tc_df <- df %>%
 # str(test)
 
 
-
-# RESUME HERE - add select for variables and order accordingly
 
 # create gs summary table
 descr_tc <- descr_tc_df %>% 
@@ -2216,7 +2398,7 @@ descr_tc <- descr_tc_df %>%
          d_age_menarche_lab,
          d_R1menopause_lab3,
          d_age_meno_tr_lab,
-         d_R1hrt_tr_lab,
+         d_R1hrt_sttyp_tr_lab,
          d_ocstatus_lab,
          d_parity_lab,
          d_agebirth1_tr_lab,
@@ -2252,7 +2434,7 @@ descr_tc <- descr_tc_df %>%
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_tr_lab ~ "HRT status",
+                          d_R1hrt_sttyp_tr_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_tr_lab ~ "Age at first birth",
                           d_md_qrt ~ "Mammographic density"
@@ -2316,7 +2498,7 @@ ST2 <- df %>%
                           d_ocstatus_lab ~ "Oral contraceptives status",
                           d_R1menopause_lab3 ~ "Menopause",
                           d_age_menopause_lab ~ "Age at menopause",
-                          d_R1hrtstatus_lab ~ "HRT status",
+                          d_R1hrt_sttyp_lab ~ "HRT status",
                           d_parity_lab ~ "N of parous pregnancies",
                           d_agebirth1_lab ~ "Age at first birth",
                           d_inv_status ~ "Invasive status",
