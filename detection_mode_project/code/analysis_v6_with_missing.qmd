@@ -110,7 +110,7 @@ all_expl_variables_tr <- c(
                             # parity related risk factors
                            "d_R1menopause_lab3", 
                            "d_age_meno_tr_lab", 
-                           "d_R1hrt_sttyp_tr_lab",
+                           "d_R1hrt_tr_lab",
                            "d_R1hrt_sttyp_tr_lab",
                            "d_parity_lab",
                            "d_age_menarche_lab", 
