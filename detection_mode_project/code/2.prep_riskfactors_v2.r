@@ -413,3 +413,8 @@ riskfactors_df <- riskfactors_df %>%
   mutate(tcode = x_tcode,
          date_birth = x_dob_shifted,
          date_entry = x_date_entry_shifted)
+
+
+# str(riskfactors_df)
+# names(riskfactors_df)
+# riskfactors_df %>% tabyl(x_breastfed)
