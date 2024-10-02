@@ -792,7 +792,16 @@ dev_an_df %>% tabyl(d_bmi_entry)
 #   )
 # hist(dev_an_df$d_bmi_entry)
 
+# per 5 kg/m2 continuous: 
+dev_an_df <- dev_an_df %>%
+  mutate(d_bmi_entry_per5 = case_when(bodysizebminow == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+                                 is.na(bodysizebminow) ~ NA, # recode missing NAs to 888 (no NAs)
+                                 bodysizebminow < 13.5 | bodysizebminow > 60 ~ NA, # extreme value
+                                 TRUE ~ bodysizebminow),
+         d_bmi_entry_per5 = d_bmi_entry_per5 / 5 # divide by 5
+  )
 
+#View(dev_an_df[,c("d_bmi_entry_per5", "d_bmi_entry")])
 
 # categorical prep
 dev_an_df <- dev_an_df %>% 
@@ -837,6 +846,18 @@ dev_an_df %>% tabyl(d_bmi_20)
 #                               TRUE ~ bodysizebmi20)
 #   )
 # hist(dev_an_df$d_bmi_20)
+
+
+# per 5 kg/m2 continuous: 
+dev_an_df <- dev_an_df %>%
+  mutate(d_bmi_20_per5 = case_when(bodysizebmi20 == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+                                      is.na(bodysizebmi20) ~ NA, # recode missing NAs to 888 (no NAs)
+                                      bodysizebmi20 < 13.5 | bodysizebmi20 > 60 ~ NA, # extreme value
+                                      TRUE ~ bodysizebmi20),
+         d_bmi_20_per5 = d_bmi_20_per5 / 5 # divide by 5
+  )
+
+#View(dev_an_df[,c("d_bmi_20_per5", "d_bmi_20")])
 
 
 # categorical prep
@@ -1593,7 +1614,7 @@ str(dev_an_df$d_md)
 dev_an_df <- dev_an_df %>% 
   mutate(d_md10 = d_md/10)
 
-View(dev_an_df[,c("d_md10", "d_md")])
+#View(dev_an_df[,c("d_md10", "d_md")])
 
 
 ### quartiles --------------------------------------------------------------------
