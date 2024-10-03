@@ -1518,10 +1518,24 @@ str(dev_an_df$x_breastfed)
 
 dev_an_df <- dev_an_df %>% 
   mutate(d_breastfed = x_breastfed,
-         d_breastfed_lab = factor(x = d_breastfed,
+         d_breastfed_lab = case_when(d_parous_lab == "Not parous" ~ "Missing",
+                                     TRUE ~ d_breastfed),
+         d_breastfed_lab = factor(x = d_breastfed_lab,
+                                  levels = c("No", "Yes", "Missing"))
+           )
+
+dev_an_df %>% tabyl(d_breastfed_lab, d_breastfed)
+
+### Ever breast fed - trick ---------------------------------------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_breastfed = x_breastfed,
+         d_breastfed_tr_lab = factor(x = d_breastfed,
                                   levels = c("No", "Yes")))
 
 dev_an_df %>% tabyl(d_breastfed_lab, d_breastfed)
+
+
 
 ### Duration of breastfeeding -----------------------------------------------------
 # cut off at entry so baseline
@@ -1538,6 +1552,53 @@ dev_an_df <- dev_an_df %>%
 summary(dev_an_df$d_bf_duration)
 
 
+### Duration of breastfeeding - categorical ---------------------------------------
+
+# never breastfed are only parous here and nulliparous are a separate category
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_cat = case_when(d_parous_lab == "Not parous" ~ 5,
+                                  d_bf_duration == 0 ~ 0,
+                                  d_bf_duration > 0 & d_bf_duration < 26 ~ 1,
+                                  d_bf_duration >= 26 & d_bf_duration < 52 ~ 2,
+                                  d_bf_duration >= 52 & d_bf_duration < 104 ~ 3,
+                                  d_bf_duration >= 104 ~ 4,
+                                  TRUE ~ NA),
+         d_bf_dur_lab = factor(d_bf_dur_cat,
+                               levels = 0:5,
+                               labels = c("Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months", "Missing"))
+         )
+
+dev_an_df %>% tabyl(d_bf_dur_cat, d_bf_dur_lab)
+dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_lab)
+
+### Duration of breastfeeding - categorical - trick ---------------------------------------
+
+# never breastfed here are both nulliparous and parous
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_tr_cat = case_when(d_bf_duration == 0 ~ 0,
+                                  d_bf_duration > 0 & d_bf_duration < 26 ~ 1,
+                                  d_bf_duration >= 26 & d_bf_duration < 52 ~ 2,
+                                  d_bf_duration >= 52 & d_bf_duration < 104 ~ 3,
+                                  d_bf_duration >= 104 ~ 4,
+                                  TRUE ~ NA),
+         d_bf_dur_tr_lab = factor(d_bf_dur_tr_cat,
+                               levels = 0:4,
+                               labels = c("Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months"))
+  )
+
+dev_an_df %>% tabyl(d_bf_dur_tr_cat, d_bf_dur_tr_lab)
+dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_tr_lab)
+
+
+### Duration of breastfeeding - continuous per month ---------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_month = d_bf_duration / 4.33)
+
+summary(dev_an_df$d_bf_dur_month)
+#View(dev_an_df[,c("d_bf_duration", "d_bf_dur_month")])
+dev_an_df %>% tabyl(d_bf_dur_month, d_bf_dur_lab)
+
 
 
 # breastfeeding logic checks:
@@ -1548,6 +1609,8 @@ dev_an_df %>% tabyl(d_bf_duration, d_parity_lab)
 
 # check breastfeeding duration against ever breastfed 
 dev_an_df %>% tabyl(d_bf_duration, d_breastfed)
+
+
 
 ### SES -------------------------------------------------------------
 # categories: Affluent achievers, rising prosperity, comfortable communities, 

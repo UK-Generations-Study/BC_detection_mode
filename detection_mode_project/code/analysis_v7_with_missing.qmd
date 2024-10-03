@@ -841,6 +841,8 @@ df %>% tabyl(d_agebirth1_lab, d_parity_lab) %>%
 
 df %>%  tabyl(d_parous_lab, d_parity_lab)
 
+df %>%  tabyl(d_breastfed_lab, d_parity_lab)
+
 ## number of parous pregnancies
 # df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
 #   adorn_title()
@@ -851,7 +853,7 @@ df %>%  tabyl(d_parous_lab, d_parity_lab)
 
 model <- df %>% 
  filter(d_parity_lab != "0") %>%
-  glm(formula = d_dmode_n ~ d_agebirth1_lab,
+  glm(formula = d_dmode_n ~ d_agebirth1_lab + d_bf_dur_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -867,7 +869,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
 # MODEL B - binary parity status in the model -------------------------------------
 
 model <- df %>%
-  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab,
+  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab + d_bf_dur_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -1115,7 +1117,7 @@ Model 4b: Model 3 + d_MDtoBC_lab (categorical)
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab,
@@ -1147,7 +1149,7 @@ model1 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1183,7 +1185,7 @@ model2 <- tbl_regression(model, exponentiate = TRUE) %>%
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1218,7 +1220,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1285,7 +1287,7 @@ model <- df_cc %>%
          )  %>% 
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1323,7 +1325,7 @@ model2_cc <- tbl_regression(model, exponentiate = TRUE) %>%
          ) %>% 
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1449,7 +1451,7 @@ model <- df %>%
   glm(formula = d_dmode_n ~ 
       d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -1487,7 +1489,7 @@ model6 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
