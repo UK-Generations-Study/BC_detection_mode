@@ -802,6 +802,7 @@ dev_an_df <- dev_an_df %>%
   )
 
 #View(dev_an_df[,c("d_bmi_entry_per5", "d_bmi_entry")])
+dev_an_df %>% tabyl(d_bmi_entry_per5)
 
 # categorical prep
 dev_an_df <- dev_an_df %>% 
@@ -858,7 +859,7 @@ dev_an_df <- dev_an_df %>%
   )
 
 #View(dev_an_df[,c("d_bmi_20_per5", "d_bmi_20")])
-
+dev_an_df %>% tabyl(d_bmi_20_per5)
 
 # categorical prep
 dev_an_df <- dev_an_df %>% 
@@ -1055,8 +1056,12 @@ dev_an_df <- dev_an_df %>%
   )
 
 
+# age meno for continuous analysis: 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_meno_cont = if_else(d_age_menopause %in% c(777, 999, 888), NA, d_age_menopause))
 
 dev_an_df %>% tabyl(d_age_menopause)
+dev_an_df %>% tabyl(d_age_meno_cont)
 dev_an_df %>% tabyl(d_age_menopause, d_R1menopause_lab6)
 dev_an_df %>% tabyl(d_age_menopause_lab)
 dev_an_df %>% tabyl(d_age_menopause_cat)
@@ -1429,6 +1434,9 @@ dev_an_df <- dev_an_df %>%
          )
   )
 
+
+
+
 dev_an_df %>% tabyl(d_parity)
 dev_an_df %>% tabyl(d_parity_cat)
 dev_an_df %>% tabyl(d_parity_lab)
@@ -1482,8 +1490,12 @@ dev_an_df %>% tabyl(d_agebirth1_cat, d_agebirth1_lab)
 dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
 
 
+# age at first birth for continuous analysis: 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_agebirth1_cont = if_else(x_age_birth_1 %in% c(777, 888), NA, x_age_birth_1))
 
-
+dev_an_df %>% tabyl(d_agebirth1_cont)
+dev_an_df %>% tabyl(x_age_birth_1)
 
 ### Age at first birth - trick -------------------------------------------
 # recode all non parous to be in the lowest age group 
@@ -1592,6 +1604,7 @@ dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_tr_lab)
 
 ### Duration of breastfeeding - continuous per month ---------------------------
 
+# code as missing if not parous
 dev_an_df <- dev_an_df %>% 
   mutate(d_bf_dur_month = d_bf_duration / 4.33)
 
@@ -1610,7 +1623,7 @@ dev_an_df %>% tabyl(d_bf_duration, d_parity_lab)
 # check breastfeeding duration against ever breastfed 
 dev_an_df %>% tabyl(d_bf_duration, d_breastfed)
 
-
+dev_an_df %>% tabyl(d_bf_duration)
 
 ### SES -------------------------------------------------------------
 # categories: Affluent achievers, rising prosperity, comfortable communities, 

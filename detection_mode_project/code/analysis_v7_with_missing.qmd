@@ -1085,6 +1085,12 @@ The main analysis is comprised of 2 parts: - now presented in the same table
 1.  Examining the relationship between risk factors and mode of detection
 2.  Adjusting for mammographic density in a subset of cases with density available
 
+02/10/2024 update:
+
+Agreed model quantitative variables as continous in a separate model to get p-value for trend
+
+this will be incorporated to the same main results table, which will be simplified and also have accompanying forest plot
+
 ## Part 1: Relationship between risk factors and mode of detection
 
 An analysis with all selected exposures in the model (adjusted for each other). Also, will need to adjust for time and age variables. Then, adjust for tumour characteristics and explore the difference. If there is no or minimal difference the model adjusted for tumour characteristics will be presented in the supplement.
@@ -1095,7 +1101,13 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 2.  +Adjusted for time variables
 3.  Fully adjusted - adding MD
 
-**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+25/09/2024 - agreed to swap hrt status for variable with subtypes of current HRT
+
+03/10/2024 - adding breastfeeding and BMI age 20 to the models, changed OC status to never/ever
+
+-HRT subtype variable to be used in detailed main analysis table for drafting and possibly appendix but for main analysis to use simple variable (this will be swaped in the tables and figures file as this file is for internal use only and contains more detail)
+
+**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parity_cat", "d_agebirth1_cat", breastfeeding duration, bmi age 20
 
 **Model 2**: Model 1 + "diagage", "d_R1toBC_y", "yeardiag"
 
@@ -1120,7 +1132,7 @@ model <- df %>%
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab,
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab,
             family = binomial(link = "logit"))
 
 # summary(model)
@@ -1152,7 +1164,7 @@ model <- df %>%
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag,
             family = binomial(link = "logit"))
 
@@ -1188,7 +1200,7 @@ model2 <- tbl_regression(model, exponentiate = TRUE) %>%
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt,
             family = binomial(link = "logit"))
@@ -1213,7 +1225,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 #model3
 
-# Model 4b ---------------------------------------------------------------------
+# Model 4 ---------------------------------------------------------------------
 
 # changed to categorical MDtoBC
 
@@ -1223,7 +1235,7 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab,
             family = binomial(link = "logit"))
@@ -1396,6 +1408,121 @@ Model 4 (with missing) vs Model 4 (complete case) - adjusted for MD
 
 -   
 :::
+
+### Model with continuous variables
+
+Models 2 and 4 using continuous variables for quantitative variables
+
+Continuous variables:
+
+-   age of menopause (602 missing)
+
+-   parity (0 missing)
+
+-   age at first birth (265 missing),
+
+-   age at menarche (180 missing),
+
+-   alcohol units (0 missing),
+
+-   bmi at entry (21 missing),
+
+-   physical activity (14 missing),
+
+-   bmi age 20 (345 missing),
+
+-   breastfeeding duration (258 missing),
+
+-   density (749 missing)
+
+```{r}
+
+# first check number of missing in these variables
+
+df %>% tabyl(d_age_menopause_lab)
+an_df %>% tabyl(d_age_menopause) ## 602 missing
+an_df %>% tabyl(d_parity) # no missing
+an_df %>% tabyl(d_age)
+
+# Model 2 cont ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+# display result as a tidy model table with OR  
+ # tidy_model <- model %>%
+ #   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+ #   mutate(OR = estimate) %>%
+ #   select(-estimate) %>%
+ #   select(term, OR, everything())
+ # tidy_model
+
+model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model2
+
+# Model 4 cont ---------------------------------------------------------------------
+
+# changed to categorical MDtoBC
+
+ model <- df %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+      + d_R1hrt_sttyp_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+# summary(model)
+# logistic.display(model)
+
+
+#display result as a tidy model table with OR
+# tidy_model <- model %>%
+#   tidy(exponentiate = TRUE, conf.int = TRUE) %>%
+#   mutate(OR = round(estimate, 2),
+#          std.error = round(std.error, 2),
+#          p.value = round(p.value, 4),
+#          conf.low = round(conf.low)
+#          ) %>%
+#   select(-estimate) %>%
+#   select(term, OR, everything())
+# tidy_model
+
+model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
+  add_n(location = "level")  %>% 
+  add_nevent(location = "level") %>% 
+  #add_global_p() %>% 
+  modify_header(stat_nevent = "**Interval N**",
+                stat_n = "**Total N**")
+
+#model4
+```
+
+compare with categorical model 2 and 4
+
+```{r}
+
+```
 
 ## Part 2: Tumour characteristics only
 
