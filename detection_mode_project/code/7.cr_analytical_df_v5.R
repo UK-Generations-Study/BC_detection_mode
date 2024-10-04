@@ -1606,12 +1606,13 @@ dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_tr_lab)
 
 # code as missing if not parous
 dev_an_df <- dev_an_df %>% 
-  mutate(d_bf_dur_month = d_bf_duration / 4.33)
+  mutate(d_bf_dur_month = if_else(d_parous_lab == "Not parous", NA, d_bf_duration / 4.33))
 
 summary(dev_an_df$d_bf_dur_month)
 #View(dev_an_df[,c("d_bf_duration", "d_bf_dur_month")])
 dev_an_df %>% tabyl(d_bf_dur_month, d_bf_dur_lab)
 
+dev_an_df %>% tabyl(d_bf_dur_month)
 
 
 # breastfeeding logic checks:
