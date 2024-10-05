@@ -989,7 +989,8 @@ model <- df %>%
 
 
 tidy_model6 <- model %>%
-   tidy(exponentiate = FALSE, conf.int = TRUE) 
+   tidy(exponentiate = FALSE, conf.int = TRUE) %>% 
+  
 
 
 tidy_model6
