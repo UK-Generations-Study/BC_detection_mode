@@ -49,7 +49,7 @@ density_vars <- mean_density_df %>%
 rf_vars <- riskfactors_df %>% 
   select(tcode, R1alcoholstatus, alcoholstartage, alcoholstopage, R1alcoholunits,
          brbendis, fambrca, fambrcaN,
-         bodysizebminow,
+         bodysizebminow, bodysizebmi20,
          hrtstatus, hrtprep,
          R1menopause, meno_age_est,
          menarcheage, ocstatus,
@@ -783,6 +783,27 @@ dev_an_df <- dev_an_df %>%
 
 dev_an_df %>% tabyl(d_bmi_entry)
 
+# to check histogram
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_bmi_entry = case_when(bodysizebminow == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+#                                  is.na(bodysizebminow) ~ NA, # recode missing NAs to 888 (no NAs)
+#                                  bodysizebminow < 13.5 | bodysizebminow > 60 ~ NA, # extreme value
+#                                  TRUE ~ bodysizebminow)
+#   )
+# hist(dev_an_df$d_bmi_entry)
+
+# per 5 kg/m2 continuous: 
+dev_an_df <- dev_an_df %>%
+  mutate(d_bmi_entry_per5 = case_when(bodysizebminow == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+                                 is.na(bodysizebminow) ~ NA, # recode missing NAs to 888 (no NAs)
+                                 bodysizebminow < 13.5 | bodysizebminow > 60 ~ NA, # extreme value
+                                 TRUE ~ bodysizebminow),
+         d_bmi_entry_per5 = d_bmi_entry_per5 / 5 # divide by 5
+  )
+
+#View(dev_an_df[,c("d_bmi_entry_per5", "d_bmi_entry")])
+dev_an_df %>% tabyl(d_bmi_entry_per5)
+
 # categorical prep
 dev_an_df <- dev_an_df %>% 
   mutate(d_bmi_entry_cat = as.factor(case_when(d_bmi_entry < 18.5 ~ 1, # < 18.5
@@ -801,6 +822,69 @@ dev_an_df <- dev_an_df %>%
 dev_an_df %>% tabyl(d_bmi_entry_cat)
 check <- dev_an_df %>% tabyl(d_bmi_entry, d_bmi_entry_cat)
 dev_an_df %>% tabyl(d_bmi_entry_cat, d_bmi_entry_lab)
+
+
+### BMI at age 20 -------------------------------------------------------------
+
+dev_an_df %>% tabyl(bodysizebmi20)
+str(dev_an_df$bodysizebmi20)
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bmi_20 = case_when(bodysizebmi20 == 999 ~ 888, # recode 999 to 888 for consistency with other variables
+                                 is.na(bodysizebmi20) ~ 888, # recode missing NAs to 888 (no NAs)
+                                 bodysizebmi20 < 13.5 | bodysizebmi20 > 60 ~ 989, # extreme value
+                                 TRUE ~ bodysizebmi20)
+  )
+
+dev_an_df %>% tabyl(d_bmi_20)
+
+
+# to check histogram
+# dev_an_df <- dev_an_df %>% 
+#   mutate(d_bmi_20 = case_when(bodysizebmi20 == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+#                               is.na(bodysizebmi20) ~ NA, # recode missing NAs to 888 (no NAs)
+#                               bodysizebmi20 < 13.5 | bodysizebmi20 > 60 ~ NA, # extreme value
+#                               TRUE ~ bodysizebmi20)
+#   )
+# hist(dev_an_df$d_bmi_20)
+
+
+# per 5 kg/m2 continuous: 
+dev_an_df <- dev_an_df %>%
+  mutate(d_bmi_20_per5 = case_when(bodysizebmi20 == 999 ~ NA, # recode 999 to 888 for consistency with other variables
+                                      is.na(bodysizebmi20) ~ NA, # recode missing NAs to 888 (no NAs)
+                                      bodysizebmi20 < 13.5 | bodysizebmi20 > 60 ~ NA, # extreme value
+                                      TRUE ~ bodysizebmi20),
+         d_bmi_20_per5 = d_bmi_20_per5 / 5 # divide by 5
+  )
+
+#View(dev_an_df[,c("d_bmi_20_per5", "d_bmi_20")])
+dev_an_df %>% tabyl(d_bmi_20_per5)
+
+# categorical prep
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bmi_20_cat = as.factor(case_when(d_bmi_20 < 18.5 ~ 1, # < 18.5
+                                               d_bmi_20 >= 18.5 & d_bmi_20 < 25 ~ 2, # 18.5 to 25
+                                               d_bmi_20 >= 25 & d_bmi_20 < 30 ~ 3, # 25 to 30
+                                               d_bmi_20 >= 30 & d_bmi_20 < 888 ~ 4, # >= 30
+                                               d_bmi_20 %in% c(888, 989) ~ NA, # not known
+                                               TRUE ~ NA
+  )),
+  d_bmi_20_cat = fct_relevel(d_bmi_20_cat, "1", "2", "3", "4"),
+  d_bmi_20_lab = factor(x = d_bmi_20_cat,
+                           levels = c(1, 2, 3, 4),
+                           labels = c("<18.5", "18.5-25", "25-30", "30+"))
+  )
+
+dev_an_df %>% tabyl(d_bmi_20_cat)
+check <- dev_an_df %>% tabyl(d_bmi_20, d_bmi_20_cat)
+dev_an_df %>% tabyl(d_bmi_20_cat, d_bmi_20_lab)
+
+
+dev_an_df %>% tabyl(d_bmi_20_lab)
+dev_an_df %>% tabyl(d_bmi_entry_lab)
+
+
 
 ### Number of relatives with BC -----------------------------------
 # categories: 0, 1, >2
@@ -972,8 +1056,12 @@ dev_an_df <- dev_an_df %>%
   )
 
 
+# age meno for continuous analysis: 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_age_meno_cont = if_else(d_age_menopause %in% c(777, 999, 888), NA, d_age_menopause))
 
 dev_an_df %>% tabyl(d_age_menopause)
+dev_an_df %>% tabyl(d_age_meno_cont)
 dev_an_df %>% tabyl(d_age_menopause, d_R1menopause_lab6)
 dev_an_df %>% tabyl(d_age_menopause_lab)
 dev_an_df %>% tabyl(d_age_menopause_cat)
@@ -1123,7 +1211,18 @@ dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab, ocstatus)
 dev_an_df %>% tabyl(d_ocstatus_lab, d_ocstatus_cat)
 
+# create categories: ever, never 
 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_ocstatus2 = if_else(d_ocstatus %in% c(1, 2), 1, d_ocstatus),
+         d_ocstatus2_lab = factor(x = d_ocstatus2,
+                                  levels = c(0, 1),
+                                  labels = c("No", "Yes")
+                                  )
+         )
+
+dev_an_df %>% tabyl(d_ocstatus2, d_ocstatus_cat)
+dev_an_df %>% tabyl(d_ocstatus2_lab, d_ocstatus_lab)
 
 ### Physical activity total --------------------------------------------------
 
@@ -1335,6 +1434,9 @@ dev_an_df <- dev_an_df %>%
          )
   )
 
+
+
+
 dev_an_df %>% tabyl(d_parity)
 dev_an_df %>% tabyl(d_parity_cat)
 dev_an_df %>% tabyl(d_parity_lab)
@@ -1388,8 +1490,12 @@ dev_an_df %>% tabyl(d_agebirth1_cat, d_agebirth1_lab)
 dev_an_df %>% tabyl(x_age_birth_1, d_agebirth1_cat)
 
 
+# age at first birth for continuous analysis: 
+dev_an_df <- dev_an_df %>% 
+  mutate(d_agebirth1_cont = if_else(x_age_birth_1 %in% c(777, 888), NA, x_age_birth_1))
 
-
+dev_an_df %>% tabyl(d_agebirth1_cont)
+dev_an_df %>% tabyl(x_age_birth_1)
 
 ### Age at first birth - trick -------------------------------------------
 # recode all non parous to be in the lowest age group 
@@ -1423,7 +1529,23 @@ str(dev_an_df$x_breastfed)
 # rename for consistency with analytical variables:
 
 dev_an_df <- dev_an_df %>% 
-  mutate(d_breastfed = x_breastfed)
+  mutate(d_breastfed = x_breastfed,
+         d_breastfed_lab = case_when(d_parous_lab == "Not parous" ~ "Missing",
+                                     TRUE ~ d_breastfed),
+         d_breastfed_lab = factor(x = d_breastfed_lab,
+                                  levels = c("No", "Yes", "Missing"))
+           )
+
+dev_an_df %>% tabyl(d_breastfed_lab, d_breastfed)
+
+### Ever breast fed - trick ---------------------------------------------------------
+
+dev_an_df <- dev_an_df %>% 
+  mutate(d_breastfed = x_breastfed,
+         d_breastfed_tr_lab = factor(x = d_breastfed,
+                                  levels = c("No", "Yes")))
+
+dev_an_df %>% tabyl(d_breastfed_lab, d_breastfed)
 
 
 
@@ -1431,6 +1553,7 @@ dev_an_df <- dev_an_df %>%
 # cut off at entry so baseline
 # Cumulative duration of breastfeeding weeks for all parous (>=26 weeks) pregnancies (calculated up to entry date)
 # Note - derived in script 2 in parity processing functions 
+# in weeks
 
 dev_an_df %>% tabyl(x_breastfeeding_duration)
 str(dev_an_df$x_breastfeeding_duration)
@@ -1438,6 +1561,70 @@ str(dev_an_df$x_breastfeeding_duration)
 dev_an_df <- dev_an_df %>% 
   mutate(d_bf_duration = x_breastfeeding_duration)
 
+summary(dev_an_df$d_bf_duration)
+
+
+### Duration of breastfeeding - categorical ---------------------------------------
+
+# never breastfed are only parous here and nulliparous are a separate category
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_cat = case_when(d_parous_lab == "Not parous" ~ 5,
+                                  d_bf_duration == 0 ~ 0,
+                                  d_bf_duration > 0 & d_bf_duration < 26 ~ 1,
+                                  d_bf_duration >= 26 & d_bf_duration < 52 ~ 2,
+                                  d_bf_duration >= 52 & d_bf_duration < 104 ~ 3,
+                                  d_bf_duration >= 104 ~ 4,
+                                  TRUE ~ NA),
+         d_bf_dur_lab = factor(d_bf_dur_cat,
+                               levels = 0:5,
+                               labels = c("Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months", "Missing"))
+         )
+
+dev_an_df %>% tabyl(d_bf_dur_cat, d_bf_dur_lab)
+dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_lab)
+
+### Duration of breastfeeding - categorical - trick ---------------------------------------
+
+# never breastfed here are both nulliparous and parous
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_tr_cat = case_when(d_bf_duration == 0 ~ 0,
+                                  d_bf_duration > 0 & d_bf_duration < 26 ~ 1,
+                                  d_bf_duration >= 26 & d_bf_duration < 52 ~ 2,
+                                  d_bf_duration >= 52 & d_bf_duration < 104 ~ 3,
+                                  d_bf_duration >= 104 ~ 4,
+                                  TRUE ~ NA),
+         d_bf_dur_tr_lab = factor(d_bf_dur_tr_cat,
+                               levels = 0:4,
+                               labels = c("Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months"))
+  )
+
+dev_an_df %>% tabyl(d_bf_dur_tr_cat, d_bf_dur_tr_lab)
+dev_an_df %>% tabyl(d_bf_duration, d_bf_dur_tr_lab)
+
+
+### Duration of breastfeeding - continuous per month ---------------------------
+
+# code as missing if not parous
+dev_an_df <- dev_an_df %>% 
+  mutate(d_bf_dur_month = if_else(d_parous_lab == "Not parous", NA, d_bf_duration / 4.33))
+
+summary(dev_an_df$d_bf_dur_month)
+#View(dev_an_df[,c("d_bf_duration", "d_bf_dur_month")])
+dev_an_df %>% tabyl(d_bf_dur_month, d_bf_dur_lab)
+
+dev_an_df %>% tabyl(d_bf_dur_month)
+
+
+# breastfeeding logic checks:
+
+# check parity against breasfeeding 
+dev_an_df %>% tabyl(d_parity_lab, d_breastfed)
+dev_an_df %>% tabyl(d_bf_duration, d_parity_lab)
+
+# check breastfeeding duration against ever breastfed 
+dev_an_df %>% tabyl(d_bf_duration, d_breastfed)
+
+dev_an_df %>% tabyl(d_bf_duration)
 
 ### SES -------------------------------------------------------------
 # categories: Affluent achievers, rising prosperity, comfortable communities, 
@@ -1504,7 +1691,7 @@ str(dev_an_df$d_md)
 dev_an_df <- dev_an_df %>% 
   mutate(d_md10 = d_md/10)
 
-View(dev_an_df[,c("d_md10", "d_md")])
+#View(dev_an_df[,c("d_md10", "d_md")])
 
 
 ### quartiles --------------------------------------------------------------------
