@@ -90,12 +90,16 @@ Mammographic density is a special variable that will be used for subanalyses on 
 all_expl_variables <- c(
                          # parity related risk factors
                         "d_R1menopause_lab3", 
-                        "d_age_menopause_lab", 
+                        "d_age_menopause_lab",
+                        "d_age_meno_cont",
                         "d_R1hrtstatus_lab",
                         "d_R1hrt_sttyp_lab",
                         "d_parity_lab", 
+                        "d_parity",
                         "d_agebirth1_lab",
+                        "d_agebirth1_cont",
                         "d_age_menarche_lab", 
+                        "d_age_menarche",
                         "d_ocstatus_lab",
                         "d_ocstatus2_lab",
                         "d_breastfed_lab",
@@ -105,22 +109,29 @@ all_expl_variables <- c(
                         "d_bbd_lab", 
                         "d_fambrca_lab",
                         # lifestyle risk factors
-                        "d_R1alcohol_units_lab", 
+                        "d_R1alcohol_units_lab",
+                        "d_R1alcohol_units",
                         "d_R1smokingstatus_lab", 
                         "d_bmi_entry_lab",
                         "d_bmi_entry_per5",
                         "d_bmi_20_lab",
                         "d_bmi_20_per5", 
-                        "d_R1physmet_leis_who_lab")
+                        "d_R1physmet_leis_who_lab",
+                        "d_R1physmet_leisure")
 
 all_expl_variables_tr <- c(
                             # parity related risk factors
                            "d_R1menopause_lab3", 
-                           "d_age_meno_tr_lab", 
+                           "d_age_meno_tr_lab",
+                           "d_age_meno_cont",
                            "d_R1hrt_tr_lab",
                            "d_R1hrt_sttyp_tr_lab",
                            "d_parity_lab",
-                           "d_age_menarche_lab", 
+                           "d_parity",
+                           "d_agebirth1_tr_lab",
+                           "d_agebirth1_cont",
+                           "d_age_menarche_lab",
+                           "d_age_menarche",
                            "d_ocstatus_lab",
                            "d_ocstatus2_lab",
                            "d_breastfed_tr_lab",
@@ -129,14 +140,16 @@ all_expl_variables_tr <- c(
                            "d_bbd_lab", 
                            "d_fambrca_lab",
                            # lifestyle risk factors
-                           "d_agebirth1_tr_lab",
+                           
                            "d_R1alcohol_units_lab", 
+                           "d_R1alcohol_units",
                            "d_R1smokingstatus_lab", 
                            "d_bmi_entry_lab",
                            "d_bmi_entry_per5",
                            "d_bmi_20_lab",
                            "d_bmi_20_per5",
-                           "d_R1physmet_leis_who_lab" 
+                           "d_R1physmet_leis_who_lab",
+                           "d_R1physmet_leisure"
                            )
   
 
@@ -358,7 +371,7 @@ df <- df %>%
 #str(df)
 
 
-#saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
+saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
 
 
 # relevel complete case data (only bmi)
@@ -841,6 +854,8 @@ df %>% tabyl(d_agebirth1_lab, d_parity_lab) %>%
 
 df %>%  tabyl(d_parous_lab, d_parity_lab)
 
+df %>%  tabyl(d_breastfed_lab, d_parity_lab)
+
 ## number of parous pregnancies
 # df %>% tabyl(d_parity_tr_lab, d_parous_lab) %>% 
 #   adorn_title()
@@ -851,7 +866,7 @@ df %>%  tabyl(d_parous_lab, d_parity_lab)
 
 model <- df %>% 
  filter(d_parity_lab != "0") %>%
-  glm(formula = d_dmode_n ~ d_agebirth1_lab,
+  glm(formula = d_dmode_n ~ d_agebirth1_lab + d_bf_dur_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -867,7 +882,7 @@ tbl_regression(model, exponentiate = TRUE) %>%
 # MODEL B - binary parity status in the model -------------------------------------
 
 model <- df %>%
-  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab,
+  glm(formula = d_dmode_n ~  d_parity_lab + d_agebirth1_tr_lab + d_bf_dur_tr_lab,
             family = binomial(link = "logit"))
 #summary(model)
 #logistic.display(model)
@@ -1083,6 +1098,12 @@ The main analysis is comprised of 2 parts: - now presented in the same table
 1.  Examining the relationship between risk factors and mode of detection
 2.  Adjusting for mammographic density in a subset of cases with density available
 
+02/10/2024 update:
+
+Agreed model quantitative variables as continous in a separate model to get p-value for trend
+
+this will be incorporated to the same main results table, which will be simplified and also have accompanying forest plot
+
 ## Part 1: Relationship between risk factors and mode of detection
 
 An analysis with all selected exposures in the model (adjusted for each other). Also, will need to adjust for time and age variables. Then, adjust for tumour characteristics and explore the difference. If there is no or minimal difference the model adjusted for tumour characteristics will be presented in the supplement.
@@ -1093,7 +1114,13 @@ Therefore, part 1 of the multivariate analysis will include 3 models:
 2.  +Adjusted for time variables
 3.  Fully adjusted - adding MD
 
-**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parous_cat", "d_parity_cat", "d_agebirth1_cat"
+25/09/2024 - agreed to swap hrt status for variable with subtypes of current HRT
+
+03/10/2024 - adding breastfeeding and BMI age 20 to the models, changed OC status to never/ever
+
+-HRT subtype variable to be used in detailed main analysis table for drafting and possibly appendix but for main analysis to use simple variable (this will be swaped in the tables and figures file as this file is for internal use only and contains more detail)
+
+**Model 1**: "d_R1alcohol_status_cat", "d_R1alcohol_units_cat", "d_R1smokingstatus_cat", "d_bmi_entry_cat", "d_R1physmet_leis_who", "d_bbd", "d_fambrca", "d_age_menarche_cat", "d_ocstatus_cat", "d_R1menopause_cat3", "d_age_menopause_cat", "d_R1hrtstatus_cat", "d_parity_cat", "d_agebirth1_cat", breastfeeding duration, bmi age 20
 
 **Model 2**: Model 1 + "diagage", "d_R1toBC_y", "yeardiag"
 
@@ -1115,10 +1142,10 @@ Model 4b: Model 3 + d_MDtoBC_lab (categorical)
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab,
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab,
             family = binomial(link = "logit"))
 
 # summary(model)
@@ -1147,10 +1174,10 @@ model1 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag,
             family = binomial(link = "logit"))
 
@@ -1183,10 +1210,10 @@ model2 <- tbl_regression(model, exponentiate = TRUE) %>%
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt,
             family = binomial(link = "logit"))
@@ -1211,17 +1238,17 @@ model3 <- tbl_regression(model, exponentiate = TRUE) %>%
 
 #model3
 
-# Model 4b ---------------------------------------------------------------------
+# Model 4 ---------------------------------------------------------------------
 
 # changed to categorical MDtoBC
 
  model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab,
             family = binomial(link = "logit"))
@@ -1285,10 +1312,10 @@ model <- df_cc %>%
          )  %>% 
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag,
             family = binomial(link = "logit"))
 
@@ -1323,10 +1350,10 @@ model2_cc <- tbl_regression(model, exponentiate = TRUE) %>%
          ) %>% 
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab,
             family = binomial(link = "logit"))
@@ -1395,6 +1422,100 @@ Model 4 (with missing) vs Model 4 (complete case) - adjusted for MD
 -   
 :::
 
+### Model with continuous variables
+
+Models 2 and 4 using continuous variables for quantitative variables
+
+Continuous variables:
+
+-   age of menopause (602 missing - most pre meno)
+
+-   parity (0 missing)
+
+-   age at first birth (265 missing - most non-parous),
+
+-   age at menarche (180 missing),
+
+-   alcohol units (0 missing),
+
+-   bmi at entry (21 missing),
+
+-   physical activity (14 missing),
+
+-   bmi age 20 (345 missing),
+
+-   breastfeeding duration (258 missing - most non-parous),
+
+-   density (749 missing)
+
+Note: On pause now as large number of missing values and models would be different (04/10/2024)
+
+```{r}
+#| include: false
+#| echo: false
+#| warning: false
+
+
+# Model 2 cont ----------------------------------------------------------------
+ # include parity and meno trick variable instead of original variables
+
+# model <- df %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+#       + d_R1hrt_sttyp_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+#       + diagage + d_R1toBC_y + yeardiag,
+#             family = binomial(link = "logit"))
+# 
+# # summary(model)
+# # logistic.display(model)
+# 
+# 
+# model2 <- tbl_regression(model, exponentiate = TRUE) %>% 
+#   add_n(location = "level")  %>% 
+#   add_nevent(location = "level") %>% 
+#   #add_global_p() %>% 
+#   modify_header(stat_nevent = "**Interval N**",
+#                 stat_n = "**Total N**")
+
+#model2
+
+# Model 4 cont ---------------------------------------------------------------------
+
+# changed to categorical MDtoBC
+
+#  model <- df %>%
+#   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
+#       + d_R1hrt_sttyp_tr_lab
+#       + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
+#       + d_bbd_lab + d_fambrca_lab
+#       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
+#       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+#       + diagage + d_R1toBC_y + yeardiag
+#       + d_md_qrt + d_MDtoBC_lab,
+#             family = binomial(link = "logit"))
+# 
+# # summary(model)
+# # logistic.display(model)
+# 
+# model4 <- tbl_regression(model, exponentiate = TRUE) %>% 
+#   add_n(location = "level")  %>% 
+#   add_nevent(location = "level") %>% 
+#   #add_global_p() %>% 
+#   modify_header(stat_nevent = "**Interval N**",
+#                 stat_n = "**Total N**")
+
+#model4
+```
+
+compare with categorical model 2 and 4
+
+```{r}
+
+```
+
 ## Part 2: Tumour characteristics only
 
 For internal purpose or supplemental materials.
@@ -1449,10 +1570,10 @@ model <- df %>%
   glm(formula = d_dmode_n ~ 
       d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
       + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab, 
@@ -1487,10 +1608,10 @@ model6 <- tbl_regression(model, exponentiate = TRUE) %>%
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
       + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
-      + d_bmi_entry_lab + d_R1physmet_leis_who_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
       + diagage + d_R1toBC_y + yeardiag
       + d_md_qrt + d_MDtoBC_lab
       + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
