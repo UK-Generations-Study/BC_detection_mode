@@ -37,11 +37,14 @@ get_dupes(casummary_im)
 
 descr(casummary_im)
 
-n_distinct(casummary_im$tcode)
+casummary_df <- casummary_im |> 
+  mutate(tcode = TCode)
+
+n_distinct(casummary_df$tcode)
 
 
 # remove tcode NAs - these pulled out of the study so ignore them
-casummary_df <- casummary_im %>%
+casummary_df <- casummary_df %>%
   filter(!is.na(tcode)) 
 
 
