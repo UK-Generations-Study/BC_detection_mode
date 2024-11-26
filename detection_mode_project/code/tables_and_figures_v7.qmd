@@ -2705,7 +2705,7 @@ table2
 
 ```
 
-## Figure X - forest plot 
+## Figure X - forest plot
 
 ```{r}
 #| echo: false
