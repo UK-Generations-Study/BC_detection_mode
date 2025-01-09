@@ -93,7 +93,7 @@ casummary_df <- casummary_df %>%
     # fix date format
     diagdate = as.Date(diagdate_f),
     # Identify any invasive cancer (including breast cancer) and insitu breast cancer (exclude NMSC)
-    # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
+    # note: edit codes for insitu breast cancers as needed - now includes only DCIS, not other insitu
     cancer = as.factor(case_when(
       startsWith(ICDt, "C44") | startsWith(ICDt, "173") ~ 0, # exclude NMSC
       
