@@ -66,7 +66,8 @@ p_load(readxl,
        skimr, # alternative to dataset overview 
        gt,
        here,
-       forestplot
+       forestplot,
+       visdat # for visualising missing data
        )
 
 options(scipen=200000)
