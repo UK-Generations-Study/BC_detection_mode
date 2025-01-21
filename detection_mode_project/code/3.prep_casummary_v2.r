@@ -37,11 +37,14 @@ get_dupes(casummary_im)
 
 descr(casummary_im)
 
-n_distinct(casummary_im$tcode)
+casummary_df <- casummary_im |> 
+  mutate(tcode = TCode)
+
+n_distinct(casummary_df$tcode)
 
 
 # remove tcode NAs - these pulled out of the study so ignore them
-casummary_df <- casummary_im %>%
+casummary_df <- casummary_df %>%
   filter(!is.na(tcode)) 
 
 
@@ -90,7 +93,7 @@ casummary_df <- casummary_df %>%
     # fix date format
     diagdate = as.Date(diagdate_f),
     # Identify any invasive cancer (including breast cancer) and insitu breast cancer (exclude NMSC)
-    # note: edit codes for insitu breast cancers as needed - now includes all insitu, might need to use only DCIS
+    # note: edit codes for insitu breast cancers as needed - now includes only DCIS, not other insitu
     cancer = as.factor(case_when(
       startsWith(ICDt, "C44") | startsWith(ICDt, "173") ~ 0, # exclude NMSC
       

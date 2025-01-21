@@ -9,7 +9,8 @@
 
 # NOTES: 
 #       - run this to execute all parts
-#       - file paths are relative, when the project is cloned from github it will set automatically WD, relative parts automatically reflect the project WD
+#       - file paths are relative, when the project is cloned from github it will set automatically WD, 
+#         relative paths automatically reflect the project WD
 #     
 
 

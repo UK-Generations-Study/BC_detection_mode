@@ -63,6 +63,8 @@ rf_vars <- riskfactors_df %>%
 
 # 2. Join all together -------------------------------------------
 
+# 14/11/2024
+# should cancer vars be also joined by the indentificators? - review
 dev_an_df <- dm_cases %>% 
   left_join(ca_vars, by = "tcode") %>% 
   left_join(dm_vars, by = "tcode") %>% 
