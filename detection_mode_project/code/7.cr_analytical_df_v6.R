@@ -17,10 +17,8 @@
 #                  2
 #                  3 - with missing values as NA instead of 888, trick variables recoded correctly
 #                  4 - trick variables recoded back to include missing from the varaible of interest in the refrence group
-
-
-
-#                   5 - update 16/09/2024 - added hrt type (hrtprep) variable
+#                 5 - update 16/09/2024 - added hrt type (hrtprep) variable
+#                 6 - added analysis specific processing (previously part of analysis-v7_with_missing.qmd)
 #_____________________________________________________________________________
 
 
@@ -1767,10 +1765,6 @@ dev_an_df <- dev_an_df %>%
 #dfSummary(dev_an_df)
 
 # 4. Comprise analytical dataset ------------------------------------------------------------
-
-## Base data 
-# this data still needs some processing for analysis this was done as part of analysis_v7_with_missing.qmd but all data manipulation should be done in simple scripts and not
-# this final processing done in script 8
 
 an_df <- dev_an_df %>% 
   select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, AgeatEntry, incident, side, 
