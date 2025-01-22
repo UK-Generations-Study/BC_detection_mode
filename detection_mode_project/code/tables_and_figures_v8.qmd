@@ -558,6 +558,75 @@ plot1
 ```{r}
 #| echo: false
 #| include: false
+
+# WRAP INTO A FUNCTION 
+
+create_violin_plot <- function(data, response_var, explanatory_var, 
+                               y_label, title, category_labels, 
+                               annotation_pos) {
+  # Fit the linear model
+  formula <- as.formula(paste(response_var, "~", explanatory_var))
+  lm_model <- lm(formula, data = data)
+  
+  # Extract and format the overall p-value
+  global_p <- extract_overall_p_from_lm(lm_model)
+  formatted_p <- format_single_p_value(global_p)
+  
+  # Create the plot
+  plot <- data %>%
+    ggplot(aes(x = .data[[explanatory_var]], y = .data[[response_var]], fill = .data[[explanatory_var]])) +
+    geom_violin(alpha = 0.4) +
+    geom_boxplot(width = 0.1) +
+    ylim(0, 100) +
+    labs(title = title, x = "", y = y_label) +
+    scale_x_discrete(labels = category_labels) +
+    theme_base() +
+    theme(legend.position = "none") +
+    scale_fill_brewer(palette = "Set2") +
+    annotate("text",
+             x = annotation_pos$ref_x,
+             y = annotation_pos$ref_y,
+             label = "reference",
+             col = "black",
+             size = 3.5) +
+    annotate("text",
+             x = annotation_pos$p_x,
+             y = annotation_pos$p_y,
+             label = paste("p-trend", formatted_p),
+             col = "black",
+             size = 3.5)
+  
+  return(plot)
+}
+
+
+# TEST FUNCTION 
+
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+
+# Define category labels
+category_labels <- c("I" = "Interval", "SD" = "Screen detected")
+
+# Call the function
+plot1 <- create_violin_plot(
+  data = md_df,
+  response_var = "d_md",
+  explanatory_var = "d_dmode",
+  y_label = "Breast density (%)",
+  title = "Mode of Detection",
+  category_labels = category_labels,
+  annotation_pos = annotation_positions
+)
+
+# Print the plot
+plot1
+
+```
+
+```{r}
+#| echo: false
+#| include: false
 # code dev for plots with p-values
 
 # ttest - to check is similar to LR
