@@ -3259,3 +3259,40 @@ ST2 <- df %>%
 
 ST2
 ```
+
+## Cross-tabulation between registry detection mode and in-house detection mode 
+
+```{r}
+# use row percentages and rename reg_sd levels to align with dmode
+
+dmode_crosstab_tb <- df |> 
+  mutate(
+    reg_sd = factor(reg_sd, 
+                    levels = c("N", "Y", "U"), 
+                    labels = c("I", "SD", "Unknown"))
+  ) |> 
+  tbl_cross(
+    row = reg_sd,
+    col = d_dmode,
+    percent = "row"
+  ) |> 
+  bold_labels()
+
+dmode_crosstab_tb |> show_header_names()
+
+
+dmode_crosstab_tb <- dmode_crosstab_tb |> 
+  modify_header(
+    label ~ "**Registry Detection Mode**"
+  ) |> 
+  modify_spanning_header(all_stat_cols() ~ "**In-house Detection Mode**" # Rename column variable
+  ) 
+
+
+dmode_crosstab_tb <- dmode_crosstab_tb |> 
+  modify_table_body(
+    ~ .x |> filter(label != "reg_sd")  # Remove rows where the label matches the old variable name
+  )
+
+dmode_crosstab_tb
+```
