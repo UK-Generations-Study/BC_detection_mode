@@ -227,13 +227,14 @@ On 13/06/2024 discussed with Amy that it is probably better to use alcohol units
 
 ```{r}
 
-df <- an_df %>% 
+df <- df_miss_cat %>% 
   select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
 #names(df)
 #str(df)
 
 # create dataset for complete case analysis with NA as missing (this will be used for a comparison of old and new method)
-df_cc <- df
+df_cc <- df_compl_case %>% 
+  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
 ```
 
 ### Notes on missing values
@@ -252,7 +253,7 @@ Even though NAs are automatically handled in glm(), to have better control over 
 
 The same steps will be then used to produce descriptive table (for publication Table 3) which will be merged with logistic regression results. Therefore, it is important that the number of observations are the same in the descriptive and analytical part of the table.
 
-2.  Updated approach (this script - analysis_v2(with_missing).qmd)
+2.  Updated approach (this script)
 
 This approach has been agreed with Montse on 29/07/2024
 
@@ -266,124 +267,17 @@ All missing will be treated as a separate levels. NA's in risk factors have only
 
 MD will also be added to the main model.
 
-#### Recode all missing values in analytical variables
-
-```{r}
-#| include: false
-#| echo: false
- 
-vis_dat(df)
-
-#vis_miss(df)
-
-gg_miss_var(df)
-
-# an_df %>% 
-#   map(pct_miss)
-
-
-
-# convert all factor variables to character 
-df <- df %>% 
-  mutate(across(where(is.factor), as.character))
-
-
-# convert all character variables NAs to "Missing" 
-df <- df %>%
-  mutate(across(where(is.character), ~ replace_na(., "Missing")))
-
-str(df)
-
-vis_dat(df) # only missing are those associated with MD which is a subset of the data
-
-# convert all character variables back to factor
-df <- df %>%
-  mutate(across(where(is.character), as.factor) 
-         )
-
-freq(df)
-
-vis_dat(df)
-gg_miss_var(df)
-
-```
+22/01/2025 - the analytical dataset processing code has been moved to script 8. That is where missing values are handled.
 
 ```{r}
 
-df %>% tabyl(d_dmode_n)
-```
-
-### Relevel required categorical variables
-
-Change the reference groups in the following categorical variables:
-
--   BMI: reference = normal weight
-
--   hormone receptor status (ER, PR) and HER2: reference = positive
-
-*BMI amended in this script directly before analysis as for descriptives the original level ordering will be needed*
-
-Also, relevel variables where "Missing" level is not last (levels jumped when converteting NA to "Missing"
-
-(smoking, hrt, hrt - trick, oc, pre-menopausal status)
-
-```{r}
-#| include: false
-#| echo: false
-
-df <- df %>% 
-  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"),
-         d_bmi_20_lab = fct_relevel(d_bmi_20_lab, "18.5-25", "<18.5", "25-30", "30+", "Missing"),
-         d_R1menopause_lab3 = fct_relevel(d_R1menopause_lab3, "Premenopausal", "Postmenopausal"),
-         d_age_menopause_lab2 = d_age_menopause_lab,
-         d_age_menopause_lab = case_when(d_age_menopause_lab == "Pre-menopausal" ~ "Missing",
-                                         TRUE ~ d_age_menopause_lab),
-         
-         d_R1hrtstatus_lab = case_when(d_R1hrtstatus_lab == "Pre-menopausal" ~ "Missing",
-                                       TRUE ~ d_R1hrtstatus_lab),
-         d_R1hrtstatus_lab = fct_relevel(d_R1hrtstatus_lab, "Never", "Former", "Current", "Missing"),
-         d_R1hrt_tr_lab = fct_relevel(d_R1hrt_tr_lab, "Never", "Former", "Current",  "Missing"),
-         
-         d_R1hrt_sttyp_lab = case_when(d_R1hrt_sttyp_lab == "Pre-menopausal" ~ "Missing",
-                                       TRUE ~ d_R1hrt_sttyp_lab),
-         d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT", "Missing"),
-         d_R1hrt_sttyp_tr_lab = fct_relevel(d_R1hrt_sttyp_tr_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT", "Missing"),
-         
-         d_agebirth1_lab = case_when(d_agebirth1_lab == "Non-parous" ~ "Missing",
-                                     TRUE ~ d_agebirth1_lab),
-         d_R1physmet_leis_who_lab = fct_relevel(d_R1physmet_leis_who_lab, "<9", "9-17", "18+"),
-         d_ocstatus_lab = fct_relevel(d_ocstatus_lab, "Never","Former", "Current", "Missing"),
-         d_ocstatus2_lab = fct_relevel(d_ocstatus2_lab, "No", "Yes", "Missing"),
-         d_breastfed_lab = fct_relevel(d_breastfed_lab, "No", "Yes", "Missing"),
-         d_breastfed_tr_lab = fct_relevel(d_breastfed_tr_lab, "No", "Yes"),
-         d_bf_dur_lab = fct_relevel(d_bf_dur_lab, "Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months", "Missing"),
-         d_bf_dur_tr_lab = fct_relevel(d_bf_dur_tr_lab, "Never breastfed", "<6 months", "6-12 months", "12-24 months", "24+ months"),
-         d_R1smokingstatus_lab = fct_relevel(d_R1smokingstatus_lab, "Never","Former", "Current", "Missing"),
-         d_pos_nodes_lab = fct_relevel(d_pos_nodes_lab, "Negative", "Positive", "Missing"),
-         d_er_status_lab = fct_relevel(d_er_status_lab, "Positive", "Negative", "Missing"),
-         d_pr_status_lab = fct_relevel(d_pr_status_lab, "Positive", "Negative", "Missing"),
-         d_her2_status_lab = fct_relevel(d_her2_status_lab, "Positive", "Negative", "Missing"),
-         d_pos_nodes_tr_lab = fct_relevel(d_pos_nodes_tr_lab, "Negative", "Positive", "Missing"),
-         d_er_tr_lab = fct_relevel(d_er_tr_lab, "Positive", "Negative", "Missing"),
-         d_pr_tr_lab = fct_relevel(d_pr_tr_lab, "Positive", "Negative", "Missing"),
-         d_her2_tr_lab = fct_relevel(d_her2_tr_lab, "Positive", "Negative", "Missing"),
-         d_morph4_lab = fct_relevel(d_morph4_lab, "Ductal", "Lobular", "Mixed: ductal and other", "Other", "Missing"),
-         reg_sd = as.factor(reg_sd),
-         d_MDtoBC_lab = fct_relevel(d_MDtoBC_lab, "<3 years", "3-5 years", "6+ years")
+df %>% tabyl(d_dmode_n) |> 
+  adorn_totals(
   )
 
-#freq(df)
-
-#str(df)
-
-
-saveRDS(df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/df_from_analysis_script.rds")
-
-
-# relevel complete case data (only bmi)
-
-df_cc <- df_cc %>% 
-  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "18.5-25", "<18.5", "25-30", "30+"))
+df %>% tabyl(d_dmode) |> 
+  adorn_totals(
+  )
 ```
 
 # Univariate analysis
