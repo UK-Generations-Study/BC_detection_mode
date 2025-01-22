@@ -67,6 +67,11 @@ dm_df <- cases %>%
 
 dm_df %>% tabyl(ancat_dmode_v2) %>% adorn_totals()
 
+# how many cases have dmode? 
+dm_df |> filter(!is.na(ancat_dmode_v2)) |> 
+  tabyl(ancat_dmode_v2) |> 
+  adorn_totals()
+
 ########################################################################################
 # 13/09/2024 - investigating if we can include cases without screening data
 
