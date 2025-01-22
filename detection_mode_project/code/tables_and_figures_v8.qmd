@@ -502,7 +502,7 @@ format_single_p_value <- function(p_value) {
 #| include: false
 # code dev for plots with p-values
 
-# ADAPTED - TEST
+# ADAPTED - TEST -----------------------------------------------------
 
 # ttest - to check is similar to LR
 t.test(d_md_sqrt ~ d_dmode, data = md_df)
@@ -524,30 +524,7 @@ global_p <- format_single_p_value(global_p)
 
 global_p
 
-# linear regression 
-lr <- md_df %>% 
-  filter(!is.na(d_dmode) 
-         ) %>% 
-  lm(d_md_sqrt ~ d_dmode, data = .
-     ) %>% tidy() 
 
-lr
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-summary(lr)
-
-SD_p <- lr %>% 
-  filter(term == "d_dmodeSD") %>% 
-  pull(p_val1)
-
-print(SD_p)
-
-  
 # plot
 
 plot1 <- md_df %>% 
@@ -571,11 +548,11 @@ plot1 <- md_df %>%
   annotate("text",
            x = 2,
            y = 90,
-           label = paste("p", SD_p),
+           label = paste("p-trend", global_p),
            col = "black",
            size = 3.5)
 
-#plot1
+plot1
 ```
 
 ```{r}
