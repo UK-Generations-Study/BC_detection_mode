@@ -663,6 +663,55 @@ df %>% tabyl(d_dmode)
 
 ```
 
+22/01/2025 - agreed to include the above tabulation in the paper - create gtsummary table
+
+```{r}
+
+df |> tbl_cross(row = reg_sd,
+                col = d_dmode,
+                percent = "row") |> 
+  bold_labels()
+
+df |> tbl_cross(row = reg_sd,
+                col = d_dmode,
+                percent = "column") |> 
+  bold_labels()
+
+
+# use row percentages and rename reg_sd levels to align with dmode
+
+dmode_crosstab_tb <- df |> 
+  mutate(
+    reg_sd = factor(reg_sd, 
+                    levels = c("N", "Y", "U"), 
+                    labels = c("I", "SD", "Unknown"))
+  ) |> 
+  tbl_cross(
+    row = reg_sd,
+    col = d_dmode,
+    percent = "row"
+  ) |> 
+  bold_labels()
+
+dmode_crosstab_tb |> show_header_names()
+
+
+dmode_crosstab_tb <- dmode_crosstab_tb |> 
+  modify_header(
+    label ~ "**Registry Detection Mode**"
+  ) |> 
+  modify_spanning_header(all_stat_cols() ~ "**In-house Detection Mode**" # Rename column variable
+  ) 
+
+
+dmode_crosstab_tb <- dmode_crosstab_tb |> 
+  modify_table_body(
+    ~ .x |> filter(label != "reg_sd")  # Remove rows where the label matches the old variable name
+  )
+
+dmode_crosstab_tb
+```
+
 #### Tabulation of detection mode by year of diagnosis and by source category.
 
 Below are 3 sets of tabulations to illustrate the distribution of interval and SD cases across years for each source type. The main interest is dmode_v2 and reg_sd.
