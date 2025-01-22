@@ -562,7 +562,7 @@ plot1
 # WRAP INTO A FUNCTION 
 
 create_violin_plot <- function(data, response_var, explanatory_var, 
-                               y_label, title, category_labels, 
+                               y_label, title, category_labels = NULL, 
                                annotation_pos) {
   # Fit the linear model
   formula <- as.formula(paste(response_var, "~", explanatory_var))
@@ -579,7 +579,6 @@ create_violin_plot <- function(data, response_var, explanatory_var,
     geom_boxplot(width = 0.1) +
     ylim(0, 100) +
     labs(title = title, x = "", y = y_label) +
-    scale_x_discrete(labels = category_labels) +
     theme_base() +
     theme(legend.position = "none") +
     scale_fill_brewer(palette = "Set2") +
@@ -596,8 +595,14 @@ create_violin_plot <- function(data, response_var, explanatory_var,
              col = "black",
              size = 3.5)
   
+  # Add custom x-axis labels if provided
+  if (!is.null(category_labels)) {
+    plot <- plot + scale_x_discrete(labels = category_labels)
+  }
+  
   return(plot)
 }
+
 
 
 # TEST FUNCTION 
@@ -621,6 +626,82 @@ plot1 <- create_violin_plot(
 
 # Print the plot
 plot1
+
+```
+
+```{r}
+
+
+# TEST FUNCTION WITH DIFFERENT EXPLANATORY VARIABLES - with no labels required and 2 levels of explanatory
+
+# Menopause 
+df |> tabyl(d_R1menopause_lab3)
+
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+
+# Define category labels - no labels needed 
+
+
+# Call the function
+plot_test <- create_violin_plot(
+  data = md_df,
+  response_var = "d_md",
+  explanatory_var = "d_R1menopause_lab3",
+  y_label = "Breast density (%)",
+  title = "Menopausal status",
+  annotation_pos = annotation_positions
+)
+
+# Print the plot
+plot_test
+
+
+
+
+
+
+
+```
+
+```{r}
+# TEST FUNCTION WITH MULTIPLE LEVELS OF EXPOSURE 
+
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+
+# Define category labels - no labels needed 
+
+
+# Call the function
+plot_test <- create_violin_plot(
+  data = md_df,
+  response_var = "d_md",
+  explanatory_var = "d_age_menopause_lab2",
+  y_label = "Breast density (%)",
+  title = "Age at menopause",
+  annotation_pos = annotation_positions
+)
+
+
+plot_test <- md_df %>%
+  filter(d_age_menopause_lab2 != "Missing") %>%
+  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "Pre-menopausal", "<50", "50-54", "55+")) %>%
+  create_violin_plot(
+    response_var = "d_md",
+    explanatory_var = "d_age_menopause_lab2",
+    y_label = "Breast density (%)",
+    title = "Age at Menopause",
+    category_labels = NULL, # Skip this if the labels are already appropriate
+    annotation_pos = list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
+  )
+
+
+
+# Print the plot
+plot_test
+
+
 
 ```
 
@@ -829,7 +910,7 @@ plot3 <- md_df %>%
            col = "black",
            size = 3.5) 
 
-#plot3
+plot3
 ```
 
 ```{r}
