@@ -248,9 +248,27 @@ ST 1 - TC descriptives by detection mode with logistic regression results for TC
 
 ST 2 - difference in characteristics between those with and without mammographic density
 
+### 22/01/2024 Updated table and figure structure
+
+based on draft paper
+
+**Figure 1:** Flow chart for selection of Generations Study breast cancer cases eligible for analyses (created in drawio (saved into the paper folder) and mermaid (memaid issue with formatting)
+
+**Figure 2:** Mammographic density by detection mode (TBC)
+
+**Figure 3:** Mammographic density across risk factor categories
+
+**Table 1:** Tumour characteristics of interval and screen-detected breast cancers
+
+**Table 1b:** Tumour characteristics of interval and screen-detected breast cancers with stratification by mammographic density
+
+**Table 2:** Risk factors of interval and screen-detected breast cancers
+
+**Table 3:** Tumour characteristics and risk factors, by detection mode - multivar models\* including a) all cases, b) cases with mammographic density data, c) adjustment for mammographic density
+
 # Main figures and tables
 
-## Table 1 - Participant characteristics by detection mode
+## **Table 1:** Tumour characteristics of interval and screen-detected breast cancers
 
 by detection mode and with p-value from logistic regression model with tumour characteristics in the model (from supplementary table 1) + adjusted for time variables
 
@@ -449,6 +467,34 @@ original + transformed
 Missing categories left in for now for info but will probably need to be removed
 :::
 
+```{r}
+# function to extract global p-value from linear regression 
+
+#define function to extract overall p-value of model
+extract_overall_p_from_lm <- function(my_model) {
+    f <- summary(my_model)$fstatistic
+    p <- pf(f[1],f[2],f[3],lower.tail=F)
+    attributes(p) <- NULL
+    return(p)
+}
+
+#extract overall p-value of model
+# e.g. extract_overall_p_from_lm(model)
+
+
+# function to format single p value (not a dataframe)
+format_single_p_value <- function(p_value) {
+  formatted_p <- case_when(
+    p_value < 0.001 ~ "<0.001",
+    p_value >= 0.001 & p_value < 0.01 ~ as.character(round(p_value, 3)),
+    round(p_value, 2) == 1 ~ "0.99",
+    TRUE ~ as.character(format(round(p_value, 2), nsmall = 1))
+  )
+  return(formatted_p)
+}
+
+```
+
 ### Reproductive, lifestyle and other risk factors
 
 ```{r}
@@ -456,9 +502,27 @@ Missing categories left in for now for info but will probably need to be removed
 #| include: false
 # code dev for plots with p-values
 
+# ADAPTED - TEST
+
 # ttest - to check is similar to LR
 t.test(d_md_sqrt ~ d_dmode, data = md_df)
  
+
+# linear regression without tidy output
+lr <- md_df %>% 
+  filter(!is.na(d_dmode) 
+         ) %>% 
+  lm(d_md_sqrt ~ d_dmode, data = .
+     )
+summary(lr)
+
+global_p <- extract_overall_p_from_lm(lr)
+
+global_p
+
+global_p <- format_single_p_value(global_p)
+
+global_p
 
 # linear regression 
 lr <- md_df %>% 
@@ -467,13 +531,15 @@ lr <- md_df %>%
   lm(d_md_sqrt ~ d_dmode, data = .
      ) %>% tidy() 
 
+lr
+
 str(lr)
 
 # format p-values 
 lr <- lr %>% 
   format_p_values(p.value)
 
-lr
+summary(lr)
 
 SD_p <- lr %>% 
   filter(term == "d_dmodeSD") %>% 
@@ -510,6 +576,68 @@ plot1 <- md_df %>%
            size = 3.5)
 
 #plot1
+```
+
+```{r}
+#| echo: false
+#| include: false
+# code dev for plots with p-values
+
+# ttest - to check is similar to LR
+t.test(d_md_sqrt ~ d_dmode, data = md_df)
+
+# linear regression 
+lr <- md_df %>% 
+  filter(!is.na(d_dmode) 
+         ) %>% 
+  lm(d_md_sqrt ~ d_dmode, data = .
+     ) %>% tidy() 
+
+lr
+
+str(lr)
+
+# format p-values 
+lr <- lr %>% 
+  format_p_values(p.value)
+
+summary(lr)
+
+SD_p <- lr %>% 
+  filter(term == "d_dmodeSD") %>% 
+  pull(p_val1)
+
+print(SD_p)
+
+  
+# plot
+
+plot1 <- md_df %>% 
+  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width = 0.1)+
+  ylim(0, 100) +
+  labs(title = "Mode of detection",
+       x = "",
+       y = "Breast density (%)") +
+  scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
+  theme_base() +
+  theme(legend.position = "none") +
+ scale_fill_brewer(palette="Set2") +
+  annotate("text",
+           x = 1,
+           y = 90,
+           label = "reference",
+           col = "black",
+           size = 3.5) +
+  annotate("text",
+           x = 2,
+           y = 90,
+           label = paste("p", SD_p),
+           col = "black",
+           size = 3.5)
+
+plot1
 ```
 
 ```{r}
@@ -584,6 +712,10 @@ lr <- md_df %>%
   mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2,  "Pre-menopausal","<50", "50-54", "55+")) %>% 
   lm(d_md_sqrt ~ d_age_menopause_lab2, data = .
      ) %>% tidy() 
+
+lr
+
+summary(lr)
 
 str(lr)
 
