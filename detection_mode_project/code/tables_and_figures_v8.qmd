@@ -25,19 +25,21 @@ version 5 - Using data missing as a separate category in analysis
 
 version 6 - swapping HRT variable for HRT subtypes variable
 
-version 7 - ?
+version 7 -
 
 version 8 - 21/01/2025 - publication edits
 
 ### Changes agreed with Montse 14/01/2025
 
-Violin plots - MD by riskfactors
+-   Violin plots - MD by riskfactors keep unadjusted but swap individual p-value for p-trend
 
--   keep unadjusted but swap individual p-value for p-trend
+-   create a table for MD by riskfactors and add adjusted for age at mammo reading
 
-<!-- -->
+-   create a crosstab for SD registry & derived dmode (expl done in analysis script - create a nice table)
 
--   create a table for MD by riskfactors and add adjusted for age estimate
+-   formatting table 1 - remove missing rows estimates, but keep percentages
+
+-   update flow chart (remove exclusions, add another level for other dmode categories, removed MD numbers)
 
 ```{r}
 #| include: false
