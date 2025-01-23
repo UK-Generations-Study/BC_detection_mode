@@ -29,6 +29,8 @@ version 7 -
 
 version 8 - 21/01/2025 - publication edits - converted violin plots into functions - this script has the conversion code
 
+version 9 - 23/01/2025 - clean code - used function for violin plots
+
 ### Changes agreed with Montse 14/01/2025
 
 -   Violin plots - MD by riskfactors keep unadjusted but swap individual p-value for p-trend
@@ -64,11 +66,7 @@ p_load(here,
 setup_path <- here("code", "1.setup_import.r")
 source(setup_path)
 
-# import data
-# data_path <- here("data", "an_df.rds")
-# an_df <- readRDS(data_path)
-
-#an_df <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/an_df.rds")
+# functions are loaded in the setup script
 
 
 # dataset with missing as separate categories
