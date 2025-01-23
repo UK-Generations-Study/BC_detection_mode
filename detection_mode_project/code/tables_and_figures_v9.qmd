@@ -415,13 +415,13 @@ table1
 
 ```
 
-## Figures 1 to 2 - descriptives of risk factors with MD
+## Descriptives of risk factors with MD
 
-#### Data transformation - formal statistical test of differences between categories
+#### Data transformation - formal statistical test of differences between categories 
 
 29/07/2024 decided to use square root transformation as data not normally distributed. Linear regression is then used to and p-values (what about estimate?) will be then added to the figures.
 
-#### Distribution before and after transformation
+#### Distribution before and after transformation (for info only)
 
 Figure for internal info only - data approximately normally distributed with more symmetry (checked with Michael and agreed this is appropriate for linear regression)
 
@@ -465,154 +465,22 @@ original + transformed
 Missing categories left in for now for info but will probably need to be removed
 :::
 
-```{r}
-# function to extract global p-value from linear regression 
-
-#define function to extract overall p-value of model
-extract_overall_p_from_lm <- function(my_model) {
-    f <- summary(my_model)$fstatistic
-    p <- pf(f[1],f[2],f[3],lower.tail=F)
-    attributes(p) <- NULL
-    return(p)
-}
-
-#extract overall p-value of model
-# e.g. extract_overall_p_from_lm(model)
-
-
-# function to format single p value (not a dataframe)
-format_single_p_value <- function(p_value) {
-  formatted_p <- case_when(
-    p_value < 0.001 ~ "<0.001",
-    p_value >= 0.001 & p_value < 0.01 ~ as.character(round(p_value, 3)),
-    round(p_value, 2) == 1 ~ "0.99",
-    TRUE ~ as.character(format(round(p_value, 2), nsmall = 1))
-  )
-  return(formatted_p)
-}
-
-```
-
-### Reproductive, lifestyle and other risk factors
+### Figure 2 - Mammographic density by detection mode
 
 ```{r}
-#| echo: false
-#| include: false
-# code dev for plots with p-values
-
-# ADAPTED - TEST -----------------------------------------------------
-
-# ttest - to check is similar to LR
-t.test(d_md_sqrt ~ d_dmode, data = md_df)
- 
-
-# linear regression without tidy output
-lr <- md_df %>% 
-  filter(!is.na(d_dmode) 
-         ) %>% 
-  lm(d_md_sqrt ~ d_dmode, data = .
-     )
-summary(lr)
-
-global_p <- extract_overall_p_from_lm(lr)
-
-global_p
-
-global_p <- format_single_p_value(global_p)
-
-global_p
-
-
-# plot
-
-plot1 <- md_df %>% 
-  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Mode of detection",
-       x = "",
-       y = "Breast density (%)") +
-  scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_base() +
-  theme(legend.position = "none") +
- scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p-trend", global_p),
-           col = "black",
-           size = 3.5)
-
-plot1
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# WRAP INTO A FUNCTION 
-
-create_violin_plot <- function(data, response_var, explanatory_var, 
-                               y_label, title, category_labels = NULL, 
-                               annotation_pos) {
-  # Fit the linear model
-  formula <- as.formula(paste(response_var, "~", explanatory_var))
-  lm_model <- lm(formula, data = data)
-  
-  # Extract and format the overall p-value
-  global_p <- extract_overall_p_from_lm(lm_model)
-  formatted_p <- format_single_p_value(global_p)
-  
-  # Create the plot
-  plot <- data %>%
-    ggplot(aes(x = .data[[explanatory_var]], y = .data[[response_var]], fill = .data[[explanatory_var]])) +
-    geom_violin(alpha = 0.4) +
-    geom_boxplot(width = 0.1) +
-    ylim(0, 100) +
-    labs(title = title, x = "", y = y_label) +
-    theme_base() +
-    theme(legend.position = "none") +
-    scale_fill_brewer(palette = "Set2") +
-    annotate("text",
-             x = annotation_pos$ref_x,
-             y = annotation_pos$ref_y,
-             label = "reference",
-             col = "black",
-             size = 3.5) +
-    annotate("text",
-             x = annotation_pos$p_x,
-             y = annotation_pos$p_y,
-             label = paste("p-trend", formatted_p),
-             col = "black",
-             size = 3.5)
-  
-  # Add custom x-axis labels if provided
-  if (!is.null(category_labels)) {
-    plot <- plot + scale_x_discrete(labels = category_labels)
-  }
-  
-  return(plot)
-}
-
-
-
-# TEST FUNCTION 
 
 # Define annotation positions
-annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+annotation_positions <- list(ref_x = 1, 
+                             ref_y = 90, 
+                             p_x = 2, 
+                             p_y = 90)
 
 # Define category labels
-category_labels <- c("I" = "Interval", "SD" = "Screen detected")
+category_labels <- c("I" = "Interval", 
+                     "SD" = "Screen detected")
 
 # Call the function
-plot1 <- create_violin_plot(
+dmode_plot <- create_violin_plot(
   data = md_df,
   response_var = "d_md",
   explanatory_var = "d_dmode",
@@ -623,26 +491,22 @@ plot1 <- create_violin_plot(
 )
 
 # Print the plot
-plot1
-
+dmode_plot
 ```
+
+### Figure 3 - Mammographic density by risk factors
 
 ```{r}
 
 
-# TEST FUNCTION WITH DIFFERENT EXPLANATORY VARIABLES - with no labels required and 2 levels of explanatory
-
-# Menopause 
-df |> tabyl(d_R1menopause_lab3)
-
+# Menopausal status ------------------------------------------------------------------------
+#df |> tabyl(d_R1menopause_lab3)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
-
 # Define category labels - no labels needed 
 
-
 # Call the function
-plot_test <- create_violin_plot(
+menost_plot <- create_violin_plot(
   data = md_df,
   response_var = "d_md",
   explanatory_var = "d_R1menopause_lab3",
@@ -650,672 +514,147 @@ plot_test <- create_violin_plot(
   title = "Menopausal status",
   annotation_pos = annotation_positions
 )
-
 # Print the plot
-plot_test
+menost_plot
 
 
 
-
-
-
-
-```
-
-```{r}
-# TEST FUNCTION WITH MULTIPLE LEVELS OF EXPOSURE 
-
+# Age at Menopause ------------------------------------------------------------------------
+df |> tabyl(d_age_menopause_lab2)
 # Define annotation positions
-annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
-
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
 # Define category labels - no labels needed 
 
-
 # Call the function
-plot_test <- create_violin_plot(
-  data = md_df,
+menoage_plot <- md_df |> 
+  filter(d_age_menopause_lab2 != "Missing"
+         ) |> 
+  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "Pre-menopausal", "<50", "50-54", "55+")
+         ) |> 
+  create_violin_plot(
   response_var = "d_md",
   explanatory_var = "d_age_menopause_lab2",
   y_label = "Breast density (%)",
   title = "Age at menopause",
   annotation_pos = annotation_positions
 )
-
-
-plot_test <- md_df %>%
-  filter(d_age_menopause_lab2 != "Missing") %>%
-  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "Pre-menopausal", "<50", "50-54", "55+")) %>%
-  create_violin_plot(
-    response_var = "d_md",
-    explanatory_var = "d_age_menopause_lab2",
-    y_label = "Breast density (%)",
-    title = "Age at Menopause",
-    category_labels = NULL, # Skip this if the labels are already appropriate
-    annotation_pos = list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
-  )
-
-
-
 # Print the plot
-plot_test
+menoage_plot
+
+
+
+# HRT status --------------------------------------------------------------------------------
+# NOTE: this may be replaced by the simpler HRT variable
+df |> tabyl(d_R1hrt_sttyp_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+hrtst_plot <- md_df |> 
+  filter(d_R1hrt_sttyp_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_R1hrt_sttyp_lab",
+  y_label = "Breast density (%)",
+  title = "HRT status",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+hrtst_plot
+
+
+
+# Parity --------------------------------------------------------
+df |> tabyl(d_parity_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+parity_plot <- md_df |> 
+  filter(d_parity_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_parity_lab",
+  y_label = "Breast density (%)",
+  title = "Parity",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+parity_plot
+
+
+
+# Age at first birth -------------------------------------------------
+df |> tabyl(d_agebirth1_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+agebirth1_plot <- md_df |> 
+  filter(d_agebirth1_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_agebirth1_lab",
+  y_label = "Breast density (%)",
+  title = "Age at first birth",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+agebirth1_plot
+
+
+
+# Age at menarche ------------------------------------------------------------
+df |> tabyl(d_age_menarche_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+agemenarche_plot <- md_df |> 
+  filter(d_age_menarche_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_age_menarche_lab",
+  y_label = "Breast density (%)",
+  title = "Age at menarche",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+agemenarche_plot
+
+
+
+# Oral contraceptives --------------------------------------------------------
+df |> tabyl(d_ocstatus_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+oc_plot <- md_df |> 
+  filter(d_ocstatus_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_ocstatus_lab",
+  y_label = "Breast density (%)",
+  title = "Oral contraceptives",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+oc_plot
 
 
 
-```
 
-```{r}
-#| echo: false
-#| include: false
-# code dev for plots with p-values
-
-# ttest - to check is similar to LR
-t.test(d_md_sqrt ~ d_dmode, data = md_df)
-
-# linear regression 
-lr <- md_df %>% 
-  filter(!is.na(d_dmode) 
-         ) %>% 
-  lm(d_md_sqrt ~ d_dmode, data = .
-     ) %>% tidy() 
-
-lr
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-summary(lr)
-
-SD_p <- lr %>% 
-  filter(term == "d_dmodeSD") %>% 
-  pull(p_val1)
-
-print(SD_p)
-
-  
-# plot
-
-plot1 <- md_df %>% 
-  ggplot(aes(x = d_dmode, y = d_md, fill = d_dmode)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Mode of detection",
-       x = "",
-       y = "Breast density (%)") +
-  scale_x_discrete(labels = c("I" = "Interval", "SD" = "Screen detected")) +
-  theme_base() +
-  theme(legend.position = "none") +
- scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p", SD_p),
-           col = "black",
-           size = 3.5)
-
-plot1
-```
-
-```{r}
-#| echo: false
-#| include: false
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-  filter(d_R1menopause_lab3 != "Missing"
-         ) %>% 
-  lm(d_md_sqrt ~ d_R1menopause_lab3, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p values
-post_meno_p <- lr %>% 
-  filter(term == "d_R1menopause_lab3Postmenopausal") %>% 
-  pull(p_val1)
-
-print(post_meno_p)
-
-  
-# plot
-
-plot2 <- md_df %>% 
-  ggplot(aes(x = d_R1menopause_lab3, y = d_md, fill = d_R1menopause_lab3)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Menopausal status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
- scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p", post_meno_p),
-           col = "black",
-           size = 3.5)
-
-#plot2
-```
-
-```{r}
-#| echo: false
-#| include: false
-# age at menopause
-# code dev for plots with p-values
-
-#md_df %>% tabyl(d_age_menopause_lab)
-
-# linear regression 
-lr <- md_df %>% 
- filter(d_age_menopause_lab2 != "Missing") %>% 
-  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2,  "Pre-menopausal","<50", "50-54", "55+")) %>% 
-  lm(d_md_sqrt ~ d_age_menopause_lab2, data = .
-     ) %>% tidy() 
-
-lr
-
-summary(lr)
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-
-meno_premeno_p <- lr %>% 
-  filter(term == "d_age_menopause_lab2Pre-menopausal") %>% 
-  pull(p_val1)
-
-meno_under50_p <- lr %>% 
-  filter(term == "d_age_menopause_lab2<50") %>% 
-  pull(p_val1)
-
-
-meno_50to54_p <- lr %>% 
-  filter(term == "d_age_menopause_lab250-54") %>% 
-  pull(p_val1)
-
-meno_over55_p <- lr %>% 
-  filter(term == "d_age_menopause_lab255+") %>% 
-  pull(p_val1)
-
-# Age at menopause
-plot3 <- md_df %>% 
-  filter(d_age_menopause_lab2 != "Missing") %>%  
-  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "Pre-menopausal", "<50", "50-54", "55+")) %>% 
-  ggplot(aes(x = d_age_menopause_lab2, y = d_md, fill = d_age_menopause_lab2)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Age at menopause",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", meno_under50_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", meno_50to54_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 4,
-           y = 90,
-           label = paste("p =", meno_over55_p),
-           col = "black",
-           size = 3.5) 
-
-plot3
-```
-
-```{r}
-#| echo: false
-#| include: false
-# HRT 
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
- filter(d_R1hrt_sttyp_lab != "Missing") %>% 
-  mutate(d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT")) %>% 
-  lm(d_md_sqrt ~ d_R1hrt_sttyp_lab, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-hrt_never_p <- lr %>% 
-  filter(term == "d_R1hrt_sttyp_labNever") %>% 
-  pull(p_val1)
-
-
-hrt_former_p <- lr %>% 
-  filter(term == "d_R1hrt_sttyp_labFormer") %>% 
-  pull(p_val1)
-
-
-hrt_current_e_p <- lr %>% 
-  filter(term == "d_R1hrt_sttyp_labCurrent: Estrogen only") %>% 
-  pull(p_val1)
-
-hrt_current_ep_p <- lr %>% 
-  filter(term == "d_R1hrt_sttyp_labCurrent: Estrogen and progestogen") %>% 
-  pull(p_val1)
-
-hrt_current_o_p <- lr %>% 
-  filter(term == "d_R1hrt_sttyp_labCurrent: Other HRT") %>% 
-  pull(p_val1)
-
-
-# plot
-
-# HRT 
-plot4 <- md_df %>% 
-  filter(d_R1hrt_sttyp_lab != "Missing") %>% 
-  mutate(d_R1hrt_sttyp_lab = fct_relevel(d_R1hrt_sttyp_lab, "Never", "Former", "Current: Estrogen only", "Current: Estrogen and progestogen", "Current: Other HRT")) %>% 
-  ggplot(aes(x = d_R1hrt_sttyp_lab, y = d_md, fill = d_R1hrt_sttyp_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "HRT status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p", hrt_former_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", hrt_current_e_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 4,
-           y = 90,
-           label = paste("p =", hrt_current_ep_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 5,
-           y = 90,
-           label = paste("p =", hrt_current_o_p),
-           col = "black",
-           size = 3.5) +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
-  
-
-#plot4
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# parity 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
- filter(d_parity_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_parity_lab, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-parity1_p <- lr %>% 
-  filter(term == "d_parity_lab1") %>% 
-  pull(p_val1)
-
-
-parity2_p <- lr %>% 
-  filter(term == "d_parity_lab2") %>% 
-  pull(p_val1)
-
-parity3_p <- lr %>% 
-  filter(term == "d_parity_lab3+") %>% 
-  pull(p_val1)
-
-
-# plot
-plot5 <- md_df %>% 
-  filter(d_parity_lab != "Missing") %>% 
-  ggplot(aes(x = d_parity_lab, y = d_md, fill = d_parity_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Number of parous pregnancies",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", parity1_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p", parity2_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 4,
-           y = 90,
-           label = paste("p =", parity3_p),
-           col = "black",
-           size = 3.5) 
-
-#plot5
-
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# Age at first birth
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
- filter(d_agebirth1_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_agebirth1_lab, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-agebirth1_20to24_p <- lr %>% 
-  filter(term == "d_agebirth1_lab20-24") %>% 
-  pull(p_val1)
-
-
-agebirth1_lab25to29_p <- lr %>% 
-  filter(term == "d_agebirth1_lab25-29") %>% 
-  pull(p_val1)
-
-agebirth1_lab30to34_p <- lr %>% 
-  filter(term == "d_agebirth1_lab30-34") %>% 
-  pull(p_val1)
-
-agebirth1_lab35_p <- lr %>% 
-  filter(term == "d_agebirth1_lab35+") %>% 
-  pull(p_val1)
-
-
-# plot 
-plot6 <- md_df %>% 
-  filter(d_agebirth1_lab != "Missing") %>% 
-  ggplot(aes(x = d_agebirth1_lab, y = d_md, fill = d_agebirth1_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Age at first birth",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", agebirth1_20to24_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", agebirth1_lab25to29_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 4,
-           y = 90,
-           label = paste("p =", agebirth1_lab30to34_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 5,
-           y = 90,
-           label = paste("p =", agebirth1_lab35_p),
-           col = "black",
-           size = 3.5) 
-
-#plot6
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# age at menarche
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
- filter(d_age_menarche_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_age_menarche_lab, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-menarche_12to13_p <- lr %>% 
-  filter(term == "d_age_menarche_lab12-13") %>% 
-  pull(p_val1)
-
-
-menarche_14_p <- lr %>% 
-  filter(term == "d_age_menarche_lab14+") %>% 
-  pull(p_val1)
-
-
-# plot
-plot7 <- md_df %>% 
-  filter(d_age_menarche_lab != "Missing") %>% 
-  ggplot(aes(x = d_age_menarche_lab, y = d_md, fill = d_age_menarche_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Age at menarche",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p", menarche_12to13_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p", menarche_14_p),
-           col = "black",
-           size = 3.5)
-
-#plot7
-
-
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# oral contraceptives 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-  filter(d_ocstatus_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_ocstatus_lab, data = .
-     ) %>% tidy() 
-
-str(lr)
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-oc_former_p <- lr %>% 
-  filter(term == "d_ocstatus_labFormer") %>% 
-  pull(p_val1)
-
-
-oc_current_p <- lr %>% 
-  filter(term == "d_ocstatus_labCurrent") %>% 
-  pull(p_val1)
-
-
-# plot
-plot8 <- md_df %>% 
-  filter(d_ocstatus_lab != "Missing") %>% 
-  ggplot(aes(x = d_ocstatus_lab, y = d_md, fill = d_ocstatus_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Oral contraceptive status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", oc_former_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", oc_current_p),
-           col = "black",
-           size = 3.5)
-
-#plot8
 ```
 
 ```{r}
