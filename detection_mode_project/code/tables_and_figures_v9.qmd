@@ -614,6 +614,9 @@ bf_plot <- md_df |>
   title = "Duration of breastfeeding",
   annotation_pos = annotation_positions
 )
+
+bf_plot <- bf_plot +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
 # Print the plot
 #bf_plot
 
@@ -643,14 +646,14 @@ menost_plot <- create_violin_plot(
 # Age at Menopause ------------------------------------------------------------------------
 df |> tabyl(d_age_menopause_lab2)
 # Define annotation positions
-annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
 
 # Call the function
 menoage_plot <- md_df |> 
-  filter(d_age_menopause_lab2 != "Missing"
+  filter(!d_age_menopause_lab2 %in% c("Missing", "Pre-menopausal")
          ) |> 
-  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "Pre-menopausal", "<50", "50-54", "55+")
+  mutate(d_age_menopause_lab2 = fct_relevel(d_age_menopause_lab2, "<50", "50-54", "55+")
          ) |> 
   create_violin_plot(
   response_var = "d_md",
@@ -659,6 +662,7 @@ menoage_plot <- md_df |>
   title = "Age at menopause",
   annotation_pos = annotation_positions
 )
+
 # Print the plot
 #menoage_plot
 
@@ -1140,33 +1144,46 @@ tcomposite_plot
 ```{r}
 
 # rf vars for violin plots
-rf_variables <- c(      "d_age_menarche_lab",
-                        "d_ocstatus_lab",
-                        "d_parity_lab",
-                        "d_agebirth1_lab",
-                        "d_bf_dur_lab",
-                        "d_R1menopause_lab3",
-                        "d_age_menopause_lab2",
-                        "d_R1hrt_sttyp_lab",
-                        "d_bbd_lab",
-                        "d_fambrca_lab",
-                        "d_bmi_20_lab",
-                        "d_bmi_entry_lab",
-                        "d_R1physmet_leis_who_lab",
-                        "d_R1alcohol_units_lab",
-                        "d_R1smokingstatus_lab"
+explanatory_vars <- c("d_dmode",
+                      "d_age_menarche_lab",
+                  "d_ocstatus_lab",
+                  "d_parity_lab",
+                  "d_agebirth1_lab",
+                  "d_bf_dur_lab",
+                  "d_R1menopause_lab3",
+                  "d_age_menopause_lab", 
+                  "d_R1hrt_sttyp_lab",
+                  "d_bbd_lab",
+                  "d_fambrca_lab",
+                  "d_bmi_20_lab",
+                  "d_bmi_entry_lab",
+                  "d_R1physmet_leis_who_lab",
+                  "d_R1alcohol_units_lab",
+                  "d_R1smokingstatus_lab",
+                        
+                 "d_inv_status", 
+                 "d_grade_lab", 
+                 "d_morph4_lab", 
+                 "d_pos_nodes_lab", 
+                 "d_tumour_size_lab", 
+                 "d_er_status_lab", 
+                 "d_pr_status_lab", 
+                 "d_her2_status_lab"
                         
                       )
 
 
 
 # Unadjusted:
-univ_unadjusted <- df_compl_case |> 
+table_unadjusted <- df_compl_case |> 
   filter(d_md_avail == 1
   ) |> 
-  mutate(d_bf_dur_lab = if_else(d_bf_dur_lab == "Missing", NA, d_bf_dur_lab)
+  mutate(d_bf_dur_lab = if_else(d_bf_dur_lab == "Missing", NA, d_bf_dur_lab),
+         d_age_menopause_lab = if_else(d_age_menopause_lab == "Pre-menopausal", NA, d_age_menopause_lab),
+         d_R1hrt_sttyp_lab = if_else(d_R1hrt_sttyp_lab == "Pre-menopausal", NA, d_R1hrt_sttyp_lab),
+         d_agebirth1_lab = if_else(d_agebirth1_lab == "Non-parous", NA, d_agebirth1_lab),
          ) |> 
-  select(d_dmode_n, d_md, any_of(rf_variables), any_of(tumour_char)
+  select(d_md, any_of(explanatory_vars)
          ) |> 
   tbl_uvregression(
     method = lm,
@@ -1177,7 +1194,15 @@ univ_unadjusted <- df_compl_case |>
   bold_labels() 
 
 
-univ_unadjusted
+table_unadjusted
+
+
+
+
+
+
+
+
 
 
 # Adjusted for age: 
@@ -1204,8 +1229,15 @@ univ_ageadjusted
 # check with single lm command that the adjusted univariate is correct 
 
 
-test <- lm(d_md ~ d_parity_lab, data = df_compl_case)
+test <- lm(d_md ~ d_age_menopause_lab2, data = df)
 summary(test)
+df |> tabyl(d_age_menopause_lab, d_age_menopause_lab2)
+
+
+test <- lm(d_md ~ d_age_menopause_lab, data = df)
+summary(test)
+
+
 
 test <- lm(d_md ~ d_parity_lab + diagage, data = df_compl_case)
 summary(test)
@@ -1225,113 +1257,53 @@ summary(test)
 ```{r}
 
 
-# List of explanatory variables
-explanatory_vars <- c("d_age_menarche_lab",
-                      "d_ocstatus_lab",
-                      "d_parity_lab",
-                      "d_agebirth1_lab",
-                      "d_bf_dur_lab",
-                      "d_R1menopause_lab3",
-                      "d_R1hrt_sttyp_lab",
-                      "d_bbd_lab",
-                      "d_fambrca_lab",
-                      "d_bmi_20_lab",
-                      "d_bmi_entry_lab",
-                      "d_R1physmet_leis_who_lab",
-                      "d_R1alcohol_units_lab",
-                      "d_R1smokingstatus_lab")
+# rf vars for violin plots
+explanatory_vars <- c("d_dmode",
+                      "d_age_menarche_lab",
+                  "d_ocstatus_lab",
+                  "d_parity_lab",
+                  "d_agebirth1_lab",
+                  "d_bf_dur_lab",
+                  "d_R1menopause_lab3",
+                  "d_age_menopause_lab", 
+                  "d_R1hrt_sttyp_lab",
+                  "d_bbd_lab",
+                  "d_fambrca_lab",
+                  "d_bmi_20_lab",
+                  "d_bmi_entry_lab",
+                  "d_R1physmet_leis_who_lab",
+                  "d_R1alcohol_units_lab",
+                  "d_R1smokingstatus_lab",
+                        
+                 "d_inv_status", 
+                 "d_grade_lab", 
+                 "d_morph4_lab", 
+                 "d_pos_nodes_lab", 
+                 "d_tumour_size_lab", 
+                 "d_er_status_lab", 
+                 "d_pr_status_lab", 
+                 "d_her2_status_lab"
+                        
+                      )
 
-
-# Create an empty list to store regression results
-regression_results <- list()
-
-# Loop over each explanatory variable and create regression models
-for (var in explanatory_vars) {
-  
-  # Run regression model for each explanatory variable, adjusting for age
-  model <- lm(d_md ~ get(var) + diagage, data = df_compl_case)  # assuming response is d_md and age is diagage
-  
-  # Store regression results in the list
-  regression_results[[var]] <- tbl_regression(
-    model,
-    estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
-    pvalue_fun = ~ style_pvalue(.x, digits = 2)  # Format p-values
-  ) %>%
-    add_global_p()  # Add the global p-value for the model
-}
-
-# Combine all regression results into one table
-final_table <- tbl_merge(regression_results, tab_spanner = TRUE, add_row_labels = TRUE)
-
-# Print the final table
-final_table
-
-
-
-
-
-
-
-model <- lm(d_md ~ d_age_menarche_lab + diagage, data = df_compl_case)
-
-
-
-table1 <- tbl_regression(
-  model,
-  estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
-    pvalue_fun = ~ style_pvalue(.x, digits = 2)
-) |> 
-  add_global_p(
-  ) |> 
-remove_row_type(variables = diagage, # remove covariates
-                  type = "all")
-
-table1
-
-
-
-
-model <- lm(d_md ~ d_ocstatus_lab + diagage, data = df_compl_case)
-
-
-
-table2 <- tbl_regression(
-  model,
-  estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
-    pvalue_fun = ~ style_pvalue(.x, digits = 2)
-) |> 
-  add_global_p(
-  ) |> 
-remove_row_type(variables = diagage, # remove covariates
-                  type = "all")
-
-table2
-
-
-final_table <- tbl_stack(list(table1, table2))
-final_table
-
-
-
-
-
-
-
-
-
-
-# List of explanatory variables
-explanatory_vars <- c("d_age_menarche_lab",
-                      "d_ocstatus_lab",
-                      "d_parity_lab")
 
 # List to store regression tables
 table_list <- list()
 
+# data manipulation to remove redundant levels 
+
+df_temp <- df_compl_case |> 
+  mutate(d_bf_dur_lab = if_else(d_bf_dur_lab == "Missing", NA, d_bf_dur_lab),
+         d_age_menopause_lab = if_else(d_age_menopause_lab == "Pre-menopausal", NA, d_age_menopause_lab),
+         d_R1hrt_sttyp_lab = if_else(d_R1hrt_sttyp_lab == "Pre-menopausal", NA, d_R1hrt_sttyp_lab),
+         d_agebirth1_lab = if_else(d_agebirth1_lab == "Non-parous", NA, d_agebirth1_lab),
+         )
+
+
 # Loop through each explanatory variable and create a regression table
 for (var in explanatory_vars) {
   # Run the regression model adjusted for age
-  model <- lm(as.formula(paste("d_md ~", var, "+ diagage")), data = df_compl_case)
+  model <- lm(as.formula(paste("d_md ~", var, "+ diagage")), data = df_temp)
   
   # Create the regression table and store it in the list
   table_list[[var]] <- tbl_regression(
@@ -1344,25 +1316,26 @@ for (var in explanatory_vars) {
 }
 
 # Stack all the regression tables into one
-final_table <- tbl_stack(table_list)
+table_adjusted <- tbl_stack(table_list)
 
 # View the final stacked table
-final_table
+table_adjusted
 
 
 
 
+```
+
+```{r}
+# Merge the tables
+
+
+md_desc_table <- tbl_merge(list(table_unadjusted, table_adjusted))
+md_desc_table
 
 
 
-
-
-
-
-
-
-
-
+# next step - add labels 
 ```
 
 ## Table 2 - Main analysis
