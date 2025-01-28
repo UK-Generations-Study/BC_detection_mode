@@ -497,7 +497,8 @@ dmode_plot
 ### Figure 3 - Mammographic density by risk factors
 
 ```{r}
-
+#| echo: false
+#| include: false
 
 
 # Age at menarche ------------------------------------------------------------
@@ -936,508 +937,193 @@ cp_6
 
 ```
 
-### Tumour characteristics
+### Figure 4 - Mammographic density by Tumour characteristics
 
 ```{r}
 #| echo: false
 #| include: false
 
-# Invasive status 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_inv_status_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_inv_status_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-inv_yes <- lr %>% 
-  filter(term == "d_inv_status_labInvasive") %>% 
-  pull(p_val1)
-
-
-
-
-# plot
-tplot1 <- md_df %>% 
-  filter(d_inv_status_lab != "Missing") %>%  
-  ggplot(aes(x = d_inv_status_lab, y = d_md, fill = d_inv_status_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Invasive status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", inv_yes),
-           col = "black",
-           size = 3.5)
-
-#tplot1
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# Grade 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_grade_lab != "Missing") %>% 
-  lm(d_md_sqrt ~ d_grade_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-grade2_p <- lr %>% 
-  filter(term == "d_grade_lab2") %>% 
-  pull(p_val1)
-
-grade3_p <- lr %>% 
-  filter(term == "d_grade_lab3") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot2 <- md_df %>% 
-  filter(d_grade_lab != "Missing") %>%  
-  ggplot(aes(x = d_grade_lab, y = d_md, fill = d_grade_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Grade",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", grade2_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", grade3_p),
-           col = "black",
-           size = 3.5)
-
-#tplot2
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# Morphology
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_morph4_lab != "Missing") %>%  
-  lm(d_md_sqrt ~ d_morph4_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-morph_lob_p <- lr %>% 
-  filter(term == "d_morph4_labLobular") %>% 
-  pull(p_val1)
-
-morph_mixed_p <- lr %>% 
-  filter(term == "d_morph4_labMixed: ductal and other") %>% 
-  pull(p_val1)
-
-morph_other_p <- lr %>% 
-  filter(term == "d_morph4_labOther") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot3 <- md_df %>% 
-  filter(d_morph4_lab != "Missing") %>% 
-  ggplot(aes(x = d_morph4_lab, y = d_md, fill = d_morph4_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Morphology",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2")  +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", morph_lob_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", morph_mixed_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 4,
-           y = 90,
-           label = paste("p =", morph_other_p),
-           col = "black",
-           size = 3.5) +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
-
-#tplot3
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# positive nodes 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_pos_nodes_lab != "Missing") %>%   
-  lm(d_md_sqrt ~ d_pos_nodes_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-pos_nodes_p <- lr %>% 
-  filter(term == "d_pos_nodes_labPositive") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot4 <- md_df %>% 
-  filter(d_pos_nodes_lab != "Missing") %>% 
-  ggplot(aes(x = d_pos_nodes_lab, y = d_md, fill = d_pos_nodes_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Positive nodes",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", pos_nodes_p),
-           col = "black",
-           size = 3.5)
-
-#tplot4
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# tumour size 
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_tumour_size_lab != "Missing") %>%    
-  lm(d_md_sqrt ~ d_tumour_size_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-tms_21to50_p <- lr %>% 
-  filter(term == "d_tumour_size_lab21-50") %>% 
-  pull(p_val1)
-
-tms_over50_p <- lr %>% 
-  filter(term == "d_tumour_size_lab50+") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot5 <- md_df %>% 
-  filter(d_tumour_size_lab != "Missing") %>% 
-  ggplot(aes(x = d_tumour_size_lab, y = d_md, fill = d_tumour_size_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "Tumour size",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", tms_21to50_p),
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 3,
-           y = 90,
-           label = paste("p =", tms_over50_p),
-           col = "black",
-           size = 3.5)
-
-#tplot5
-  
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# er status
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_er_status_lab != "Missing") %>%     
-  lm(d_md_sqrt ~ d_er_status_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-er_neg_p <- lr %>% 
-  filter(term == "d_er_status_labNegative") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot6 <- md_df %>% 
-  filter(d_er_status_lab != "Missing") %>%
-  ggplot(aes(x = d_er_status_lab, y = d_md, fill = d_er_status_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "ER status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", er_neg_p),
-           col = "black",
-           size = 3.5)
-
-#tplot6
-```
-
-```{r}
-#| echo: false
-#| include: false
-
-# pr status
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_pr_status_lab != "Missing") %>%   
-  lm(d_md_sqrt ~ d_pr_status_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-pr_neg_p <- lr %>% 
-  filter(term == "d_pr_status_labNegative") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot7 <- md_df %>% 
-  filter(d_pr_status_lab != "Missing") %>%
-  ggplot(aes(x = d_pr_status_lab, y = d_md, fill = d_pr_status_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "PR status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", pr_neg_p),
-           col = "black",
-           size = 3.5)
-
-#tplot7
+
+# Invesive status -----------------------------------------------------------------------
+df |> tabyl(d_inv_status_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+invst_plot <- md_df |> 
+  filter(d_inv_status_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_inv_status_lab",
+  y_label = "Breast density (%)",
+  title = "Invasive status",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+invst_plot
+
+
+# Grade ----------------------------------------------------------------------------------
+df |> tabyl(d_grade_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+grade_plot <- md_df |> 
+  filter(d_grade_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_grade_lab",
+  y_label = "Breast density (%)",
+  title = "Grade",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+grade_plot
+
+
+# Morphology -------------------------------------------------------------------------------
+df |> tabyl(d_morph4_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+morph_plot <- md_df |> 
+  filter(d_grade_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_morph4_lab",
+  y_label = "Breast density (%)",
+  title = "Morphology",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+morph_plot
+
+
+
+# Positive nodes -------------------------------------------------------------------------------
+df |> tabyl(d_pos_nodes_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+nodes_plot <- md_df |> 
+  filter(d_pos_nodes_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_pos_nodes_lab",
+  y_label = "Breast density (%)",
+  title = "Positive nodes",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+nodes_plot
+
+
+
+# Tumour size -------------------------------------------------------------------------------
+df |> tabyl(d_tumour_size_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+tsize_plot <- md_df |> 
+  filter(d_tumour_size_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_tumour_size_lab",
+  y_label = "Breast density (%)",
+  title = "Tumour size",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+tsize_plot
+
+
+
+# ER status --------------------------------------------------------------------------------
+df |> tabyl(d_er_status_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+er_plot <- md_df |> 
+  filter(d_er_status_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_er_status_lab",
+  y_label = "Breast density (%)",
+  title = "ER status",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+er_plot
+
+
+# PR status ------------------------------------------------------------------------------------
+df |> tabyl(d_pr_status_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+pr_plot <- md_df |> 
+  filter(d_pr_status_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_pr_status_lab",
+  y_label = "Breast density (%)",
+  title = "PR status",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+pr_plot
+
+
+
+# HER2 status -------------------------------------------------------------------------------------
+df |> tabyl(d_her2_status_lab)
+# Define annotation positions
+annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
+# Define category labels - no labels needed 
+
+# Call the function
+her2_plot <- md_df |> 
+  filter(d_her2_status_lab != "Missing"
+         ) |> 
+  create_violin_plot(
+  response_var = "d_md",
+  explanatory_var = "d_her2_status_lab",
+  y_label = "Breast density (%)",
+  title = "HER2 status",
+  annotation_pos = annotation_positions
+)
+# Print the plot
+her2_plot
 
 ```
 
-```{r}
-#| echo: false
-#| include: false
-
-# her2 status
-
-# code dev for plots with p-values
-
-
-# linear regression 
-lr <- md_df %>% 
-   filter(d_her2_status_lab != "Missing") %>%   
-  lm(d_md_sqrt ~ d_her2_status_lab, data = .
-     ) %>% tidy() 
-
-# format p-values 
-lr <- lr %>% 
-  format_p_values(p.value)
-
-lr
-
-# pull p-values
-her2_neg_p <- lr %>% 
-  filter(term == "d_her2_status_labNegative") %>% 
-  pull(p_val1)
-
-
-# plot
-tplot8 <- md_df %>% 
-  filter(d_her2_status_lab != "Missing") %>% 
-  ggplot(aes(x = d_her2_status_lab, y = d_md, fill = d_her2_status_lab)) +
-  geom_violin(alpha = 0.4) +
-  geom_boxplot(width = 0.1)+
-  ylim(0, 100) +
-  labs(title = "HER2 status",
-       x = "",
-       y = "Breast density (%)") +
-  theme_base() +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette="Set2") +
-  annotate("text",
-           x = 1,
-           y = 90,
-           label = "reference",
-           col = "black",
-           size = 3.5) +
-  annotate("text",
-           x = 2,
-           y = 90,
-           label = paste("p =", her2_neg_p),
-           col = "black",
-           size = 3.5) 
-
-#tplot8
-```
-
-```{r, fig.width=19, fig.height=13}
+```{r, fig.width=13, fig.height=15}
 #| echo: false
 
-# composite plot
-tcomposite_plot <-plot1 + tplot1 + tplot2 + tplot4 + tplot5 + tplot6 + tplot7 + tplot8 + tplot3 + plot_layout(ncol = 3)
+tcomposite_plot <- invst_plot + grade_plot + morph_plot + nodes_plot + tsize_plot + er_plot + pr_plot + her2_plot + plot_layout(ncol = 2)
 
 tcomposite_plot
+
 
 
 ```
