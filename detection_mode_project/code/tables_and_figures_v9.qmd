@@ -1139,8 +1139,6 @@ tcomposite_plot
 
 ```{r}
 
-
-
 # rf vars for violin plots
 rf_variables <- c(      "d_age_menarche_lab",
                         "d_ocstatus_lab",
@@ -1194,7 +1192,6 @@ univ_ageadjusted <- df_compl_case |>
     method = lm,
     y = d_md,
     formula = "{y} ~ {x} + diagage",
-      #list(formula = ~ . + diagage), # Adjust for age 
     pvalue_fun = ~ style_pvalue(.x, digits = 2)
    ) |> 
   add_global_p() |>  # add global p-value
@@ -1205,6 +1202,166 @@ univ_ageadjusted
 
 
 # check with single lm command that the adjusted univariate is correct 
+
+
+test <- lm(d_md ~ d_parity_lab, data = df_compl_case)
+summary(test)
+
+test <- lm(d_md ~ d_parity_lab + diagage, data = df_compl_case)
+summary(test)
+
+
+
+
+test <- lm(d_md ~ d_parity_lab, data = df_compl_case)
+summary(test)
+
+test <- lm(d_md ~ d_parity_lab + diagage, data = df_compl_case)
+summary(test)
+
+
+```
+
+```{r}
+
+
+# List of explanatory variables
+explanatory_vars <- c("d_age_menarche_lab",
+                      "d_ocstatus_lab",
+                      "d_parity_lab",
+                      "d_agebirth1_lab",
+                      "d_bf_dur_lab",
+                      "d_R1menopause_lab3",
+                      "d_R1hrt_sttyp_lab",
+                      "d_bbd_lab",
+                      "d_fambrca_lab",
+                      "d_bmi_20_lab",
+                      "d_bmi_entry_lab",
+                      "d_R1physmet_leis_who_lab",
+                      "d_R1alcohol_units_lab",
+                      "d_R1smokingstatus_lab")
+
+
+# Create an empty list to store regression results
+regression_results <- list()
+
+# Loop over each explanatory variable and create regression models
+for (var in explanatory_vars) {
+  
+  # Run regression model for each explanatory variable, adjusting for age
+  model <- lm(d_md ~ get(var) + diagage, data = df_compl_case)  # assuming response is d_md and age is diagage
+  
+  # Store regression results in the list
+  regression_results[[var]] <- tbl_regression(
+    model,
+    estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)  # Format p-values
+  ) %>%
+    add_global_p()  # Add the global p-value for the model
+}
+
+# Combine all regression results into one table
+final_table <- tbl_merge(regression_results, tab_spanner = TRUE, add_row_labels = TRUE)
+
+# Print the final table
+final_table
+
+
+
+
+
+
+
+model <- lm(d_md ~ d_age_menarche_lab + diagage, data = df_compl_case)
+
+
+
+table1 <- tbl_regression(
+  model,
+  estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+) |> 
+  add_global_p(
+  ) |> 
+remove_row_type(variables = diagage, # remove covariates
+                  type = "all")
+
+table1
+
+
+
+
+model <- lm(d_md ~ d_ocstatus_lab + diagage, data = df_compl_case)
+
+
+
+table2 <- tbl_regression(
+  model,
+  estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)
+) |> 
+  add_global_p(
+  ) |> 
+remove_row_type(variables = diagage, # remove covariates
+                  type = "all")
+
+table2
+
+
+final_table <- tbl_stack(list(table1, table2))
+final_table
+
+
+
+
+
+
+
+
+
+
+# List of explanatory variables
+explanatory_vars <- c("d_age_menarche_lab",
+                      "d_ocstatus_lab",
+                      "d_parity_lab")
+
+# List to store regression tables
+table_list <- list()
+
+# Loop through each explanatory variable and create a regression table
+for (var in explanatory_vars) {
+  # Run the regression model adjusted for age
+  model <- lm(as.formula(paste("d_md ~", var, "+ diagage")), data = df_compl_case)
+  
+  # Create the regression table and store it in the list
+  table_list[[var]] <- tbl_regression(
+    model,
+    estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
+    pvalue_fun = ~ style_pvalue(.x, digits = 2)    # Formatting p-values
+  ) %>%
+    add_global_p() %>%
+    remove_row_type(variables = "diagage", type = "all")  # Remove the age covariate from the table
+}
+
+# Stack all the regression tables into one
+final_table <- tbl_stack(table_list)
+
+# View the final stacked table
+final_table
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```
 
