@@ -1348,7 +1348,7 @@ md_desc_table
 # 
 # 
 # 
-# md_desc_table <- md_desc_table |> 
+# md_desc_table <- md_desc_table |>
 #   modify_table_styling(columns = label,
 #                        rows = variable %in% explanatory_vars & row_type == "label",
 #                        label = tab_labels
@@ -1475,7 +1475,12 @@ model2 <- tbl_regression(model,
                          ) %>% 
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
-                  type = "all")
+                  type = "all") |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
   
 
 #model2
@@ -1518,7 +1523,12 @@ model4 <- tbl_regression(model,
                          ) %>% 
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
-                  type = "all")
+                  type = "all")|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
 
 
 
@@ -1616,6 +1626,9 @@ table2 <- table2 %>%
 
 table2
 
+
+
+
 ```
 
 ### Simplified table
@@ -1632,7 +1645,7 @@ on 01/10/2024 agreed to:
 
 -   add overall p-value (only for model 4?)
 
-Forest plot will be also presented
+should Forest plot also be presented?
 
 ```{r}
 #| echo: false
@@ -1684,7 +1697,12 @@ model2 <- tbl_regression(model,
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
                   type = "all") %>% 
-  add_global_p()
+  add_global_p() |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
   
 
 #model2
@@ -1731,7 +1749,12 @@ model4 <- tbl_regression(model,
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
                   type = "all") %>% 
-  add_global_p()
+  add_global_p()|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
 
 
 
@@ -1832,7 +1855,15 @@ table2
 
 ```
 
-## Figure X - forest plot
+## Figure X - forest plot 
+
+::: {.callout-note style="color:orange"}
+## Question
+
+29/01/2025
+
+Do we still want the forest plot figures?
+:::
 
 ```{r}
 #| echo: false
@@ -2046,7 +2077,7 @@ Some edits in the forest plot are still needed
 TC descriptives by detection mode, logistic regression of TC with detection mode (same principal as risk factor analysis but multiple exposures are TC)
 
 ::: {.callout-note style="color: orange"}
-this will be in excel format in supplement
+previously agreed that this could be in excel format in supplement as too large
 :::
 
 ```{r}
@@ -2077,7 +2108,12 @@ model5 <- tbl_regression(model,
                           d_pr_tr_lab ~ "PR status",
                           d_her2_tr_lab ~ "HER2 status"
                          )
-                         ) 
+                         ) |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
   
 
 
@@ -2133,7 +2169,12 @@ model6 <- tbl_regression(model,
                          )
                          ) %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
-                  type = "all")
+                  type = "all") |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
 
 
 # summary Logistic Regression of Model 7  -----------------------------------------
@@ -2189,7 +2230,12 @@ model7 <- tbl_regression(model,
                          )
                          ) %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
-                  type = "all")
+                  type = "all") |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
 
 # Create descriptives by mode of detection ------------------------------------
 # select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
