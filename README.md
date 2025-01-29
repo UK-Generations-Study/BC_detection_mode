@@ -38,8 +38,8 @@ code development for for descriptive figures
 
 ### Analysis 
 with detailed code
-[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis_v7_with_missing.html) 
+[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis_v8.html) 
 
 ### Publication table and figures
 code hidden, outputs only 
-[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v7.html)
+[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v9.html)
