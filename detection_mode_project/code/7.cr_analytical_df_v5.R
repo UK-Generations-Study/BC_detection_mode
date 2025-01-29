@@ -1767,6 +1767,11 @@ dev_an_df <- dev_an_df %>%
 #dfSummary(dev_an_df)
 
 # 4. Comprise analytical dataset ------------------------------------------------------------
+
+## Base data 
+# this data still needs some processing for analysis this was done as part of analysis_v7_with_missing.qmd but all data manipulation should be done in simple scripts and not
+# this final processing done in script 8
+
 an_df <- dev_an_df %>% 
   select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, AgeatEntry, incident, side, 
          source_dm2, dm2_screen_date_f, dens_dm2_screen_date_f, SD_dg_first_screen, reg_sd,
