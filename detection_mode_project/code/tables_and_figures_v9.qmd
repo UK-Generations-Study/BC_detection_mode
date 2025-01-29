@@ -39,7 +39,7 @@ version 9 - 23/01/2025 - clean code - used function for violin plots
 
 -   create a crosstab for SD registry & derived dmode (expl done in analysis script - create a nice table)
 
--   formatting table 1 - remove missing rows estimates, but keep percentages
+-   formatting regression tables - remove missing rows estimates, but keep descriptives
 
 -   update flow chart (remove exclusions, add another level for other dmode categories, removed MD numbers)
 
@@ -475,6 +475,7 @@ Missing categories left in for now for info but will probably need to be removed
 ### Figure 2 - Mammographic density by detection mode
 
 ```{r}
+#| echo: false
 
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, 
@@ -502,6 +503,12 @@ dmode_plot
 ```
 
 ### Figure 3 - Mammographic density by risk factors
+
+::: {.callout-note style="color: orange"}
+## Question
+
+The layout to be decided - currently there are several composite plots by risk factor groups
+:::
 
 ```{r}
 #| echo: false
@@ -1139,9 +1146,13 @@ tcomposite_plot
 
 ```
 
-### Supporting tables for violin plots
+### Table X - Supporting tables for violin plots
 
 ```{r}
+#| echo: false
+#| include: false
+#| warning: false
+
 
 # rf vars for violin plots
 explanatory_vars <- c("d_dmode",
@@ -1194,68 +1205,14 @@ table_unadjusted <- df_compl_case |>
   bold_labels() 
 
 
-table_unadjusted
-
-
-
-
-
-
-
-
-
-
-# Adjusted for age: 
-univ_ageadjusted <- df_compl_case |> 
-  filter(d_md_avail == 1
-  ) |> 
-  mutate(d_bf_dur_lab = if_else(d_bf_dur_lab == "Missing", NA, d_bf_dur_lab)
-         ) |> 
-  select(d_dmode_n, d_md, any_of(rf_variables), any_of(tumour_char), diagage
-         ) |> 
-  tbl_uvregression(
-    method = lm,
-    y = d_md,
-    formula = "{y} ~ {x} + diagage",
-    pvalue_fun = ~ style_pvalue(.x, digits = 2)
-   ) |> 
-  add_global_p() |>  # add global p-value
-  bold_labels() 
-
-
-univ_ageadjusted
-
-
-# check with single lm command that the adjusted univariate is correct 
-
-
-test <- lm(d_md ~ d_age_menopause_lab2, data = df)
-summary(test)
-df |> tabyl(d_age_menopause_lab, d_age_menopause_lab2)
-
-
-test <- lm(d_md ~ d_age_menopause_lab, data = df)
-summary(test)
-
-
-
-test <- lm(d_md ~ d_parity_lab + diagage, data = df_compl_case)
-summary(test)
-
-
-
-
-test <- lm(d_md ~ d_parity_lab, data = df_compl_case)
-summary(test)
-
-test <- lm(d_md ~ d_parity_lab + diagage, data = df_compl_case)
-summary(test)
-
+#table_unadjusted
 
 ```
 
 ```{r}
-
+#| echo: false
+#| include: false
+#| warning: false
 
 # rf vars for violin plots
 explanatory_vars <- c("d_dmode",
@@ -1320,7 +1277,7 @@ for (var in explanatory_vars) {
 table_adjusted <- tbl_stack(table_list)
 
 # View the final stacked table
-table_adjusted
+#table_adjusted
 
 
 
@@ -1328,6 +1285,8 @@ table_adjusted
 ```
 
 ```{r}
+#| echo: false
+
 # Merge the tables
 
 
@@ -1403,6 +1362,12 @@ md_desc_table
 
 # Note - labelling variables doesn't work. Look into using package labelled https://www.pipinghotdata.com/posts/2021-07-14-polished-summary-tables-in-r-with-gtsummary/
 ```
+
+::: callout-note
+## Note
+
+There is some bug with labelling the variables as the table is a composite of two types of tables. I tried a few different ways but needs further reviewing.
+:::
 
 ## Table 2 - Main analysis
 
@@ -1631,7 +1596,7 @@ table2
 
 ```
 
-### Simplified table
+### Simplified table 2
 
 on 01/10/2024 agreed to:
 
@@ -2077,7 +2042,7 @@ Some edits in the forest plot are still needed
 TC descriptives by detection mode, logistic regression of TC with detection mode (same principal as risk factor analysis but multiple exposures are TC)
 
 ::: {.callout-note style="color: orange"}
-previously agreed that this could be in excel format in supplement as too large
+previously agreed that this could be in excel format in supplementar materials as too large
 :::
 
 ```{r}
@@ -2420,6 +2385,8 @@ ST2
 ## Cross-tabulation between registry detection mode and in-house detection mode
 
 ```{r}
+#| echo: false
+
 # use row percentages and rename reg_sd levels to align with dmode
 
 dmode_crosstab_tb <- df |> 
@@ -2435,7 +2402,7 @@ dmode_crosstab_tb <- df |>
   ) |> 
   bold_labels()
 
-dmode_crosstab_tb |> show_header_names()
+#dmode_crosstab_tb |> show_header_names()
 
 
 dmode_crosstab_tb <- dmode_crosstab_tb |> 
