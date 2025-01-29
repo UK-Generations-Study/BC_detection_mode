@@ -509,7 +509,7 @@ dmode_plot
 
 
 # Age at menarche ------------------------------------------------------------
-df |> tabyl(d_age_menarche_lab)
+#df |> tabyl(d_age_menarche_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -531,7 +531,7 @@ agemenarche_plot <- md_df |>
 
 
 # Oral contraceptives --------------------------------------------------------
-df |> tabyl(d_ocstatus_lab)
+#df |> tabyl(d_ocstatus_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -553,7 +553,7 @@ oc_plot <- md_df |>
 
 
 # Parity --------------------------------------------------------
-df |> tabyl(d_parity_lab)
+#df |> tabyl(d_parity_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
 # Define category labels - no labels needed 
@@ -576,7 +576,7 @@ parity_plot <- md_df |>
 
 
 # Age at first birth -------------------------------------------------
-df |> tabyl(d_agebirth1_lab)
+#df |> tabyl(d_agebirth1_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
 # Define category labels - no labels needed 
@@ -598,7 +598,7 @@ agebirth1_plot <- md_df |>
 
 
 # Duration of breastfeeding -----------------------------------------------------
-df |> tabyl(d_bf_dur_lab)
+#df |> tabyl(d_bf_dur_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
 # Define category labels - no labels needed 
@@ -644,7 +644,7 @@ menost_plot <- create_violin_plot(
 
 
 # Age at Menopause ------------------------------------------------------------------------
-df |> tabyl(d_age_menopause_lab2)
+#df |> tabyl(d_age_menopause_lab2)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -670,7 +670,7 @@ menoage_plot <- md_df |>
 
 # HRT status --------------------------------------------------------------------------------
 # NOTE: this may be replaced by the simpler HRT variable
-df |> tabyl(d_R1hrt_sttyp_lab)
+#df |> tabyl(d_R1hrt_sttyp_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
 # Define category labels - no labels needed 
@@ -696,7 +696,7 @@ hrtst_plot <- hrtst_plot +
 
 
 # Benign breast disease ---------------------------------------------------------
-df |> tabyl(d_bbd_lab)
+#df |> tabyl(d_bbd_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -719,7 +719,7 @@ bbd_plot <- md_df |>
 
 
 # Family history of breast cancer -----------------------------------------------
-df |> tabyl(d_fambrca_lab)
+#df |> tabyl(d_fambrca_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -741,7 +741,7 @@ fambrca_plot <- md_df |>
 
 
 # BMI at age 20 ------------------------------------------------------------------
-df |> tabyl(d_bmi_20_lab)
+#df |> tabyl(d_bmi_20_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
 # Define category labels - no labels needed 
@@ -763,7 +763,7 @@ bmi20_plot <- md_df |>
 
 
 # BMI -----------------------------------------------------------------------------
-df |> tabyl(d_bmi_entry_lab)
+#df |> tabyl(d_bmi_entry_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
 # Define category labels - no labels needed 
@@ -787,7 +787,7 @@ bmi_plot <- md_df |>
 
 
 # Physical activity ---------------------------------------------------------------
-df |> tabyl(d_R1physmet_leis_who_lab)
+#df |> tabyl(d_R1physmet_leis_who_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -810,7 +810,7 @@ pa_plot <- md_df |>
 
 
 # Alcohol ------------------------------------------------------------------------
-df |> tabyl(d_R1alcohol_units_lab)
+#df |> tabyl(d_R1alcohol_units_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 5, p_y = 90)
 # Define category labels - no labels needed 
@@ -833,7 +833,7 @@ alc_plot <- md_df |>
 
 
 # Smoking -----------------------------------------------------------------------
-df |> tabyl(d_R1smokingstatus_lab)
+#df |> tabyl(d_R1smokingstatus_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -956,7 +956,7 @@ cp_6
 
 
 # Invesive status -----------------------------------------------------------------------
-df |> tabyl(d_inv_status_lab)
+#df |> tabyl(d_inv_status_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -973,11 +973,11 @@ invst_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-invst_plot
+#invst_plot
 
 
 # Grade ----------------------------------------------------------------------------------
-df |> tabyl(d_grade_lab)
+#df |> tabyl(d_grade_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -994,11 +994,11 @@ grade_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-grade_plot
+#grade_plot
 
 
 # Morphology -------------------------------------------------------------------------------
-df |> tabyl(d_morph4_lab)
+#df |> tabyl(d_morph4_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 4, p_y = 90)
 # Define category labels - no labels needed 
@@ -1015,12 +1015,12 @@ morph_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-morph_plot
+#morph_plot
 
 
 
 # Positive nodes -------------------------------------------------------------------------------
-df |> tabyl(d_pos_nodes_lab)
+#df |> tabyl(d_pos_nodes_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -1037,12 +1037,12 @@ nodes_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-nodes_plot
+#nodes_plot
 
 
 
 # Tumour size -------------------------------------------------------------------------------
-df |> tabyl(d_tumour_size_lab)
+#df |> tabyl(d_tumour_size_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 3, p_y = 90)
 # Define category labels - no labels needed 
@@ -1059,12 +1059,12 @@ tsize_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-tsize_plot
+#tsize_plot
 
 
 
 # ER status --------------------------------------------------------------------------------
-df |> tabyl(d_er_status_lab)
+#df |> tabyl(d_er_status_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -1081,11 +1081,11 @@ er_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-er_plot
+#er_plot
 
 
 # PR status ------------------------------------------------------------------------------------
-df |> tabyl(d_pr_status_lab)
+#df |> tabyl(d_pr_status_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -1102,12 +1102,12 @@ pr_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-pr_plot
+#pr_plot
 
 
 
 # HER2 status -------------------------------------------------------------------------------------
-df |> tabyl(d_her2_status_lab)
+#df |> tabyl(d_her2_status_lab)
 # Define annotation positions
 annotation_positions <- list(ref_x = 1, ref_y = 90, p_x = 2, p_y = 90)
 # Define category labels - no labels needed 
@@ -1124,7 +1124,7 @@ her2_plot <- md_df |>
   annotation_pos = annotation_positions
 )
 # Print the plot
-her2_plot
+#her2_plot
 
 ```
 
@@ -1139,7 +1139,7 @@ tcomposite_plot
 
 ```
 
-### Supporting tables for violin plots 
+### Supporting tables for violin plots
 
 ```{r}
 
@@ -1309,9 +1309,10 @@ for (var in explanatory_vars) {
   table_list[[var]] <- tbl_regression(
     model,
     estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
-    pvalue_fun = ~ style_pvalue(.x, digits = 2)    # Formatting p-values
+    pvalue_fun = ~ style_pvalue(.x, digits = 2),    # Formatting p-values
   ) %>%
-    add_global_p() %>%
+    add_global_p() |> 
+    #add_n() |> # checked with unadjusted and n is the same so no need here
     remove_row_type(variables = "diagage", type = "all")  # Remove the age covariate from the table
 }
 
@@ -1330,13 +1331,77 @@ table_adjusted
 # Merge the tables
 
 
-md_desc_table <- tbl_merge(list(table_unadjusted, table_adjusted))
+md_desc_table <- tbl_merge(list(table_unadjusted, table_adjusted),
+                           tab_spanner = c("**Unadjusted**", "**Adjusted for age at diagnosis**"
+                                           )
+                         )
+                         
 md_desc_table
 
 
 
+# Option 1 for adding labels --------------------------------------------
+# this doesn't work properly
+
+
+# tab_labels <- c("Detection mode", "Age at menarche", "Oral contraception status", "Parity", "Age at first birth", "Breastfeeding duration", "Menopausal status", "Age at menopause", "HRT status", "Benin breast disease", "Family history of breast cancer", "BMI at age 20y", "BMI at baseline", "Physical Activity at baseline (MET-h/w", "Alcohol units per week", "Smoking status", "Invasive status", "Grade", "Morhpology", "Positive nodes", "Tumour size", "ER status", "PR status", "HER2 status")
+# 
+# 
+# 
+# md_desc_table <- md_desc_table |> 
+#   modify_table_styling(columns = label,
+#                        rows = variable %in% explanatory_vars & row_type == "label",
+#                        label = tab_labels
+#   )
+
+
+
+# Option 2 for labels---------------------------------------------------
+# also doesn't work properly - it changes all variable levels to the name of the variable too 
+
+# # Create the mapping of variable names to their labels
+# tab_labels <- c(
+#   "d_dmode" = "Detection mode",
+#   "d_age_menarche_lab" = "Age at menarche",
+#   "d_ocstatus_lab" = "Oral contraception status",
+#   "d_parity_lab" = "Parity",
+#   "d_agebirth1_lab" = "Age at first birth",
+#   "d_bf_dur_lab" = "Breastfeeding duration",
+#   "d_R1menopause_lab3" = "Menopausal status",
+#   "d_age_menopause_lab" = "Age at menopause",
+#   "d_R1hrt_sttyp_lab" = "HRT status",
+#   "d_bbd_lab" = "Benign breast disease",
+#   "d_fambrca_lab" = "Family history of breast cancer",
+#   "d_bmi_20_lab" = "BMI at age 20y",
+#   "d_bmi_entry_lab" = "BMI at baseline",
+#   "d_R1physmet_leis_who_lab" = "Physical Activity at baseline (MET-h/w)",
+#   "d_R1alcohol_units_lab" = "Alcohol units per week",
+#   "d_R1smokingstatus_lab" = "Smoking status",
+#   "d_inv_status" = "Invasive status",
+#   "d_grade_lab" = "Grade",
+#   "d_morph4_lab" = "Morphology",
+#   "d_pos_nodes_lab" = "Positive nodes",
+#   "d_tumour_size_lab" = "Tumour size",
+#   "d_er_status_lab" = "ER status",
+#   "d_pr_status_lab" = "PR status",
+#   "d_her2_status_lab" = "HER2 status"
+# )
+# 
+# 
+# md_desc_table$table_body <- md_desc_table$table_body |> 
+#   mutate(label = case_when(
+#     variable %in% names(tab_labels) ~ tab_labels[variable],
+#     TRUE ~ label  # Keep the original label if no match
+#   ))
+# 
+# 
+# md_desc_table
+
 # next step - add labels 
 # also investigate why morphology p-value is different
+
+
+# Note - labelling variables doesn't work. Look into using package labelled https://www.pipinghotdata.com/posts/2021-07-14-polished-summary-tables-in-r-with-gtsummary/
 ```
 
 ## Table 2 - Main analysis
