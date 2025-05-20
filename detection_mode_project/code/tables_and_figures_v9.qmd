@@ -1820,7 +1820,7 @@ table2
 
 ```
 
-## Figure X - forest plot 
+## Figure X - forest plot
 
 ::: {.callout-note style="color:orange"}
 ## Question
