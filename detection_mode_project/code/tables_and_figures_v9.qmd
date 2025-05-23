@@ -1206,13 +1206,13 @@ ggsave(plot, filename = "../outputs/figures/main/figure_2.png", height = 20, wid
 # rf vars for violin plots
 explanatory_vars <- c("d_dmode",
                       "d_age_menarche_lab",
-                  "d_ocstatus_lab",
+                  "d_ocstatus2_lab",
                   "d_parity_lab",
                   "d_agebirth1_lab",
                   "d_bf_dur_lab",
                   "d_R1menopause_lab3",
                   "d_age_menopause_lab", 
-                  "d_R1hrt_sttyp_lab",
+                  "d_R1hrtstatus_lab",
                   "d_bbd_lab",
                   "d_fambrca_lab",
                   "d_bmi_20_lab",
@@ -1266,13 +1266,13 @@ table_unadjusted <- df_compl_case |>
 # rf vars for violin plots
 explanatory_vars <- c("d_dmode",
                       "d_age_menarche_lab",
-                  "d_ocstatus_lab",
+                  "d_ocstatus2_lab",
                   "d_parity_lab",
                   "d_agebirth1_lab",
                   "d_bf_dur_lab",
                   "d_R1menopause_lab3",
                   "d_age_menopause_lab", 
-                  "d_R1hrt_sttyp_lab",
+                  "d_R1hrtstatus_lab",
                   "d_bbd_lab",
                   "d_fambrca_lab",
                   "d_bmi_20_lab",
@@ -1348,13 +1348,13 @@ md_desc_table <- tbl_merge(list(table_unadjusted, table_adjusted),
 tab_labels <- c(
   "d_dmode" = "Mode of detection",
   "d_age_menarche_lab" = "Age at menarche",
-  "d_ocstatus_lab" = "Oral contraception status",
+  "d_ocstatus2_lab" = "Oral contraception status",
   "d_parity_lab" = "Parity",
   "d_agebirth1_lab" = "Age at first birth",
   "d_bf_dur_lab" = "Breastfeeding duration (mths)",
   "d_R1menopause_lab3" = "Menopausal status",
   "d_age_menopause_lab" = "Age at menopause",
-  "d_R1hrt_sttyp_lab" = "HRT status",
+  "d_R1hrtstatus_lab" = "HRT status",
   "d_bbd_lab" = "Benign breast disease",
   "d_fambrca_lab" = "Family history of breast cancer",
   "d_bmi_20_lab" = "BMI at age 20",
@@ -1392,6 +1392,10 @@ md_desc_table$table_body$label[md_desc_table$table_body$label == "SD"] <- "Scree
 
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_bbd_labYes"] <- "Ever"
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_bbd_labNo"] <- "Never"
+
+
+md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_ocstatus2_labNo"] <- "Never"
+md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_ocstatus2_labYes"] <- "Ever"
 
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_inv_status1"] <- "Invasive"
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_inv_status0"] <- "DCIS"
@@ -2268,8 +2272,8 @@ model5 <- tbl_regression(model,
 model <- df %>%
   glm(formula = d_dmode_n ~ 
       d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
@@ -2297,10 +2301,10 @@ model6 <- tbl_regression(model,
                           d_bbd_lab ~ "Benign breast disease",
                           d_fambrca_lab ~ "Family history of breast cancer",
                           d_age_menarche_lab ~ "Age at menarche",
-                          d_ocstatus_lab ~ "Oral contraceptive use",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
                           d_R1menopause_lab3 ~ "Menopausal status",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_sttyp_tr_lab ~ "MHT status",
+                          d_R1hrt_tr_lab ~ "MHT status",
                           d_parity_lab ~ "Parity",
                           d_agebirth1_tr_lab ~ "Age at first birth",
                           d_bf_dur_tr_lab ~ "Breast feeding duration (mths)",
@@ -2327,8 +2331,8 @@ model6 <- tbl_regression(model,
 
 model <- df %>%
   glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab 
-      + d_R1hrt_sttyp_tr_lab
-      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus_lab 
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab 
       + d_bbd_lab + d_fambrca_lab
       + d_R1alcohol_units_lab + d_R1smokingstatus_lab 
       + d_bmi_entry_lab + d_R1physmet_leis_who_lab
@@ -2357,10 +2361,10 @@ model7 <- tbl_regression(model,
                           d_bbd_lab ~ "Benign breast disease",
                           d_fambrca_lab ~ "Family history of breast cancer",
                           d_age_menarche_lab ~ "Age at menarche",
-                          d_ocstatus_lab ~ "Oral contraceptive use",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
                           d_R1menopause_lab3 ~ "Menopausal status",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_sttyp_tr_lab ~ "MHT status",
+                          d_R1hrt_tr_lab ~ "MHT status",
                           d_parity_lab ~ "Parity",
                           d_agebirth1_tr_lab ~ "Age at first birth",
                           d_md_qrt ~ "Mammographic density",
@@ -2398,11 +2402,11 @@ descr_tc_df <- df %>%
          d_pr_tr_lab = d_pr_status_lab,
          d_her2_tr_lab = d_her2_status_lab,
          d_age_meno_tr_lab = d_age_menopause_lab,
-         d_R1hrt_sttyp_tr_lab = d_R1hrt_sttyp_lab,
+         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
          d_agebirth1_tr_lab = d_agebirth1_lab,
          d_bf_dur_tr_lab = d_bf_dur_lab
          ) %>% 
-  select(-d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab, -diagage, -d_R1toBC_y, -d_age_menopause_lab, -d_R1hrt_sttyp_lab, -d_agebirth1_lab, -d_bf_dur_lab)  
+  select(-d_grade_lab, -d_morph4_lab, -d_pos_nodes_lab, -d_tumour_size_lab, -d_er_status_lab, -d_pr_status_lab, -d_her2_status_lab, -diagage, -d_R1toBC_y, -d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -d_bf_dur_lab)  
   
 
 
@@ -2425,13 +2429,13 @@ descr_tc <- descr_tc_df %>%
          d_pr_tr_lab, 
          d_her2_tr_lab, 
          d_age_menarche_lab,
-         d_ocstatus_lab,
+         d_ocstatus2_lab,
          d_parity_lab,
          d_agebirth1_tr_lab,
          d_bf_dur_tr_lab,
          d_R1menopause_lab3,
          d_age_meno_tr_lab,
-         d_R1hrt_sttyp_tr_lab,
+         d_R1hrt_tr_lab,
          d_bbd_lab,
          d_fambrca_lab,
          d_bmi_entry_lab,
@@ -2462,10 +2466,10 @@ descr_tc <- descr_tc_df %>%
                           d_bbd_lab ~ "Benign breast disease",
                           d_fambrca_lab ~ "Family history of breast cancer",
                           d_age_menarche_lab ~ "Age at menarche",
-                          d_ocstatus_lab ~ "Oral contraceptive use",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
                           d_R1menopause_lab3 ~ "Menopausal status",
                           d_age_meno_tr_lab ~ "Age at menopause",
-                          d_R1hrt_sttyp_tr_lab ~ "MHT status",
+                          d_R1hrt_tr_lab ~ "MHT status",
                           d_parity_lab ~ "Parity",
                           d_agebirth1_tr_lab ~ "Age at first birth",
                           d_md_qrt ~ "Mammographic density",
@@ -2494,8 +2498,10 @@ ST1$table_body$label[2] <- "DCIS"
 ST1$table_body$label[3] <- "Invasive"
 ST1$table_body$label[ST1$table_body$label == "Mixed: ductal and other"] <- "Mixed"
 ST1$table_body$label[grepl(" months", ST1$table_body$label)] <- gsub(" months", "", ST1$table_body$label[grepl(" months", ST1$table_body$label)])
-ST1$table_body$label[81] <- "Never"
-ST1$table_body$label[82] <- "Ever"
+ST1$table_body$label[78] <- "Never"
+ST1$table_body$label[79] <- "Ever"
+ST1$table_body$label[42] <- "Never"
+ST1$table_body$label[43] <- "Ever"
 
 ST1
 
@@ -2574,6 +2580,9 @@ ST2
 ## Cross-tabulation between registry detection mode and in-house detection mode
 
 ```{r}
+
+#| echo: false
+
 # Read in data
 df_mod <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/dm_df_include_unknown.rds")
 
@@ -2637,6 +2646,9 @@ dmode_crosstab_tb |>
 ## Cross-tabulation between SHIM and in-house detection mode
 
 ```{r}
+#| echo: false
+
+
 # Read in data
 df_mod <- readRDS("Q:/SHARED/USERS/MBrayley/Screening/data/dm_df_include_unknown.rds")
 
@@ -2702,6 +2714,7 @@ dmode_crosstab_tb |>
 ## Counting individuals by ordering of events in MOD
 
 ```{r}
+#| echo: false
 
 df |>
   mutate(
@@ -2720,5 +2733,32 @@ df |>
     
   ) |>
   xtabs(formula = ~ MOD_order)
+
+```
+
+## Summary of time differences
+
+```{r}
+#| echo: false
+
+for(mod in unique(df$d_dmode)){
+  
+  label <- if_else(mod == "I", "Interval", "Screen-Detected")
+  
+  cat("Summary of time from R1 to breast cancer for", label, "cancers\n")
+  with(df |> filter(d_dmode == mod), print(summary(d_R1toBC_y)))
+  cat("\n")
+  
+  cat("Summary of time from R1 to mammogram for", label, "cancers\n")
+  with(df |> filter(d_dmode == mod), print(summary(d_R1toMD_y)))
+  cat("\n")
+
+  cat("Summary of time from mammogram to breast cancer for", label, "cancers\n")
+  with(df |> filter(d_dmode == mod), print(summary(d_MDtoBC_y)))
+  cat("\n")
+
+  
+  
+}
 
 ```
