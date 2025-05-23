@@ -177,20 +177,20 @@ create_violin_plot <- function(data, response_var, explanatory_var,
     labs(title = title, x = "", y = y_label) +
     theme_base() +
     theme(legend.position = "none") +
-    scale_fill_brewer(palette = "Set2") +
-    annotate("text",
-             x = annotation_pos$ref_x,
-             y = annotation_pos$ref_y,
-             label = "reference",
-             col = "black",
-             size = 3.5) +
-    annotate("text",
-             x = annotation_pos$p_x,
-             y = annotation_pos$p_y,
-             label = paste("p-trend", formatted_p),
-             col = "black",
-             size = 3.5)
-  
+    scale_fill_brewer(palette = "Set2") # +
+    # annotate("text",
+    #          x = annotation_pos$ref_x,
+    #          y = annotation_pos$ref_y,
+    #          label = "reference",
+    #          col = "black",
+    #          size = 3.5) +
+    # annotate("text",
+    #          x = annotation_pos$p_x,
+    #          y = annotation_pos$p_y,
+    #          label = paste("p-trend", formatted_p),
+    #          col = "black",
+    #          size = 3.5)
+
   # Add custom x-axis labels if provided
   if (!is.null(category_labels)) {
     plot <- plot + scale_x_discrete(labels = category_labels)
