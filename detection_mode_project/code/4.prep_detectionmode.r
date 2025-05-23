@@ -60,7 +60,7 @@ str(dm_df)
 # select eligible cancer cases cases 
 
 dm_df <- cases %>% 
-  left_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
+  merge(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
 
 # descriptives
 #stview(dfSummary(dm_df))
@@ -98,7 +98,8 @@ dm_df |> filter(!is.na(ancat_dmode_v2)) |>
 #####################################################################################
 
 
-
+# Output data for use in crosstabulations
+saveRDS(dm_df, file = "Q:/SHARED/USERS/MBrayley/Screening/data/dm_df_include_unknown.rds")
 
 
 # select only interval and SD dmode categories from ancat_dmode_v2 
