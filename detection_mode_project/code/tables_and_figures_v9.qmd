@@ -1249,6 +1249,7 @@ table_summary <- df_compl_case |>
          d_age_menopause_lab = if_else(d_age_menopause_lab == "Pre-menopausal", NA, d_age_menopause_lab),
          d_R1hrt_sttyp_lab = if_else(d_R1hrt_sttyp_lab == "Pre-menopausal", NA, d_R1hrt_sttyp_lab),
          d_agebirth1_lab = if_else(d_agebirth1_lab == "Non-parous", NA, d_agebirth1_lab),
+         d_dmode = factor(d_dmode, levels = c("SD", "I"))
          ) |> 
   select(any_of(explanatory_vars)
          ) |> 
@@ -1258,7 +1259,8 @@ table_summary <- df_compl_case |>
                 all_categorical() ~ "{n}"
                 ),
               digits = all_continuous() ~ 2,,
-              type = list(d_ocstatus2_lab ~ "categorical"),
+              type = list(d_ocstatus2_lab ~ "categorical",
+                          d_fambrca_lab ~ "categorical"),
               missing = "no"
     ) |>
     modify_table_body(
@@ -1274,14 +1276,16 @@ table_unadjusted <- df_compl_case |>
          d_age_menopause_lab = if_else(d_age_menopause_lab == "Pre-menopausal", NA, d_age_menopause_lab),
          d_R1hrt_sttyp_lab = if_else(d_R1hrt_sttyp_lab == "Pre-menopausal", NA, d_R1hrt_sttyp_lab),
          d_agebirth1_lab = if_else(d_agebirth1_lab == "Non-parous", NA, d_agebirth1_lab),
+         d_dmode = factor(d_dmode, levels = c("SD", "I"))
          ) |> 
   select(d_md, any_of(explanatory_vars)
          ) |> 
   tbl_uvregression(
     method = lm,
     y = log(d_md),
-    # pvalue_fun = ~ style_pvalue(.x, digits = 2),
-    pvalue_fun = ~ as.character(.x),
+    # pvalue_fun = ~ style_pvalue(.x, digits = 2),,
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x,
     hide_n = T
    ) |> 
   add_global_p() |>  # add global p-value
@@ -1337,24 +1341,26 @@ df_temp <- df_compl_case |>
          d_age_menopause_lab = if_else(d_age_menopause_lab == "Pre-menopausal", NA, d_age_menopause_lab),
          d_R1hrt_sttyp_lab = if_else(d_R1hrt_sttyp_lab == "Pre-menopausal", NA, d_R1hrt_sttyp_lab),
          d_agebirth1_lab = if_else(d_agebirth1_lab == "Non-parous", NA, d_agebirth1_lab),
+         d_age_mammo = AgeatEntry + d_R1toMD_y,
+         d_dmode = factor(d_dmode, levels = c("SD", "I"))
          )
 
 
 # Loop through each explanatory variable and create a regression table
 for (var in explanatory_vars) {
   # Run the regression model adjusted for age
-  model <- lm(as.formula(paste("log(d_md) ~", var, "+ diagage")), data = df_temp)
+  model <- lm(as.formula(paste("log(d_md) ~", var, "+ d_age_mammo")), data = df_temp)
   
   # Create the regression table and store it in the list
   table_list[[var]] <- tbl_regression(
     model,
-    # estimate_fun = ~ style_number(.x, digits = 2),  # Formatting estimates
-    pvalue_fun = ~ as.character(.x),
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
   ) %>%
     add_global_p(
     ) |> 
     #add_n() |> # checked with unadjusted and n is the same so no need here
-    remove_row_type(variables = "diagage", type = "all")  # Remove the age covariate from the table
+    remove_row_type(variables = "d_age_mammo", type = "all")  # Remove the age covariate from the table
 }
 
 # Stack all the regression tables into one
@@ -1375,7 +1381,7 @@ table_adjusted
 
 
 md_desc_table <- tbl_merge(list(table_summary, table_unadjusted, table_adjusted),
-                           tab_spanner = c("", "**Unadjusted**", "**Adjusted for age at diagnosis**"
+                           tab_spanner = c("", "**Unadjusted**", "**Adjusted for age at mammogram**"
                                            )
                          )
                          
@@ -1422,8 +1428,8 @@ md_desc_table$table_body$label[md_desc_table$table_body$label == "Mixed: ductal 
 
 md_desc_table$table_body$label[grepl(md_desc_table$table_body$label, pattern = "months")] <- gsub(" months", "", md_desc_table$table_body$label[grepl(md_desc_table$table_body$label, pattern = "months")])
 
-md_desc_table$table_body$label[md_desc_table$table_body$label == "I"] <- "Interval"
-md_desc_table$table_body$label[md_desc_table$table_body$label == "SD"] <- "Screen-Detected"
+# md_desc_table$table_body$label[md_desc_table$table_body$label == "I"] <- "Interval"
+# md_desc_table$table_body$label[md_desc_table$table_body$label == "SD"] <- "Screen-Detected"
 
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_bbd_labYes"] <- "Ever"
 md_desc_table$table_body$label[names(md_desc_table$table_body$label) == "d_bbd_labNo"] <- "Never"
@@ -1804,7 +1810,8 @@ model2 <- tbl_regression(model,
                           d_bmi_20_lab ~ "BMI at age 20",
                           d_bf_dur_tr_lab ~ "Breast feeding duration (mths)"
                          ),
-    pvalue_fun = ~ as.character(.x)
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
                          ) %>% 
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
@@ -1857,7 +1864,8 @@ model4 <- tbl_regression(model,
                           d_bf_dur_tr_lab ~ "Breast feeding duration (mths)",
                           d_md_qrt ~ "Mammographic density (quartiles)"
                          ),
-    pvalue_fun = ~ as.character(.x)
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
                          ) %>% 
   #add_global_p() %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
@@ -2289,8 +2297,8 @@ model5 <- tbl_regression(model,
                           d_pr_tr_lab ~ "PR status",
                           d_her2_tr_lab ~ "HER2 status"
                          ),
-                         ,
-    pvalue_fun = ~ as.character(.x)
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
                          ) |> 
   # remove Missing levels from regression output
   modify_table_body(
@@ -2350,8 +2358,8 @@ model6 <- tbl_regression(model,
                           d_bf_dur_tr_lab ~ "Breast feeding duration (mths)",
                           d_bmi_20_lab ~ "BMI at age 20"
                          ),
-                         ,
-    pvalue_fun = ~ as.character(.x)
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
                          ) %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
                   type = "all") |> 
@@ -2413,8 +2421,8 @@ model7 <- tbl_regression(model,
                           d_bf_dur_tr_lab ~ "Breast feeding duration (mths)",
                           d_bmi_20_lab ~ "BMI at age 20"
                          ),
-                         ,
-    pvalue_fun = ~ as.character(.x)
+    pvalue_fun = ~ .x,
+    estimate_fun = ~ .x
                          ) %>% 
   remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
                   type = "all") |> 
@@ -2736,5 +2744,18 @@ for(mod in unique(df$d_dmode)){
   
   
 }
+
+```
+
+## Statistics for paper
+```{r}
+
+# Summary of density for IBC vs SDBC
+summary(df$d_md[df$d_dmode == "I"], na.rm = T)
+summary(df$d_md[df$d_dmode == "SD"], na.rm = T)
+
+# Percentage of missing densities
+summary(1-df$d_md_avail)
+
 
 ```
