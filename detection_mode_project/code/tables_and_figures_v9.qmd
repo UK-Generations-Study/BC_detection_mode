@@ -347,8 +347,9 @@ model_t1 <- tbl_regression(model,
 # create df
   
 descr_t1_df <- df %>% 
-  # select(d_dmode, all_of(tumour_char), diagage, d_R1toBC_y, AgeatEntry, yeardiag_cat
-  select(d_dmode, all_of(tumour_char), diagage, d_R1toBC_y, yeardiag_cat
+  mutate(mammo_age = d_R1toMD_y + AgeatEntry) |>
+  select(d_dmode, all_of(tumour_char), diagage, d_R1toBC_y, AgeatEntry, mammo_age, yeardiag_cat
+  # select(d_dmode, all_of(tumour_char), diagage, d_R1toBC_y, yeardiag_cat
          ) %>% 
   mutate(d_grade_tr = d_grade_lab,
          d_morph4_tr_lab = d_morph4_lab,
@@ -368,7 +369,8 @@ descr_t1 <- descr_t1_df %>%
   # reselect to ensure the correct order
   mutate(d_dmode = if_else(d_dmode == "I", "Interval", "Screen-Detected")) |>
   select(d_dmode,
-         # AgeatEntry,
+         AgeatEntry,
+         mammo_age,
          diagage,
          d_R1toBC_y,
          yeardiag_cat,
@@ -386,6 +388,7 @@ descr_t1 <- descr_t1_df %>%
                 all_continuous() ~ "{mean} ({sd})",
                 all_categorical() ~ "{n} ({p})"
                 ),
+              missing = "ifany",
               digits = all_continuous() ~ 2,
               label = list(
                           d_inv_status ~ "Invasive status",
@@ -397,8 +400,9 @@ descr_t1 <- descr_t1_df %>%
                           d_pr_tr_lab ~ "PR status",
                           d_her2_tr_lab ~ "HER2 status",
                           diagage ~ "Age at diagnosis",
-                           # AgeatEntry ~ "Age at recruitment",
+                           AgeatEntry ~ "Age at recruitment",
                            d_R1toBC_y ~ "Time from recruitment to diagnosis (years)",
+                          mammo_age ~ "Age at mammogram",
                           yeardiag_cat ~ "Year of diagnosis"
                           
                          )
@@ -438,9 +442,16 @@ table1 <- table1 %>%
   )
 
 # Manually changing rows with inviasive/DCIS labels
-table1$table_body$label[8] <- "DCIS"
-table1$table_body$label[9] <- "Invasive"
-table1$table_body$label[18] <- "Mixed"
+table1$table_body$label[11] <- "DCIS"
+table1$table_body$label[12] <- "Invasive"
+table1$table_body$label[21] <- "Mixed"
+
+# Manually adding % for the unknown categories for mammogram age
+table1$table_body$stat_1_1[table1$table_body$label == "Unknown"] <- paste0(table1$table_body$stat_1_1[table1$table_body$label == "Unknown"], " (",  round(100*as.numeric(table1$table_body$stat_1_1[table1$table_body$label == "Unknown"])/table1$table_styling$header$modify_stat_n[!is.na(table1$table_styling$header$modify_stat_n)][1]), ")")
+
+
+
+table1$table_body$stat_2_1[table1$table_body$label == "Unknown"] <- paste0(table1$table_body$stat_2_1[table1$table_body$label == "Unknown"], " (",  round(100*as.numeric(table1$table_body$stat_2_1[table1$table_body$label == "Unknown"])/table1$table_styling$header$modify_stat_n[!is.na(table1$table_styling$header$modify_stat_n)][2]), ")")
 
 
 table1
@@ -1255,12 +1266,13 @@ table_summary <- df_compl_case |>
          ) |> 
     tbl_summary(
               statistic = list(
-                all_continuous() ~ "{mean}",
-                all_categorical() ~ "{n}"
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
                 ),
               digits = all_continuous() ~ 2,,
               type = list(d_ocstatus2_lab ~ "categorical",
-                          d_fambrca_lab ~ "categorical"),
+                          d_fambrca_lab ~ "categorical",
+                          d_bbd_lab ~ "categorical"),
               missing = "no"
     ) |>
     modify_table_body(
@@ -1928,8 +1940,8 @@ descr_tab2 <- descr_tab2_df %>%
          d_md_qrt) %>% 
   tbl_summary(by = d_dmode,
               statistic = list(
-                all_continuous() ~ "{mean}",
-                all_categorical() ~ "{n}"
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
                 ),
               digits = all_continuous() ~ 2,
               label = list(
@@ -2211,6 +2223,7 @@ plot <- md_forest_long %>%
              ci.vertices = T,
              ci.vertices.height = 0.2,
              legend = c("Model 2 (adjusted for MD)", "Model 1"),
+             # legend = c("Model 1", "Model 2 (adjusted for MD)"),
              title = paste("Final model adjusted vs unadjusted for mamographic breast density quartiles"),
              is.summary = is_summary,
              )   %>% 
@@ -2240,6 +2253,7 @@ plot <- md_forest_long %>%
                 upper = NULL,
                 is.summary = TRUE,
                 boxsize = NA)
+
 
 plot
 
