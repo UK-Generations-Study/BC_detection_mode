@@ -34,7 +34,7 @@ dm_vars <- dm_df %>%
 ## select variables from cancer df ---------------------------
 
 ca_vars <- cancer_df %>% 
-  select(tcode, date_birth, date_entry, diagdate, yeardiag, diagage, 
+  select(tcode, date_birth, date_entry, diagdate, yeardiag = diagyear, diagage, 
          incident, side, ICDt, ICDm, breast_cancer, breast_cancer_invasive, breast_cancer_dcis, 
          stage, grade, er_Status, pr_Status, her2_Status, Tsize, nodes_tot, nodes_pos, N, AgeatEntry)
 
@@ -86,7 +86,8 @@ str(dev_an_df)
 dev_an_df <- dev_an_df %>% 
   mutate(
     d_R1toBC = as.numeric(diagdate - date_entry),
-    d_R1toBC_y = round(d_R1toBC/365.25, 1),
+    d_R1toBC_y = time_length(interval(start = date_entry, end = diagdate), unit = "year"), # replacing original with more precise variable
+    # d_R1toBC_y = round(d_R1toBC/365.25, 1),
     d_R1toBC_cat = as.factor(case_when(d_R1toBC_y < 3 ~ 1,
                              d_R1toBC_y >= 3 & d_R1toBC_y < 6 ~ 2,
                              d_R1toBC_y >= 6 & d_R1toBC_y < 9 ~ 3,
@@ -118,7 +119,8 @@ dev_an_df %>% tabyl(d_R1toBC_lab, d_R1toBC_cat)
 dev_an_df <- dev_an_df %>% 
   mutate(
     d_MDtoBC = as.numeric(diagdate - MammoDat_f),
-    d_MDtoBC_y = round(d_MDtoBC/365.25, 1),
+    d_MDtoBC_y = time_length(interval(start = MammoDat_f, end = diagdate), unit = "year"), # replacing original with more precise variable
+    # d_MDtoBC_y = round(d_MDtoBC/365.25, 1),
     d_MDtoBC_cat = as.factor(case_when(d_MDtoBC_y < 3 ~ 1,
                            d_MDtoBC_y >=3 & d_MDtoBC_y <6 ~ 2,
                            d_MDtoBC_y >= 6 ~ 3,
@@ -144,7 +146,8 @@ str(dev_an_df)
 dev_an_df <- dev_an_df %>% 
   mutate(
     d_R1toMD = as.numeric(MammoDat_f - date_entry),
-    d_R1toMD_y = round(d_R1toMD/365.25, 1)
+    d_R1toMD_y = time_length(interval(start = date_entry, end = MammoDat_f), unit = "year"), # replacing original with more precise variable
+    # d_R1toMD_y = round(d_R1toMD/365.25, 1)
     )
 
 summary(dev_an_df$d_R1toMD_y)
@@ -152,14 +155,25 @@ hist(dev_an_df$d_R1toMD_y)
 #View(dev_an_df[,c("tcode", "date_entry", "MammoDat_f", "d_R1toMD_y")])
 
 ### Age at breast cancer diagnosis -------------------------------------
-# does not need preparing as it looks okay 
+# replacing with more precise variable
+
+dev_an_df <- dev_an_df |>
+  mutate(
+    diagage = time_length(interval(start = date_birth, end = diagdate), unit = "year")
+  )
 
 dev_an_df %>% tabyl(diagage)
 hist(dev_an_df$diagage)
 
 
 ### Age at entry -----------------------------------------------------
-# does not need preparing as it looks okay 
+# replacing with more precise variable
+
+dev_an_df <- dev_an_df |>
+  mutate(
+    AgeatEntry = time_length(interval(start = date_birth, end = date_entry), unit = "year")
+  )
+
 dev_an_df %>% tabyl(AgeatEntry)
 hist(dev_an_df$AgeatEntry)
 
