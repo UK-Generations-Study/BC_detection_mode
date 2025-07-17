@@ -159,7 +159,7 @@ format_single_p_value <- function(p_value) {
 
 create_violin_plot <- function(data, response_var, explanatory_var, 
                                y_label, title, category_labels = NULL, 
-                               annotation_pos) {
+                               annotation_pos, log = F) {
   # Fit the linear model
   formula <- as.formula(paste(response_var, "~", explanatory_var))
   lm_model <- lm(formula, data = data)
@@ -168,12 +168,21 @@ create_violin_plot <- function(data, response_var, explanatory_var,
   global_p <- extract_overall_p_from_lm(lm_model)
   formatted_p <- format_single_p_value(global_p)
   
+  # If log model, have different y bounds
+  if(log){
+    y_upper = log(100)
+    y_lower = NA
+  } else {
+    y_upper = 100
+    y_lower = 0
+  }
+  
   # Create the plot
   plot <- data %>%
     ggplot(aes(x = .data[[explanatory_var]], y = .data[[response_var]], fill = .data[[explanatory_var]])) +
     geom_violin(alpha = 0.4) +
     geom_boxplot(width = 0.1) +
-    ylim(0, 100) +
+    ylim(y_lower, y_upper) +
     labs(title = title, x = "", y = y_label) +
     theme_base() +
     theme(legend.position = "none") +
