@@ -1,0 +1,92 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0" version="27.1.6">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="2297" dy="1120" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-1" target="bQMAd0MoqUX5oat_RcF5-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-1" target="fg8ay7pHeUuxrboupSco-0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-1" value="GS participants with valid data&lt;div&gt;&lt;b&gt;n = 113,757&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="160" y="80" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250.00000000000045" y="260" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="250" y="250" />
+              <mxPoint x="251" y="250" />
+              <mxPoint x="251" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-6" target="fg8ay7pHeUuxrboupSco-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-6" value="Linked with the NHSBSP and attended screening&lt;div&gt;&lt;b&gt;n = 65,121&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="160" y="170" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-10" target="fg8ay7pHeUuxrboupSco-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-10" target="XpVRFSjj-JRpkuJtu_D--0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-10" value="Confirmed breast cancer cases (invasive and DCIS)&amp;nbsp;&lt;div&gt;&lt;b&gt;n = 3,039&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="160" y="260" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140.00000000000045" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140.00000000000045" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140.00000000000045" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="bQMAd0MoqUX5oat_RcF5-12" target="bQMAd0MoqUX5oat_RcF5-19" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-12" value="&lt;div&gt;Interval and screen-detected cases&lt;/div&gt;&lt;div&gt;&lt;b&gt;n = 1,940&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="160" y="440" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-14" value="&lt;div&gt;Interval cases&lt;/div&gt;&lt;div&gt;&lt;b&gt;n = 755&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="50" y="570" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bQMAd0MoqUX5oat_RcF5-19" value="&lt;div&gt;Screen-detected cases&lt;/div&gt;&lt;div&gt;&lt;b&gt;n = 1,185&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="270" y="570" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-0" value="&lt;b&gt;Excluded:&lt;/b&gt; Not linked with NHSBSP (&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;n = 48,636)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="390" y="80" width="310" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-2" value="&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Excluded:&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt; No cancer or other cancer sites (&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;n = 62,082)&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="390" y="170" width="310" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fg8ay7pHeUuxrboupSco-6" value="&lt;b&gt;Excluded:&lt;/b&gt;&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Not able to derive detection mode&lt;br&gt;(total n = 966) of which:&amp;nbsp;&lt;/span&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;Diagnosis after NHSBSP linkage date (n = 404)&lt;br&gt;Diagnosis before screening invitation (n =&amp;nbsp; 310)&lt;br&gt;Diagnosis after screening age eligibility (n = 172)&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Other/complex screening history (n = 80)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="390" y="250" width="310" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="XpVRFSjj-JRpkuJtu_D--0" target="bQMAd0MoqUX5oat_RcF5-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="XpVRFSjj-JRpkuJtu_D--0" target="XpVRFSjj-JRpkuJtu_D--5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--0" value="Confirmed breast cancer cases (invasive and DCIS) with derived detection mode&lt;div&gt;&lt;b&gt;n = 2,073&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="160" y="350" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="XpVRFSjj-JRpkuJtu_D--5" value="&lt;b&gt;Excluded:&lt;/b&gt;&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Other detection mode categories &lt;br&gt;(total n = 173) of which:&amp;nbsp;&lt;/span&gt;&lt;div&gt;&lt;div&gt;&lt;br&gt;Non-attenders (n = 46)&lt;br&gt;Lapsed attender (n = 44)&lt;br&gt;Interval after assessment (n = 43)&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="390" y="380" width="310" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

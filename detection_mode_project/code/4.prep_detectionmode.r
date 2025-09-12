@@ -64,12 +64,13 @@ str(dm_df)
 dm_df <- dm_df |> 
   mutate(dm = 1)
 
-dm_df <- cases %>% 
-  left_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
-
-# # with inner join
+# # original
 # dm_df <- cases %>% 
-#   inner_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
+#   left_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
+
+# with inner join
+dm_df <- cases %>%
+  inner_join(dm_df, by = c("tcode", "reginfo_groupdatesite", "reginfo_clusterino", "report_groupdatesite", "report_cluster"))
 
 # descriptives
 #stview(dfSummary(dm_df))

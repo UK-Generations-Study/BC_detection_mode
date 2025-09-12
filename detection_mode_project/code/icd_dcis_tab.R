@@ -3,6 +3,8 @@
 # run set up first
 
 # import data 
+
+library(here)
 # set up
 setup_path <- here("code", "1.setup_import.r")
 source(setup_path)
@@ -90,8 +92,11 @@ missing_dm <- missing_dm |>
 missing_dm |> tabyl(out_scrage)
 missing_dm |> tabyl(diagyear)
 
+# dm_df <- dm_df |> 
+#   filter(ancat_dmode_v2 %in% c("SD", "I"))
+
 dm_df <- dm_df |> 
-  filter(ancat_dmode_v2 %in% c("SD", "I"))
+  filter(ancat_dmode_v2 %in% c("SD", "I", "LA", "DNA", "IA"))
 
 dm_df |> tabyl(ancat_dmode_v2) |> adorn_totals()
 
@@ -126,3 +131,81 @@ n_bsp - n_bcwithbsp
 
 # excluded third round
 n_bcwithbsp - n_isd
+
+
+
+# tabulations for supplement -----------------------------------------------------------
+
+# source tabulation for all dmode cases 
+dm_df |> tabyl(source_dm2) |> 
+  adorn_totals()
+# 86% derived screening data (dmode v1 and v2 combined) when included all DM categories (n 3039)
+# 80% derived screening data when included only flow chart derived dm (n 2073)
+
+# expert derived in 3039 = 7%
+# expert derived in 2073 = 3%
+
+
+
+
+dm_df <- dm_df |> 
+  mutate(dm_3cat = case_when(ancat_dmode_v2 == "SD" ~ "SD",
+                             ancat_dmode_v2 == "I" ~ "I", 
+                             TRUE ~ "Other"),
+         reg_sd_new = case_when(reg_sd == "Y" ~ "SD",
+                                reg_sd == "N" ~ "I",
+                                TRUE ~ "Unknown"))
+
+dm_df |> tabyl(ancat_dmode_v2, dm_3cat)
+
+dm_df |> 
+  filter(source_dm2 != "reg_sd") |> 
+  tabyl(reg_sd, dm_3cat) |> 
+  adorn_totals(where = c("row", "col")) |> 
+  adorn_percentages(denominator = "row") |> 
+   adorn_pct_formatting() |> 
+  adorn_ns() 
+  
+
+
+dm_df |> 
+  filter(source_dm2 != "reg_sd") |> 
+  tabyl(dmode_v2, reg_sd_new) |> 
+   adorn_totals(where = c("row","col")) |> 
+  adorn_title() 
+
+dm_df |> 
+  filter(source_dm2 != "reg_sd") |> 
+  tabyl(ancat_dmode_v2, reg_sd) |> 
+  adorn_totals(where = c("row","col")) |> 
+  adorn_title()
+
+
+dm_df |> 
+  tabyl(dmode_v2, ancat_dmode_v2)
+
+dm_df |> 
+  tabyl(ancat_dmode_v2)
+ 
+
+# reg_sd completeness ----------------------
+df <- dm_df |> 
+  left_join(cancer_df, by = "tcode")
+
+
+df |> tabyl(diagyear, reg_sd) |> 
+  adorn_percentages() |> 
+  adorn_pct_formatting()
+
+
+# tabulate detection mode by source
+df %>% tabyl(ancat_dmode_v2, source_dm2) %>% 
+  adorn_totals() %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+
+# density ---------------------------------------
+
+df |> tabyl(d_md_avail_lab, d_dmode)
+
