@@ -1,45 +1,45 @@
-# BC_detection_mode
-Analytical project using Generations and Screening data to explore differences between interval vs screen detected breast cancers.
+# Temporal Trends in Behavioural Risk Factors for Early-Onset Cancer in England
 
-## Project Background 
-Initial work done by Louise. The analytical dataset was initially collated in Safe Haven, then transferred in the same format to RDS where analysis was carried out using Stata. To ensure reproducibility and consistency with current projects, this project is now to be translated into R using RDS datasets. The code is stored in GitHub. 
+  Code and publicly available data for:
 
-## Data preparation
-Done using R scripts (not Quarto) as these can be linked in the master file. Hence these are not available as HTML outputs but can be reviewed in the code folder. Alternatively, they could be ran through Quarto file with printing the output as html. 
+  > Johns L, Brayley M, Frost R, Coulson P, Jones M, Berrington de Gonzalez A, García-Closas M.
+  > *Breast density and risk factors for interval and screen-detected breast cancers: a case-case analysis of the Breast Cancer Now Generations Cohort, UK.*
 
-Data preparation was done in 7 scripts to separate different parts and stages. These are all connected in the Master script. By running the Master script the analytical dataset is generated (an_df). 
-This is the summary of the 7 parts: 
-1. SET UP --------------------------------------
-2. PREPARE RISK FACTORS ---------------------------------
-3. PREPARE CASUMMARY ---------------------------------
-4. PREPARE DETECTION MODE -----------------------------
-5. PREPARE MAMMODENSITY -------------------------------
-6. CREATE MAMMO DENSITY VARIABLE ------------------------
-7. COMPRISE ANALYTICAL DATASET  ------------------------
+  ## Overview
 
-There are 2 version of script 7 varying by how they handle missing values. For analysis, v3 is used. (v1 is archived)
+  This repository contains the code for a case-case analysis examining differences in aetiology between interval and screen-detected breast cancers utilising Breast Cancer Now Generations Study (BGS) data. The analysis looks at the risk factors associated with mammographic breast density, using linear regression, and then uses logistic regression to calculate odds ratios (OR) for interval vs screen-detected breast cancers, adjusting for breast density and tumour characteristics.
 
-V2 - missing values treated as error codes 888 - good for exploratory analysis and checking reason for missingness
+  ## Key Files
+  ### [🔗 detection_mode_project/code/tables_and_figures_v10.html](https://uk-generations-study.github.io/BC_detection_mode/detection_mode_project/code/tables_and_figures_v10.html)
+  * Reproduction of manuscript figures and tables
 
-V3 - Missing values are treated as NAs in v3 - better for futher analysis
+  ## Repository Structure
 
-[GitHub pages link](https://expert-dollop-n8m7kve.pages.github.io/) 
+```text
+BC_detection_mode
+├── detection_mode_DD/        # Data dictionaries for detection mode
+│
+├── detection_mode_project/   
+│   ├── code/                 # Code to reproduce results from BGS data
+│   ├── density_selection/    # Process to select breast density measurements for each participant
+│   └── outputs/              # Output tables and figures
+│
+└── flowchart/                # Flowchart of BGS participants for inclusion in case/case analysis
+```
 
-### Breast density selection decision tree
-[diagram](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/density_selection/breast_density_selection.drawio.html)  
+## Software Requirements
 
-### Breast density descriptions 
-preliminary - for checks against Louise's density
-[density descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/density_descriptives.html)
+* R (version 4.4.1 or later recommended)
 
-### Mode of detection - analytical dataset descriptives 
-code development for for descriptive figures
-[dataset descriptions](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/screening_descriptives.html) 
+## Citation
 
-### Analysis 
-with detailed code
-[analysis](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/analysis_v8.html) 
+If you use this repository in your work, please cite:
 
-### Publication table and figures
-code hidden, outputs only 
-[tables and figures](https://expert-dollop-n8m7kve.pages.github.io/detection_mode_project/code/tables_and_figures_v9.html)
+  > Johns L, Brayley M, Frost R, Coulson P, Jones M, Berrington de Gonzalez A, García-Closas M.
+  > *BC_detection_mode*.
+  > (2026).
+
+## License
+
+This project is licensed under the MIT License.
+
