@@ -38,6 +38,7 @@ If you use this repository in your work, please cite:
   > Johns L, Brayley M, Frost R, Coulson P, Jones M, Berrington de Gonzalez A, García-Closas M.
   > *BC_detection_mode*.
   > (2026).
+  > https://doi.org/10.5281/zenodo.18937247 
 
 ## License
 
