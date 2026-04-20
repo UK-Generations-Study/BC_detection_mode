@@ -29,7 +29,6 @@ execute:
 
 # SET UP ------------------------------------------------------------------------
 
-
 # execute master file - no need run it as final data now saved
 #source("code/master.R")
 
@@ -4437,6 +4436,730 @@ table2_df <- as_tibble(table2)
 
 write_xlsx(table2_df, path = "../outputs/ses_results.xlsx")
 
+```
 
+
+### Sensivity analysis comparing internal MOD flag vs cancer registry flag
+```{r}
+
+# Read in casummary data
+df_casummary <- jsonlite::fromJSON("//rds/data/DGE/DUDGE/Shared/GENERATIONS/_JSON_Data/v20260123/CancerSummary.json") 
+
+df_casummary_clean <- df_casummary |>
+  filter(substr(ICD_CODE, 1, 3) == "C50" | ICD_CODE %in% c("D051", "D059")) |>
+  mutate(DIAGNOSIS_DATE = as.Date(DIAGNOSIS_DATE_SHIFTED, format = "%Y-%m-%d")) |>
+  arrange(DIAGNOSIS_DATE) |>
+  group_by(TCode) |>
+  filter(row_number() == 1) |>
+  ungroup() |>
+  select(TCode, DIAGNOSIS_DATE, SCREENINGSTATUSCOSD_CODE)
+
+df_2 <- df |>
+  merge(df_casummary_clean, by.x = "tcode", by.y = "TCode", all.x = T) |>
+  filter(source_dm2 != "reg_sd") |>
+  filter(SCREENINGSTATUSCOSD_CODE %in% c(1,2))
+  
+# Generate the table based on internal MOD variable
+
+# Create clean version of logistic output, without Ns
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model1 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
+                  type = "all") %>%
+  # add_global_p() |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  ) |>
+  bold_labels() 
+  
+
+#model2
+
+# summary Logistic Regression of Model 2  -----------------------------------------
+
+ model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+
+# tidy up output
+model2 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# summary Logistic Regression of Model 3  -----------------------------------------
+
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model3 <- tbl_regression(model,
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>%
+  #add_global_p() %>%
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|>
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# summary Logistic Regression of Model 4  -----------------------------------------
+
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model4 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# Create descriptives by mode of detection ------------------------------------
+# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_sttyp_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
+
+# note: need to rename the non-trick variables according to their trick name to align with the model, which can then allow table merge. 
+
+# include missing 
+# create df_2
+  
+descr_tab2_df <- df_2  %>%
+  select(d_dmode, all_of(all_expl_variables), all_of(tumour_char), diagage, d_R1toBC_y, d_md_qrt
+         ) %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+"),
+        d_bmi_20_lab = fct_relevel(d_bmi_20_lab, "<18.5", "18.5-25", "25-30", "30+") 
+              ) %>% 
+  mutate(d_age_meno_tr_lab = d_age_menopause_lab,
+         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
+         d_agebirth1_tr_lab = d_agebirth1_lab,
+         d_bf_dur_tr_lab = d_bf_dur_lab
+         ) %>% 
+  select(-d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -d_bf_dur_lab, -diagage, -d_R1toBC_y)  
+  
+  
+
+# glimpse(descr_model2)
+# str(test)
+
+# create gs summary table
+descr_tab2 <- descr_tab2_df %>% 
+  mutate(d_dmode = if_else(d_dmode == "I", "Interval", "Screen-Detected")) |>
+  select(d_dmode,
+         d_age_menarche_lab,
+         d_ocstatus2_lab,
+         d_parity_lab,
+         d_agebirth1_tr_lab,
+         d_bf_dur_tr_lab,
+         d_R1menopause_lab3,
+         d_age_meno_tr_lab,
+         d_R1hrt_tr_lab,
+         d_bbd_lab,
+         d_fambrca_lab,
+         d_bmi_entry_lab,
+         d_bmi_20_lab,
+         d_R1physmet_leis_who_lab,
+         d_R1alcohol_units_lab, 
+         d_R1smokingstatus_lab,
+         d_md_qrt,
+         d_inv_status, 
+         d_grade_tr = d_grade_lab, 
+         d_morph4_tr_lab = d_morph4_lab, 
+         d_pos_nodes_tr_lab = d_pos_nodes_lab, 
+         d_tmsize_tr_lab = d_tumour_size_lab, 
+         d_er_tr_lab = d_er_status_lab, 
+         d_pr_tr_lab = d_pr_status_lab, 
+         d_her2_tr_lab = d_her2_status_lab) %>% 
+  tbl_summary(by = d_dmode,
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
+                ),
+              digits = all_continuous() ~ 2,
+              label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                ),
+              type = list(d_bbd_lab ~ "categorical",
+                          d_fambrca_lab ~ "categorical")
+              )
+
+#descr_model2
+  
+# merge with analysis output -------------------------------------------------
+
+
+table2 <- tbl_merge(
+  tbls = list(descr_tab2, model1, model2, model3, model4),
+  tab_spanner = c("**Distribution by detection mode**", "**Model 1**", "**Model 2**", "**Model 3**", "**Model 4**")
+   ) 
+
+#show_header_names(table2)
+
+table2 <- table2 %>% 
+  modify_footnote(
+    estimate_2 ~ "Model 1: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at Diagnosis, Time from Recruitment to BC diagnosis, Year of diagnosis",
+    estimate_3 ~ "Model 2: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Percent mammographic density (quartiles), Time from mammographic density measurement to BRCA diagnosis",
+    estimate_4 ~ "Model 3: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Invasive status, Morphology, Node status, Tumour size, ER status, PR status, HER2 status",
+    estimate_5 ~ "Model 4: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Percent mammographic density (quartiles), Time from mammographic density measurement to BRCA diagnosis, Invasive status, Morphology, Node status, Tumour size, ER status, PR status, HER2 status"
+  )
+
+# Manually changing labels for the levels
+table2$table_body$label[grepl(" months", table2$table_body$label)] <- gsub(" months", "", table2$table_body$label[grepl(" months", table2$table_body$label)])
+
+table2$table_body$label[43] <- "Never"
+table2$table_body$label[44] <- "Ever"
+
+table2$table_body$label[7] <- "Never"
+table2$table_body$label[8] <- "Ever"
+
+table2$table_body$label[82] <- "DCIS"
+table2$table_body$label[83] <- "Invasive"
+table2$table_body$label[table2$table_body$label == "Mixed: ductal and other"] <- "Mixed"
+
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt1"] <- "1 (<11.45%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt2"] <- "2 (11.45-22.00%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt3"] <- "3 (22.00-26.70%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt4"] <- "4 (>36.70%)"
+
+table2
+
+table2_df <- as_tibble(table2)
+
+writexl::write_xlsx(table2_df, path = "../outputs/sensitivity_results_gsvar.xlsx")
+
+
+# Generate the table based on external MOD variable
+df_2 <- df_2 |>
+  mutate(d_dmode_n = if_else(SCREENINGSTATUSCOSD_CODE == 2, 1, 0))
+
+# Create clean version of logistic output, without Ns
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model1 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
+                  type = "all") %>%
+  # add_global_p() |> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  ) |>
+  bold_labels() 
+  
+
+#model2
+
+# summary Logistic Regression of Model 2  -----------------------------------------
+
+ model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab,
+            family = binomial(link = "logit"))
+
+
+# tidy up output
+model2 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# summary Logistic Regression of Model 3  -----------------------------------------
+
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model3 <- tbl_regression(model,
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # pvalue_fun = ~ .x,
+    # estimate_fun = ~ .x
+                         ) %>%
+  #add_global_p() %>%
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|>
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# summary Logistic Regression of Model 4  -----------------------------------------
+
+model <- df_2 %>%
+  glm(formula = d_dmode_n ~ d_R1menopause_lab3 + d_age_meno_tr_lab
+      + d_R1hrt_tr_lab
+      + d_parity_lab + d_agebirth1_tr_lab + d_age_menarche_lab + d_ocstatus2_lab
+      + d_bbd_lab + d_fambrca_lab
+      + d_R1alcohol_units_lab + d_R1smokingstatus_lab
+      + d_bmi_entry_lab + d_R1physmet_leis_who_lab + d_bmi_20_lab + d_bf_dur_tr_lab
+      + diagage + d_R1toBC_y + yeardiag
+      + d_md_qrt + d_MDtoBC_lab
+      + d_inv_status + d_grade_tr + d_morph4_tr_lab + d_pos_nodes_tr_lab 
+      + d_tmsize_tr_lab + d_er_tr_lab + d_pr_tr_lab + d_her2_tr_lab,
+            family = binomial(link = "logit"))
+
+# tidy up output
+model4 <- tbl_regression(model, 
+                         exponentiate = TRUE,
+                         label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                         ),
+    pvalue_fun = custom_pvalue_fun
+    # estimate_fun = ~ .x
+                         ) %>% 
+  #add_global_p() %>% 
+  remove_row_type(variables = c(diagage, d_R1toBC_y, yeardiag, d_MDtoBC_lab), # remove covariates
+                  type = "all") %>%
+  # add_global_p()|> 
+  # remove Missing levels from regression output
+  modify_table_body(
+    ~ .x %>%
+      dplyr::filter(!grepl("Missing", .data$label, ignore.case = TRUE))  # Filter 'missing' levels
+  )
+
+
+# Create descriptives by mode of detection ------------------------------------
+# select(d_dmode_n, d_R1alcohol_units_lab, d_R1smokingstatus_lab, d_bmi_entry_lab,  d_R1physmet_leis_who_lab, d_bbd_lab, d_fambrca_lab, d_age_menarche_lab, d_ocstatus_lab, d_R1menopause_lab3, d_age_meno_tr_lab, d_R1hrt_sttyp_tr_lab, d_parity_tr_lab, d_agebirth1_tr_lab)
+
+# note: need to rename the non-trick variables according to their trick name to align with the model, which can then allow table merge. 
+
+# include missing 
+# create df_2
+  
+descr_tab2_df <- df_2  %>%
+  select(d_dmode, all_of(all_expl_variables), all_of(tumour_char), diagage, d_R1toBC_y, d_md_qrt
+         ) %>% 
+  mutate(d_bmi_entry_lab = fct_relevel(d_bmi_entry_lab, "<18.5", "18.5-25", "25-30", "30+"),
+        d_bmi_20_lab = fct_relevel(d_bmi_20_lab, "<18.5", "18.5-25", "25-30", "30+") 
+              ) %>% 
+  mutate(d_age_meno_tr_lab = d_age_menopause_lab,
+         d_R1hrt_tr_lab = d_R1hrtstatus_lab,
+         d_agebirth1_tr_lab = d_agebirth1_lab,
+         d_bf_dur_tr_lab = d_bf_dur_lab
+         ) %>% 
+  select(-d_age_menopause_lab, -d_R1hrtstatus_lab, -d_agebirth1_lab, -d_bf_dur_lab, -diagage, -d_R1toBC_y)  
+  
+  
+
+# glimpse(descr_model2)
+# str(test)
+
+# create gs summary table
+descr_tab2 <- descr_tab2_df %>% 
+  mutate(d_dmode = if_else(d_dmode == "I", "Interval", "Screen-Detected")) |>
+  select(d_dmode,
+         d_age_menarche_lab,
+         d_ocstatus2_lab,
+         d_parity_lab,
+         d_agebirth1_tr_lab,
+         d_bf_dur_tr_lab,
+         d_R1menopause_lab3,
+         d_age_meno_tr_lab,
+         d_R1hrt_tr_lab,
+         d_bbd_lab,
+         d_fambrca_lab,
+         d_bmi_entry_lab,
+         d_bmi_20_lab,
+         d_R1physmet_leis_who_lab,
+         d_R1alcohol_units_lab, 
+         d_R1smokingstatus_lab,
+         d_md_qrt,
+         d_inv_status, 
+         d_grade_tr = d_grade_lab, 
+         d_morph4_tr_lab = d_morph4_lab, 
+         d_pos_nodes_tr_lab = d_pos_nodes_lab, 
+         d_tmsize_tr_lab = d_tumour_size_lab, 
+         d_er_tr_lab = d_er_status_lab, 
+         d_pr_tr_lab = d_pr_status_lab, 
+         d_her2_tr_lab = d_her2_status_lab) %>% 
+  tbl_summary(by = d_dmode,
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p})"
+                ),
+              digits = all_continuous() ~ 2,
+              label = list(
+                          d_R1alcohol_units_lab ~ "Alcohol units per week",
+                          d_R1smokingstatus_lab ~ "Smoking status",
+                          d_bmi_entry_lab ~ "BMI at recruitment (kg/m²)",
+                          d_R1physmet_leis_who_lab ~ "Physical activity (MET h/wk)",
+                          d_bbd_lab ~ "Benign breast disease",
+                          d_fambrca_lab ~ "Family history of breast cancer",
+                          d_age_menarche_lab ~ "Age at menarche",
+                          d_ocstatus2_lab ~ "Oral contraceptive use",
+                          d_R1menopause_lab3 ~ "Menopausal status",
+                          d_age_meno_tr_lab ~ "Age at menopause",
+                          d_R1hrt_tr_lab ~ "MHT status",
+                          d_parity_lab ~ "Parity",
+                          d_agebirth1_tr_lab ~ "Age at first birth",
+                          d_bmi_20_lab ~ "BMI at age 20 (kg/m²)",
+                          d_bf_dur_tr_lab ~ "Breastfeeding duration (mths)",
+                          d_md_qrt ~ "Mammographic density (quartiles)",
+                          d_inv_status ~ "Invasive status",
+                          d_grade_tr ~ "Grade",
+                          d_morph4_tr_lab ~ "Morphology type",
+                          d_pos_nodes_tr_lab ~ "Node status",
+                          d_tmsize_tr_lab ~ "Tumour size (mm)",
+                          d_er_tr_lab ~ "ER status",
+                          d_pr_tr_lab ~ "PR status",
+                          d_her2_tr_lab ~ "HER2 status"
+                ),
+              type = list(d_bbd_lab ~ "categorical",
+                          d_fambrca_lab ~ "categorical")
+              )
+
+#descr_model2
+  
+# merge with analysis output -------------------------------------------------
+
+
+table2 <- tbl_merge(
+  tbls = list(descr_tab2, model1, model2, model3, model4),
+  tab_spanner = c("**Distribution by detection mode**", "**Model 1**", "**Model 2**", "**Model 3**", "**Model 4**")
+   ) 
+
+#show_header_names(table2)
+
+table2 <- table2 %>% 
+  modify_footnote(
+    estimate_2 ~ "Model 1: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at Diagnosis, Time from Recruitment to BC diagnosis, Year of diagnosis",
+    estimate_3 ~ "Model 2: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Percent mammographic density (quartiles), Time from mammographic density measurement to BRCA diagnosis",
+    estimate_4 ~ "Model 3: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Invasive status, Morphology, Node status, Tumour size, ER status, PR status, HER2 status",
+    estimate_5 ~ "Model 4: Age at menarche, Menopause, Age at menopause, MHT status, Oral contraceptive use, Parity, Age at first birth, Breast feeding duration (mths), Benign breast disease, Family history of breast cancer, BMI at recruitment (kg/m²), BMI at age 20 (kg/m²), Physical activity (MET h/wk), Alcohol units per week, Smoking status, Age at diagnosis, Time from recruitment to BC diagnosis, Year of diagnosis, Percent mammographic density (quartiles), Time from mammographic density measurement to BRCA diagnosis, Invasive status, Morphology, Node status, Tumour size, ER status, PR status, HER2 status"
+  )
+
+# Manually changing labels for the levels
+table2$table_body$label[grepl(" months", table2$table_body$label)] <- gsub(" months", "", table2$table_body$label[grepl(" months", table2$table_body$label)])
+
+table2$table_body$label[43] <- "Never"
+table2$table_body$label[44] <- "Ever"
+
+table2$table_body$label[7] <- "Never"
+table2$table_body$label[8] <- "Ever"
+
+table2$table_body$label[82] <- "DCIS"
+table2$table_body$label[83] <- "Invasive"
+table2$table_body$label[table2$table_body$label == "Mixed: ductal and other"] <- "Mixed"
+
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt1"] <- "1 (<11.45%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt2"] <- "2 (11.45-22.00%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt3"] <- "3 (22.00-26.70%)"
+table2$table_body$label[table2$table_body$term_3 == "d_md_qrt4"] <- "4 (>36.70%)"
+
+table2
+
+table2_df <- as_tibble(table2)
+
+writexl::write_xlsx(table2_df, path = "../outputs/sensitivity_results_nhsvar.xlsx")
 
 ```
