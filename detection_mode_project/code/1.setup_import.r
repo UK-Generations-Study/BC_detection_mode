@@ -116,7 +116,7 @@ problems(riskfactors_im)
 #source("code/Functions.r")
 
 # set up
-functions_path <- here("code", "Functions.R")
-source(functions_path)
+# functions_path <- here("code", "Functions.R")
+# source(functions_path)
 
 
