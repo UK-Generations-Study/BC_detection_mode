@@ -145,14 +145,13 @@ extract_overall_p_from_lm <- function(my_model) {
 
 
 # function to format single p value (not a dataframe)
-format_single_p_value <- function(p_value) {
-  formatted_p <- case_when(
-    p_value < 0.001 ~ "<0.001",
-    p_value >= 0.001 & p_value < 0.01 ~ as.character(round(p_value, 3)),
-    round(p_value, 2) == 1 ~ "0.99",
-    TRUE ~ as.character(format(round(p_value, 2), nsmall = 1))
+custom_pvalue_fun <- function(x) {
+  dplyr::case_when(
+    is.na(x) ~ NA_character_,
+    x < 0.001 ~ "<0.001",
+    x > 0.999 ~ ">0.999",
+    TRUE ~ formatC(x, format = "f", digits = 3)
   )
-  return(formatted_p)
 }
 
 ## function to create violin plots ----------------------------------------------------
@@ -166,7 +165,7 @@ create_violin_plot <- function(data, response_var, explanatory_var,
   
   # Extract and format the overall p-value
   global_p <- extract_overall_p_from_lm(lm_model)
-  formatted_p <- format_single_p_value(global_p)
+  formatted_p <- custom_pvalue_fun(global_p)
   
   # If log model, have different y bounds
   if(log){
@@ -186,7 +185,16 @@ create_violin_plot <- function(data, response_var, explanatory_var,
     labs(title = title, x = "", y = y_label) +
     theme_base() +
     theme(legend.position = "none") +
-    scale_fill_brewer(palette = "Set2") # +
+    scale_fill_brewer(palette = "Set2") +
+    theme(
+      # plot.title = element_text(size = 10, face = "bold"),
+      axis.title = element_text(size = 16),
+      axis.text = element_text(size = 16),
+      # legend.title = element_text(size = 10, face = "bold"),
+      # legend.text = element_text(size = 10),
+      # strip.text = element_text(size = 10, face = "bold"),
+      # plot.caption = element_text(size = 10)
+    )
     # annotate("text",
     #          x = annotation_pos$ref_x,
     #          y = annotation_pos$ref_y,

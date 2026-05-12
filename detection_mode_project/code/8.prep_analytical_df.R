@@ -164,7 +164,7 @@ time_vars <- c("diagage",
 
 
 df <- df %>% 
-  select(d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
+  select(tcode, d_dmode_n, d_dmode, source_dm2, d_md_avail_lab, d_md_avail, d_parous_lab, d_md, d_md_qrt, d_md10, any_of(all_expl_variables), any_of(all_expl_variables_tr), d_inv_status_lab, any_of(tumour_char), d_stage_cat, any_of(tumour_char_tr), any_of(time_vars), AgeatEntry, d_R1toBC_lab, ImageType, reg_sd)
 #names(df)
 #str(df)
 
